@@ -66,13 +66,14 @@
 ### 前端架构
 
 #### 核心框架
-- **Vue 3**: 现代化前端框架
-- **Nuxt 3**: Vue的服务端渲染框架
-- **Vuex 4/Pinia**: 状态管理
+- **Vue 3.3+**: 现代化前端框架
+- **Nuxt 3.15.0**: Vue的服务端渲染框架
+- **Pinia**: 状态管理
 - **Vue Router 4**: 路由管理
 
 #### UI组件
-- **Element Plus**: UI组件库
+- **Headless UI**: 无样式的可访问性UI组件
+- **Heroicons**: SVG图标集
 - **Tailwind CSS**: 实用工具类的CSS框架
 
 #### 关键模块
@@ -118,7 +119,7 @@
 
 ### 系统要求
 - Python 3.11+
-- Node.js 16+
+- Node.js 18+ (推荐使用Node.js 20 LTS)
 - SQLite 3 (开发环境)
 - PostgreSQL 14+ (生产环境推荐)
 - Nginx (生产环境)
@@ -143,21 +144,26 @@ python-dotenv==1.0.0  # 环境变量管理
 ```json
 {
   "dependencies": {
-    "@nuxtjs/axios": "^5.13.6",
+    "@headlessui/vue": "^1.7.16",
+    "@heroicons/vue": "^2.1.1",
+    "@nuxtjs/i18n": "^8.0.0",
     "@pinia/nuxt": "^0.5.1",
-    "element-plus": "^2.4.2",
-    "nuxt": "^3.8.0",
+    "@vueuse/core": "^10.7.0",
+    "axios": "^1.6.2",
+    "dompurify": "^3.2.5",
+    "marked": "^15.0.8",
+    "nuxt": "3.15.0",
     "pinia": "^2.1.7",
-    "vue": "^3.3.4",
-    "vue-router": "^4.2.5",
-    "vuex": "^4.1.0"
+    "unhead": "1.8.10",
+    "uuid": "^11.1.0",
+    "vue": "^3.3.13",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.8.0",
+    "@nuxtjs/tailwindcss": "^6.10.1",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31",
-    "sass": "^1.69.5",
-    "tailwindcss": "^3.3.5"
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6"
   }
 }
 ```
