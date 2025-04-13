@@ -63,3 +63,8 @@ Thumbs.db
 old/
 old/react-storefront/
 old/saleor-platform/
+
+# Large files
+*.tar.gz
+mall_deploy.tar.gz
+mall_deploy_with_readme.tar.gz
