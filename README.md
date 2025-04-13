@@ -1,39 +1,104 @@
-# Fashion Leather Mall 部署说明
+# 多站点电商平台 (Mall)
 
-本文档提供关于Fashion Leather Mall电子商城系统的部署指南。
+这是一个基于Django和Vue/Nuxt的多站点电商平台系统，支持通过单一后台管理多个前端站点。
+
+## 系统架构
+
+### 后端
+- **Django**: 提供API和管理后台
+- **Django REST Framework**: 构建RESTful API
+- **JWT认证**: 用户身份验证
+- **多站点支持**: 通过SiteMiddleware实现多站点管理
+
+### 前端
+- **Vue 3/Nuxt**: 现代化前端框架
+- **Vuex/Pinia**: 状态管理
+- **Vue Router**: 路由管理
+
+## 主要功能
+
+### 多站点管理
+- 通过单一Django后台管理多个前端站点
+- 每个站点可以有独立的配置、主题和商品集合
+- 通过visible_in字段控制商品在不同站点的可见性
+
+### 商品系统
+- 商品分类与展示
+- 产品详情页面
+- 分类筛选功能
+- 价格区间筛选
+
+### 用户系统
+- JWT认证
+- 用户注册和登录
+- 用户资料管理
+
+### 心愿单功能
+- 创建和管理心愿单
+- 心愿单分享功能
+- 优化的移动端心愿单展示
+
+### 购物与支付
+- 购物车功能
+- 订单管理
+- 多种支付方式支持
+
+### 其他功能
+- Telegram机器人集成
+- 信息页面系统(关于我们、购物指南、售后服务)
+- API监控与管理(Alokai集成)
 
 ## 系统要求
 
 - Python 3.11+
-- Django 5.1.7
+- Node.js 16+
 - SQLite 3 (生产环境建议使用MySQL或PostgreSQL)
-- 静态文件服务器 (Nginx等)
 
-## 部署步骤
+## 快速开始
 
-1. 安装依赖
+### 后端设置
 
+1. 激活虚拟环境
+```bash
+source venv/bin/activate
+```
+
+2. 安装依赖
 ```bash
 pip install -r requirements.txt
 ```
 
-2. 数据库配置
-
-项目默认使用SQLite数据库，如需使用其他数据库，请修改`mall/settings.py`中的数据库配置。
-
-3. 设置环境变量
-
-在生产环境，需要设置Django的SECRET_KEY环境变量。为了安全起见，不应使用代码中默认的密钥。
-
+3. 运行数据库迁移
 ```bash
-export DJANGO_SECRET_KEY='你的安全密钥'
+python manage.py migrate
 ```
 
-4. 配置静态文件
+4. 创建超级用户
+```bash
+python manage.py createsuperuser
+```
 
-静态文件已收集到`staticfiles`目录，需要配置Web服务器(如Nginx)指向此目录，并配置媒体文件目录。
+5. 启动开发服务器
+```bash
+python manage.py runserver
+```
 
-5. 启动应用
+### 前端设置
+
+1. 安装依赖
+```bash
+cd nuxt-frontend
+npm install
+```
+
+2. 启动开发服务器
+```bash
+npm run dev
+```
+
+## 部署
+
+### 后端部署
 
 使用WSGI或ASGI服务器运行应用程序，推荐使用Gunicorn和Nginx:
 
@@ -41,40 +106,21 @@ export DJANGO_SECRET_KEY='你的安全密钥'
 gunicorn --bind 0.0.0.0:8000 mall.wsgi:application
 ```
 
-## Nginx配置示例
+### 前端部署
 
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com;
-
-    location /static/ {
-        alias /path/to/staticfiles/;
-    }
-
-    location /media/ {
-        alias /path/to/media/;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
+```bash
+cd nuxt-frontend
+npm run build
 ```
 
-## 功能更新说明
+## 站点配置
 
-本版本包含以下功能:
-1. 商品分类与展示
-2. 产品详情页面
-3. 分类筛选功能
-4. 价格区间筛选
-5. 心愿单功能
-6. 支付和订单处理
-7. 用户登录和注册
+站点配置存储在settings.py中的SITE_MAPPING和SITE_NAMES中。要添加新站点，请更新这些设置并确保相应的域名指向您的服务器。
 
-## 联系支持
+## 贡献
 
-如有任何部署问题，请联系技术支持人员。 
+欢迎提交问题和拉取请求。对于重大更改，请先打开一个问题讨论您想要更改的内容。
+
+## 许可证
+
+[MIT](https://choosealicense.com/licenses/mit/) 
