@@ -1,0 +1,254 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Product List | Fashion Leather Mall{% endblock %}
+
+{% block content %}
+<div class="product-list-wrapper">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="{% url 'goods:home' %}">Home</a>
+            <span class="separator">/</span>
+            <span class="current">Products</span>
+        </nav>
+
+        <div class="page-header">
+            <h1 class="page-title">
+                {% if category %}
+                {{ category.name }}
+                {% else %}
+                All Products
+                {% endif %}
+            </h1>
+            <p class="product-count">{{ products.count }} items</p>
+        </div>
+
+        <div class="product-container">
+            <!-- 筛选侧边栏 -->
+            <div class="filter-sidebar">
+                <form action="{% url 'goods:product_list' %}" method="get" id="filter-form">
+                    <!-- 保留其他GET参数，如排序 -->
+                    {% if request.GET.sort %}
+                    <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+                    {% endif %}
+                    
+                    <!-- 分类筛选 -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">分类</h3>
+                        <div class="filter-options">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="category" id="category-all" value="" {% if not category %}checked{% endif %}>
+                                <label class="form-check-label" for="category-all">
+                                    所有分类
+                                </label>
+                            </div>
+                            {% for cat in all_categories %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="category" id="category-{{ cat.id }}" value="{{ cat.id }}" {% if category.id == cat.id %}checked{% endif %}>
+                                <label class="form-check-label" for="category-{{ cat.id }}">
+                                    {{ cat.name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- 价格范围筛选 -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">价格区间</h3>
+                        <div class="price-range">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" name="min_price" placeholder="最低价" value="{{ request.GET.min_price|default:'' }}">
+                            </div>
+                            <div class="price-range-separator text-center mb-2">至</div>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" name="max_price" placeholder="最高价" value="{{ request.GET.max_price|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 排序选项 -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">排序方式</h3>
+                        <select class="form-select" name="sort" onchange="this.form.submit()">
+                            <option value="" {% if not request.GET.sort %}selected{% endif %}>默认排序</option>
+                            <option value="price-low" {% if request.GET.sort == 'price-low' %}selected{% endif %}>价格从低到高</option>
+                            <option value="price-high" {% if request.GET.sort == 'price-high' %}selected{% endif %}>价格从高到低</option>
+                            <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>最新上架</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary filter-apply-btn">应用筛选</button>
+                    <a href="{% url 'goods:product_list' %}" class="btn btn-outline-secondary filter-clear-btn">清除筛选</a>
+                </form>
+            </div>
+            
+            <!-- 商品列表 -->
+            <div class="product-grid-container">
+                {% if products %}
+                <div class="product-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <a href="{% url 'goods:product_detail' product.id %}" class="product-link">
+                            <div class="product-image">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                <img src="/static/img/product-placeholder.jpg" alt="{{ product.name }}">
+                                {% endif %}
+                                {% with product.images.all|first as second_image %}
+                                {% if second_image %}
+                                <img src="{{ second_image.image.url }}" alt="{{ product.name }}" class="hover-image">
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">{{ product.name }}</h3>
+                                <p class="product-price">${{ product.price }}</p>
+                            </div>
+                        </a>
+                        {% if product.stock > 0 %}
+                        <a href="{% url 'wishlist:add' product.id %}" class="btn btn-primary">Add to Wishlist</a>
+                        {% else %}
+                        <p class="out-of-stock">Sold Out</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.min_price %}min_price={{ request.GET.min_price }}&{% endif %}{% if request.GET.max_price %}max_price={{ request.GET.max_price }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="page-link prev">&laquo; Previous</a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="page-link current">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.min_price %}min_price={{ request.GET.min_price }}&{% endif %}{% if request.GET.max_price %}max_price={{ request.GET.max_price }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.min_price %}min_price={{ request.GET.min_price }}&{% endif %}{% if request.GET.max_price %}max_price={{ request.GET.max_price }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="page-link next">Next &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="no-products">
+                    <p>No products found matching your criteria</p>
+                    <a href="{% url 'goods:product_list' %}" class="btn btn-outline">View All Products</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* 产品列表页样式 */
+.product-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.filter-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.product-grid-container {
+    flex-grow: 1;
+}
+
+.filter-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.filter-options {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.form-check {
+    margin-bottom: 8px;
+}
+
+.price-range {
+    margin-top: 15px;
+}
+
+.price-range-separator {
+    margin: 8px 0;
+}
+
+.filter-apply-btn {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.filter-clear-btn {
+    width: 100%;
+}
+
+/* 商品网格样式（已有，这里只是优化） */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 992px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-container {
+        flex-direction: column;
+    }
+    
+    .filter-sidebar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+    // 表单提交前处理
+    document.getElementById('filter-form').addEventListener('submit', function(e) {
+        // 移除空值参数
+        const inputs = this.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (input.value === '' && input.name !== 'category') {
+                input.disabled = true;
+            }
+        });
+        
+        // 如果选择了"所有分类"，禁用category参数
+        const allCategoryRadio = document.getElementById('category-all');
+        if (allCategoryRadio && allCategoryRadio.checked) {
+            allCategoryRadio.disabled = true;
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,23 @@
+{% extends 'alokai/base.html' %}
+
+{% block title %}{{ product.name }} - {{ site_config.name }}{% endblock %}
+
+{% block content %}
+    <!-- 商品详情 -->
+    <alokai-product-detail
+        :product="product"
+        :related-products="related_products"
+    ></alokai-product-detail>
+
+    <!-- 商品评论 -->
+    <alokai-product-reviews
+        :reviews="product.reviews"
+        :product-id="product.id"
+    ></alokai-product-reviews>
+
+    <!-- 商品推荐 -->
+    <alokai-product-recommendations
+        :products="recommendations"
+        :title="'猜你喜欢'"
+    ></alokai-product-recommendations>
+{% endblock %}

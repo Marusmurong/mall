@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}我的心愿单{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>我的心愿单</h2>
+    
+    {% if wishlist.items.all %}
+    <div class="row">
+        {% for item in wishlist.items.all %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" class="card-img-top" alt="{{ item.product.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.product.name }}</h5>
+                    <p class="card-text">{{ item.product.description|truncatewords:30 }}</p>
+                    <p class="card-text"><strong>价格：</strong>¥{{ item.product.price }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'goods:detail' item.product.id %}" class="btn btn-primary">查看详情</a>
+                        <form action="{% url 'wishlist_new:remove' item.id %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">移除</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        您的心愿单还是空的。浏览商品并添加到心愿单吧！
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

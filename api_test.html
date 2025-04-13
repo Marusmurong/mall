@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .response {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>API 测试工具</h1>
+    
+    <div class="container">
+        <div class="card">
+            <h2>API 配置</h2>
+            <div class="form-group">
+                <label for="baseUrl">API 基础 URL</label>
+                <input type="text" id="baseUrl" value="http://127.0.0.1:8001/api/v1">
+            </div>
+            <div class="form-group">
+                <label for="authUrl">认证 API URL</label>
+                <input type="text" id="authUrl" value="http://127.0.0.1:8001/api/v1/auth/token/">
+            </div>
+            <div class="form-group">
+                <label for="siteId">站点 ID</label>
+                <input type="text" id="siteId" value="default">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>登录</h2>
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" value="admin">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" value="admin">
+            </div>
+            <button onclick="login()">登录</button>
+            <div class="response">
+                <h3>响应</h3>
+                <pre id="loginResponse">等待响应...</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>获取心愿单列表</h2>
+            <button onclick="getWishlists()">获取心愿单</button>
+            <div class="response">
+                <h3>响应</h3>
+                <pre id="wishlistResponse">等待响应...</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>获取分类列表</h2>
+            <button onclick="getCategories()">获取分类</button>
+            <div class="response">
+                <h3>响应</h3>
+                <pre id="categoriesResponse">等待响应...</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>获取商品列表</h2>
+            <div class="form-group">
+                <label for="categoryId">分类 ID (可选)</label>
+                <input type="text" id="categoryId" placeholder="留空获取所有商品">
+            </div>
+            <button onclick="getProducts()">获取商品</button>
+            <div class="response">
+                <h3>响应</h3>
+                <pre id="productsResponse">等待响应...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 存储认证信息
+        let authToken = localStorage.getItem('authToken');
+        
+        // 辅助函数：格式化 JSON
+        function formatJSON(json) {
+            try {
+                return JSON.stringify(JSON.parse(json), null, 2);
+            } catch (e) {
+                return json;
+            }
+        }
+        
+        // 登录
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const authUrl = document.getElementById('authUrl').value;
+            const responseElement = document.getElementById('loginResponse');
+            
+            responseElement.textContent = "正在请求...";
+            
+            try {
+                const response = await fetch(authUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+                
+                const data = await response.text();
+                responseElement.textContent = formatJSON(data);
+                
+                if (response.ok) {
+                    const jsonData = JSON.parse(data);
+                    if (jsonData.access) {
+                        authToken = jsonData.access;
+                        localStorage.setItem('authToken', authToken);
+                        responseElement.textContent += "\n\n登录成功！Token 已保存。";
+                    }
+                }
+            } catch (error) {
+                responseElement.textContent = "请求出错: " + error.message;
+            }
+        }
+        
+        // 获取心愿单列表
+        async function getWishlists() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const siteId = document.getElementById('siteId').value;
+            const responseElement = document.getElementById('wishlistResponse');
+            
+            responseElement.textContent = "正在请求...";
+            
+            try {
+                const url = `${baseUrl}/wishlist/lists/?site=${siteId}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': authToken ? `Bearer ${authToken}` : '',
+                    },
+                });
+                
+                const data = await response.text();
+                responseElement.textContent = formatJSON(data);
+            } catch (error) {
+                responseElement.textContent = "请求出错: " + error.message;
+            }
+        }
+        
+        // 获取分类列表
+        async function getCategories() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const siteId = document.getElementById('siteId').value;
+            const responseElement = document.getElementById('categoriesResponse');
+            
+            responseElement.textContent = "正在请求...";
+            
+            try {
+                const url = `${baseUrl}/categories/?site=${siteId}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const data = await response.text();
+                responseElement.textContent = formatJSON(data);
+            } catch (error) {
+                responseElement.textContent = "请求出错: " + error.message;
+            }
+        }
+        
+        // 获取商品列表
+        async function getProducts() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const siteId = document.getElementById('siteId').value;
+            const categoryId = document.getElementById('categoryId').value;
+            const responseElement = document.getElementById('productsResponse');
+            
+            responseElement.textContent = "正在请求...";
+            
+            try {
+                let url = `${baseUrl}/products/?site=${siteId}`;
+                if (categoryId) {
+                    url += `&category=${categoryId}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const data = await response.text();
+                responseElement.textContent = formatJSON(data);
+            } catch (error) {
+                responseElement.textContent = "请求出错: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

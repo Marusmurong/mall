@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}封禁用户 - {{ user_profile.user.username }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card mt-5">
+        <div class="card-header bg-warning">
+          <h4 class="mb-0">封禁用户: {{ user_profile.user.username }}</h4>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <p><strong>用户信息</strong></p>
+            <ul>
+              <li>用户名: {{ user_profile.user.username }}</li>
+              <li>邮箱: {{ user_profile.user.email }}</li>
+              <li>注册时间: {{ user_profile.user.date_joined|date:"Y-m-d H:i" }}</li>
+              <li>最后登录: {{ user_profile.user.last_login|date:"Y-m-d H:i"|default:"从未登录" }}</li>
+              {% if user_profile.referrer %}
+              <li>邀请人: {{ user_profile.referrer.user.username }}</li>
+              {% endif %}
+              <li>历史封禁次数: {{ user_profile.ban_count }}</li>
+            </ul>
+          </div>
+          
+          <form method="post" action="{% url 'ban_user' user_profile.user.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="ban_reason"><strong>封禁原因:</strong></label>
+              <textarea class="form-control" id="ban_reason" name="ban_reason" rows="3" required></textarea>
+              <small class="form-text text-muted">请详细说明封禁原因，用户将能看到此信息</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="ban_days"><strong>封禁时长 (天):</strong></label>
+              <input type="number" class="form-control" id="ban_days" name="ban_days" min="1" max="3650">
+              <small class="form-text text-muted">留空表示永久封禁，或者输入天数进行临时封禁</small>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="confirm_ban" required>
+              <label class="form-check-label" for="confirm_ban">
+                我确认此次封禁操作是必要的
+              </label>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-secondary">取消</a>
+              <button type="submit" class="btn btn-danger">执行封禁</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

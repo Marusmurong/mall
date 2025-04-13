@@ -1,0 +1,17 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% block inner_title %}心愿单{% endblock %} - Fashion Leather Mall{% endblock %}
+
+{% block content %}
+<div class="container wishlist-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    {% block wishlist_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}{% endblock %} 

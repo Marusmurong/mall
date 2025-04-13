@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新站点</title>
+    
+    <!-- Alokai平台核心样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/alokai-core.css">
+    
+    <!-- 站点主题样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/themes/default.css">
+    
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Alokai平台核心库 -->
+    <script src="https://cdn.alokai.com/libs/alokai-core.js"></script>
+    
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <header class="site-header">
+            <nav>
+                <div class="logo">新站点</div>
+                <div class="nav-items">
+                    <a href="/">首页</a>
+                    <a href="/categories">分类</a>
+                    <a href="/cart">购物车</a>
+                    <a href="/wishlist">心愿单</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- 主体内容 -->
+        <main class="main-content">
+            <div v-if="loading" class="loading">加载中...</div>
+            <div v-else-if="error" class="error">{{ error }}</div>
+            <div v-else>
+                <!-- 轮播图 -->
+                <div class="carousel">
+                    <div v-for="banner in siteConfig.banners" :key="banner.id" class="banner">
+                        <img :src="banner.image" :alt="banner.title">
+                    </div>
+                </div>
+
+                <!-- 特色商品 -->
+                <div class="featured-products">
+                    <h2>特色商品</h2>
+                    <div class="product-grid">
+                        <div v-for="product in siteConfig.featured_products" :key="product.id" class="product-card">
+                            <img :src="product.image" :alt="product.name">
+                            <h3>{{ product.name }}</h3>
+                            <p>{{ product.price }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Vue.js应用入口 -->
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

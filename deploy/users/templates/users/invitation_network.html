@@ -1,0 +1,129 @@
+{% extends 'users/base.html' %}
+
+{% block title %}我的邀请网络{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2>我的邀请网络</h2>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="display-4">{{ invitee_count }}</h3>
+                            <p class="lead">直接邀请</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="display-4">{{ total_network_size }}</h3>
+                            <p class="lead">网络总人数</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h4>我的邀请码: <span class="badge bg-primary">{{ user.profile.invite_code }}</span></h4>
+                    <p>
+                        <a href="{% url 'users:profile' %}" class="btn btn-sm btn-outline-primary">
+                            查看我的邀请链接
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>我直接邀请的用户</h3>
+            </div>
+            <div class="card-body">
+                {% if direct_invitees %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>注册时间</th>
+                                    <th>心愿单数量</th>
+                                    <th>邀请人数</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invitee in direct_invitees %}
+                                <tr>
+                                    <td>{{ invitee.user.username }}</td>
+                                    <td>{{ invitee.profile.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ invitee.wishlist_count }}</td>
+                                    <td>{{ invitee.invite_count }}</td>
+                                    <td>
+                                        <a href="{% url 'users:invitee_detail' invitee.user.id %}" class="btn btn-sm btn-primary">
+                                            查看详情
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        您还没有邀请任何用户。分享您的邀请码来邀请朋友加入！
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if invitation_tree %}
+        <div class="card">
+            <div class="card-header">
+                <h3>邀请关系网络</h3>
+            </div>
+            <div class="card-body">
+                <div class="tree-container">
+                    <div class="tree-root mb-2">
+                        <strong>{{ user.username }}</strong> (我)
+                    </div>
+                    
+                    {% for invitee in invitation_tree %}
+                    <div class="tree-item tree-level-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ invitee.user.username }}</strong>
+                                <span class="badge bg-secondary ms-2">一级</span>
+                            </div>
+                            <a href="{% url 'users:invitee_detail' invitee.user.id %}" class="btn btn-sm btn-outline-primary">
+                                查看
+                            </a>
+                        </div>
+                        
+                        {% for sub_invitee in invitee.children %}
+                        <div class="tree-item tree-level-2 mt-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ sub_invitee.user.username }}</strong>
+                                    <span class="badge bg-info ms-2">二级</span>
+                                </div>
+                                <a href="{% url 'users:invitee_detail' sub_invitee.user.id %}" class="btn btn-sm btn-outline-primary">
+                                    查看
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

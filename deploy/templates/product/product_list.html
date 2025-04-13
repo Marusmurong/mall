@@ -1,0 +1,248 @@
+{% extends 'base/base.html' %}
+
+{% block title %}时尚皮革商品列表{% endblock %}
+{% block meta_description %}浏览我们精选的高品质皮革商品，包括皮带、手包、钱包和更多时尚配饰。{% endblock %}
+
+{% block content %}
+<div class="product-page">
+    <div class="container">
+        <div class="product-list-header">
+            <h1 class="page-title">
+                {% if category %}
+                    {{ category.name }}
+                {% else %}
+                    全部商品
+                {% endif %}
+            </h1>
+            
+            <div class="product-filter-sort">
+                <!-- 排序选项 -->
+                <div class="sort-options">
+                    <select id="sort-selector" class="sort-select">
+                        <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>默认排序</option>
+                        <option value="price-asc" {% if current_sorting == 'price-asc' %}selected{% endif %}>价格: 低到高</option>
+                        <option value="price-desc" {% if current_sorting == 'price-desc' %}selected{% endif %}>价格: 高到低</option>
+                        <option value="name-asc" {% if current_sorting == 'name-asc' %}selected{% endif %}>名称: A-Z</option>
+                        <option value="name-desc" {% if current_sorting == 'name-desc' %}selected{% endif %}>名称: Z-A</option>
+                    </select>
+                </div>
+                
+                <!-- 显示方式：网格或列表 -->
+                <div class="view-options">
+                    <button class="view-btn grid-view active" data-view="grid">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <button class="view-btn list-view" data-view="list">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="4" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="3" y="10" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="3" y="16" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="product-list-container">
+            <!-- 筛选边栏 -->
+            <aside class="product-filter-sidebar">
+                <div class="filter-section">
+                    <h3 class="filter-title">分类</h3>
+                    <ul class="filter-list">
+                        <li>
+                            <a href="{% url 'product_list' %}" class="{% if not category %}active{% endif %}">
+                                全部商品
+                            </a>
+                        </li>
+                        {% for cat in all_categories %}
+                        <li>
+                            <a href="{% url 'category' category_slug=cat.name|lower %}" class="{% if category.id == cat.id %}active{% endif %}">
+                                {{ cat.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="filter-section">
+                    <h3 class="filter-title">价格</h3>
+                    <div class="price-filter">
+                        <form method="get" action="" class="price-range-form">
+                            <div class="price-inputs">
+                                <input type="number" name="min_price" placeholder="￥最低" value="{{ min_price }}">
+                                <span>-</span>
+                                <input type="number" name="max_price" placeholder="￥最高" value="{{ max_price }}">
+                            </div>
+                            <button type="submit" class="btn-apply-filter">应用</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 可以添加更多筛选选项，如颜色、材质等 -->
+            </aside>
+
+            <!-- 商品列表 -->
+            <div class="product-grid" id="product-container">
+                {% if products %}
+                    {% for product in products %}
+                    <div class="product-card">
+                        <a href="{% url 'product_detail' product.id %}" class="product-link">
+                            <div class="product-image">
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">{{ product.name }}</h3>
+                                <p class="product-price">{{ product.price }} 元</p>
+                            </div>
+                        </a>
+                        {% if product.stock > 0 %}
+                        <form method="post" action="#" class="quick-add-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="quick-add-btn">快速加入购物车</button>
+                        </form>
+                        {% else %}
+                        <button class="sold-out-btn" disabled>已售罄</button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="no-products">
+                    <h2>没有找到符合条件的商品</h2>
+                    <p>请尝试调整您的筛选条件，或浏览其他分类</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-info">显示 {{ page_obj.start_index }}-{{ page_obj.end_index }} 个，共 {{ paginator.count }} 个商品</span>
+            <div class="page-controls">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn first">
+                    <span>首页</span>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn prev">
+                    <span>上一页</span>
+                </a>
+                {% endif %}
+            
+                <span class="current-page">
+                    第 {{ page_obj.number }} 页，共 {{ paginator.num_pages }} 页
+                </span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn next">
+                    <span>下一页</span>
+                </a>
+                <a href="?page={{ paginator.num_pages }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="page-btn last">
+                    <span>尾页</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 排序功能
+        const sortSelector = document.getElementById('sort-selector');
+        if (sortSelector) {
+            sortSelector.addEventListener('change', function() {
+                const currentUrl = new URL(window.location.href);
+                const selectedValue = this.value;
+                
+                // 更新排序参数
+                if (selectedValue !== 'default') {
+                    currentUrl.searchParams.set('sort', selectedValue);
+                } else {
+                    currentUrl.searchParams.delete('sort');
+                }
+                
+                // 保持当前页码
+                if (currentUrl.searchParams.has('page')) {
+                    currentUrl.searchParams.set('page', 1);
+                }
+                
+                window.location.href = currentUrl.toString();
+            });
+        }
+
+        // 视图切换（网格/列表）
+        const viewButtons = document.querySelectorAll('.view-btn');
+        const productContainer = document.getElementById('product-container');
+        
+        if (viewButtons.length && productContainer) {
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const viewType = this.getAttribute('data-view');
+                    
+                    // 移除所有视图按钮的活动状态
+                    viewButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // 添加当前按钮的活动状态
+                    this.classList.add('active');
+                    
+                    // 更新产品容器的类
+                    productContainer.className = viewType === 'grid' ? 'product-grid' : 'product-list';
+                    
+                    // 可选：保存用户首选项到localStorage
+                    localStorage.setItem('product_view_preference', viewType);
+                });
+            });
+            
+            // 从localStorage加载用户的首选项
+            const savedViewPreference = localStorage.getItem('product_view_preference');
+            if (savedViewPreference) {
+                const preferredViewButton = document.querySelector(`.view-btn[data-view="${savedViewPreference}"]`);
+                if (preferredViewButton) {
+                    preferredViewButton.click();
+                }
+            }
+        }
+
+        // 快速添加到购物车动画
+        const quickAddForms = document.querySelectorAll('.quick-add-form');
+        
+        if (quickAddForms.length) {
+            quickAddForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const button = this.querySelector('.quick-add-btn');
+                    button.classList.add('adding');
+                    button.textContent = '添加中...';
+                    
+                    // 模拟添加到购物车的过程
+                    setTimeout(() => {
+                        button.classList.remove('adding');
+                        button.classList.add('added');
+                        button.textContent = '已添加';
+                        
+                        // 提交表单
+                        this.submit();
+                        
+                        // 重置按钮状态（可选）
+                        setTimeout(() => {
+                            button.classList.remove('added');
+                            button.textContent = '快速加入购物车';
+                        }, 2000);
+                    }, 500);
+                });
+            });
+        }
+    });
+</script>
+{% endblock %} 

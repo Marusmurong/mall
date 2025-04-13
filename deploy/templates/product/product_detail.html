@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ product.name }} – Fashion Leather Mall{% endblock %}
+{% block meta_description %}{{ product.description|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <div class="container">
+        <div class="product-detail-grid">
+            <!-- Product Image Gallery -->
+            <div class="product-gallery">
+                <div class="main-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" id="main-product-image">
+                </div>
+                <div class="thumbnail-gallery">
+                    <button class="thumbnail active" data-image="{{ product.image.url }}">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    </button>
+                    {% for image in product_images %}
+                    <button class="thumbnail" data-image="{{ image.image.url }}">
+                        <img src="{{ image.image.url }}" alt="{{ product.name }} - Image {{ forloop.counter }}">
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Product Information -->
+            <div class="product-info">
+                <h1 class="product-title">{{ product.name }}</h1>
+                <div class="product-price">${{ product.price }}</div>
+
+                {% if product.stock > 0 %}
+                <div class="product-status in-stock">In Stock</div>
+                {% else %}
+                <div class="product-status out-of-stock">Sold Out</div>
+                {% endif %}
+
+                <!-- Add to Wishlist -->
+                <form method="post" action="{% url 'wishlist:add' product.id %}" class="add-to-wishlist-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+
+                    {% if product.stock > 0 %}
+                    <button type="submit" class="btn btn-primary">Add to Wishlist</button>
+                    {% endif %}
+                </form>
+
+                <!-- Product Description -->
+                <div class="product-description">
+                    {{ product.description|linebreaks }}
+                </div>
+
+                <!-- Product Details -->
+                {% if product.goods_desc %}
+                <div class="product-details">
+                    <h3>Product Details</h3>
+                    {{ product.goods_desc|safe }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Shipping Information -->
+        <div class="product-shipping">
+            <details class="shipping-info-accordion">
+                <summary>Shipping Information</summary>
+                <div class="shipping-content">
+                    <h3>Discreet Packaging</h3>
+                    <p>We value your privacy. All orders are shipped in plain packaging boxes with no indication of the contents.</p>
+
+                    <h3>Delivery Time</h3>
+                    <p>Mainland China orders are typically delivered within 3-5 business days after placing your order.</p>
+
+                    <table class="shipping-table">
+                        <thead>
+                            <tr>
+                                <th>Shipping Method</th>
+                                <th>Processing Time</th>
+                                <th>Delivery Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Standard Shipping</td>
+                                <td>1-2 business days</td>
+                                <td>3-5 business days</td>
+                            </tr>
+                            <tr>
+                                <td>Express Shipping</td>
+                                <td>1 business day</td>
+                                <td>1-3 business days</td>
+                            </tr>
+                            <tr>
+                                <td>Local Delivery</td>
+                                <td>1 business day</td>
+                                <td>Same day or next day</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+
+        <!-- Product Disclaimer -->
+        <div class="product-disclaimer">
+            <details class="disclaimer-accordion">
+                <summary>Disclaimer</summary>
+                <div class="disclaimer-content">
+                    <p>All Fashion Leather Mall products are intended for adult use only, and users must ensure they use the products in a safe and responsible manner.</p>
+                    <p>By purchasing, you confirm that you are at least 18 years old and agree to use the product responsibly.</p>
+                    <p>Our company is not responsible for any injuries, damages, or losses resulting from the use or misuse of our products.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- Ask a Question -->
+        <div class="product-question">
+            <details class="question-accordion">
+                <summary>Ask a Question</summary>
+                <div class="question-content">
+                    <form method="post" action="#" class="question-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="question-name">Name</label>
+                            <input type="text" name="name" id="question-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="question-email">Email</label>
+                            <input type="email" name="email" id="question-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="question-message">Question</label>
+                            <textarea name="message" id="question-message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </form>
+                </div>
+            </details>
+        </div>
+
+        <!-- Related Products -->
+        {% if related_products %}
+        <div class="related-products">
+            <h2 class="section-title">You May Also Like</h2>
+            <div class="product-grid">
+                {% for related_product in related_products %}
+                <div class="product-card">
+                    <a href="{% url 'goods:product_detail' related_product.id %}" class="product-link">
+                        <div class="product-image">
+                            <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">{{ related_product.name }}</h3>
+                            <p class="product-price">${{ related_product.price }}</p>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Back to Category Link -->
+        <div class="back-link">
+            <a href="{% url 'goods:product_list_by_category' category_slug=product.category.name|lower %}" class="btn btn-outline">
+                ← Back to {{ product.category.name }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Product gallery functionality
+        const mainImage = document.getElementById('main-product-image');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                // Update main image
+                mainImage.src = this.getAttribute('data-image');
+
+                // Update active thumbnail
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

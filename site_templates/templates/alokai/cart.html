@@ -1,0 +1,22 @@
+{% extends 'alokai/base.html' %}
+
+{% block title %}购物车 - {{ site_config.name }}{% endblock %}
+
+{% block content %}
+    <!-- 购物车列表 -->
+    <alokai-cart-list
+        :items="cart_items"
+        :total="cart_total"
+    ></alokai-cart-list>
+
+    <!-- 购物车促销 -->
+    <alokai-cart-promotions
+        :promotions="cart_promotions"
+    ></alokai-cart-promotions>
+
+    <!-- 结算按钮 -->
+    <alokai-checkout-button
+        :total="cart_total"
+        :items-count="cart_items.length"
+    ></alokai-checkout-button>
+{% endblock %}

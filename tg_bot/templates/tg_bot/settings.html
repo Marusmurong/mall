@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Telegram Bot设置{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Telegram Bot设置</h2>
+    
+    {% if settings %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Bot配置</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Webhook URL:</strong> {{ settings.webhook_url }}</p>
+            <p><strong>状态:</strong> {% if settings.is_active %}启用{% else %}禁用{% endif %}</p>
+            <p><strong>最后更新:</strong> {{ settings.updated_at|date:"Y-m-d H:i:s" }}</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        尚未配置Telegram Bot，请在管理后台进行配置。
+    </div>
+    {% endif %}
+
+    <h3>最近消息</h3>
+    {% if notifications %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>聊天ID</th>
+                    <th>消息内容</th>
+                    <th>发送时间</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notification in notifications %}
+                <tr>
+                    <td>{{ notification.chat_id }}</td>
+                    <td>{{ notification.message }}</td>
+                    <td>{{ notification.sent_at|date:"Y-m-d H:i:s" }}</td>
+                    <td>
+                        {% if notification.is_sent %}
+                        <span class="badge bg-success">已发送</span>
+                        {% else %}
+                        <span class="badge bg-warning">待发送</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        暂无消息记录
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

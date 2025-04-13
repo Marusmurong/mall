@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alokai 站点编辑器 - {{ site_name }}</title>
+  <link rel="stylesheet" href="{% static 'css/alokai-template.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site-specific.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site-editor.css' %}">
+  <meta name="site-id" content="{{ site_id }}">
+</head>
+<body>
+  <div id="editor-app" v-cloak>
+    <!-- 编辑器顶部工具栏 -->
+    <div class="editor-toolbar">
+      <div class="container">
+        <div class="editor-logo">
+          <img src="{% static 'img/alokai-logo.png' %}" alt="Alokai">
+          <span>站点编辑器</span>
+        </div>
+        
+        <div class="editor-site-info">
+          <span>编辑站点: {{ siteName }}</span>
+          <div class="editor-actions">
+            <button @click="previewSite" class="preview-btn">预览</button>
+            <button @click="saveSite" class="save-btn" :disabled="isSaving">
+              <span v-if="isSaving">保存中...</span>
+              <span v-else>保存更改</span>
+            </button>
+            <button @click="exitEditor" class="exit-btn">退出编辑器</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 编辑器侧边栏 -->
+    <div class="editor-sidebar" :class="{ 'collapsed': sidebarCollapsed }">
+      <div class="sidebar-toggle" @click="toggleSidebar">
+        <i :class="sidebarCollapsed ? 'icon-right' : 'icon-left'"></i>
+      </div>
+      
+      <div class="sidebar-content">
+        <div class="sidebar-section">
+          <h3>站点设置</h3>
+          <div class="form-group">
+            <label>站点名称</label>
+            <input type="text" v-model="siteConfig.name">
+          </div>
+          
+          <div class="form-group">
+            <label>站点Logo</label>
+            <div class="image-upload">
+              <img :src="siteConfig.logo || '{% static 'img/default-logo.png' %}'" alt="Logo">
+              <button @click="uploadImage('logo')">更换Logo</button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>公告栏文本</label>
+            <input type="text" v-model="siteConfig.announcement">
+          </div>
+          
+          <div class="form-group">
+            <label>站点描述</label>
+            <textarea v-model="siteConfig.description" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="sidebar-section">
+          <h3>页面区块</h3>
+          <div class="block-list">
+            <div 
+              v-for="(block, index) in pageBlocks" 
+              :key="index"
+              class="block-item"
+              :class="{ 'active': selectedBlockIndex === index }"
+              @click="selectBlock(index)"
+            >
+              <div class="block-icon">
+                <i :class="'icon-' + block.type"></i>
+              </div>
+              <div class="block-info">
+                <h4>{{ getBlockTitle(block) }}</h4>
+                <span class="block-type">{{ getBlockTypeName(block.type) }}</span>
+              </div>
+              <div class="block-actions">
+                <button @click.stop="moveBlockUp(index)" :disabled="index === 0" class="action-btn">
+                  <i class="icon-up"></i>
+                </button>
+                <button @click.stop="moveBlockDown(index)" :disabled="index === pageBlocks.length - 1" class="action-btn">
+                  <i class="icon-down"></i>
+                </button>
+                <button @click.stop="removeBlock(index)" class="action-btn delete">
+                  <i class="icon-delete"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <button @click="showAddBlockModal = true" class="add-block-btn">
+            <i class="icon-plus"></i> 添加区块
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 编辑器主内容区域 -->
+    <div class="editor-main" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+      <div class="editor-canvas">
+        <div v-if="selectedBlockIndex !== null" class="block-editor">
+          <h2>编辑 {{ getBlockTypeName(selectedBlock.type) }}</h2>
+          
+          <!-- 动态加载区块编辑表单 -->
+          <component 
+            :is="selectedBlock.type + '-editor'"
+            :block-data="selectedBlock.data"
+            @update="updateBlockData"
+          />
+        </div>
+        
+        <div v-else class="no-selection">
+          <p>请从侧边栏选择一个区块进行编辑，或添加新区块</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 添加区块模态框 -->
+    <div v-if="showAddBlockModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>添加新区块</h2>
+          <button @click="showAddBlockModal = false" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="block-type-grid">
+            <div 
+              v-for="blockType in availableBlockTypes" 
+              :key="blockType.type"
+              class="block-type-card"
+              @click="addNewBlock(blockType.type)"
+            >
+              <div class="block-type-icon">
+                <i :class="'icon-' + blockType.type"></i>
+              </div>
+              <h3>{{ blockType.name }}</h3>
+              <p>{{ blockType.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 通知组件 -->
+    <div v-if="notification.show" class="notification" :class="notification.type">
+      <p>{{ notification.message }}</p>
+    </div>
+  </div>
+
+  <script src="{% static 'js/vue.js' %}"></script>
+  <script src="{% static 'js/axios.min.js' %}"></script>
+  <script src="{% static 'js/site-editor.js' %}"></script>
+</body>
+</html>

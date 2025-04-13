@@ -1,0 +1,358 @@
+{% extends 'base/base.html' %}
+
+{% block title %}结账 – 时尚皮革商城{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <div class="container">
+        <h1 class="page-title">结账</h1>
+
+        <div class="checkout-grid">
+            <!-- 结账信息表单部分 -->
+            <div class="checkout-form-section">
+                <form method="post" id="checkout-form">
+                    {% csrf_token %}
+                    
+                    <!-- 联系信息 -->
+                    <div class="form-section">
+                        <h2 class="section-title">联系信息</h2>
+                        <div class="form-group">
+                            <label for="email">电子邮箱</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">手机号码</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                    
+                    <!-- 收货地址 -->
+                    <div class="form-section">
+                        <h2 class="section-title">收货地址</h2>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="first_name">名字</label>
+                                <input type="text" id="first_name" name="first_name" required>
+                            </div>
+                            <div class="form-group half">
+                                <label for="last_name">姓氏</label>
+                                <input type="text" id="last_name" name="last_name" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">详细地址</label>
+                            <input type="text" id="address" name="address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="apartment">单元、门牌号等（可选）</label>
+                            <input type="text" id="apartment" name="apartment">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group third">
+                                <label for="city">城市</label>
+                                <input type="text" id="city" name="city" required>
+                            </div>
+                            <div class="form-group third">
+                                <label for="province">省份</label>
+                                <select id="province" name="province" required>
+                                    <option value="">-- 请选择省份 --</option>
+                                    <option value="北京">北京市</option>
+                                    <option value="上海">上海市</option>
+                                    <option value="广东">广东省</option>
+                                    <option value="江苏">江苏省</option>
+                                    <option value="浙江">浙江省</option>
+                                    <!-- 其他省份可以根据需要添加 -->
+                                </select>
+                            </div>
+                            <div class="form-group third">
+                                <label for="postal_code">邮政编码</label>
+                                <input type="text" id="postal_code" name="postal_code" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 配送方式 -->
+                    <div class="form-section">
+                        <h2 class="section-title">配送方式</h2>
+                        <div class="shipping-options">
+                            <div class="shipping-option">
+                                <input type="radio" id="shipping_standard" name="shipping_method" value="standard" checked>
+                                <label for="shipping_standard">
+                                    <span class="option-name">标准配送</span>
+                                    <span class="option-price">15 元</span>
+                                    <span class="option-description">3-5个工作日送达</span>
+                                </label>
+                            </div>
+                            <div class="shipping-option">
+                                <input type="radio" id="shipping_express" name="shipping_method" value="express">
+                                <label for="shipping_express">
+                                    <span class="option-name">快速配送</span>
+                                    <span class="option-price">30 元</span>
+                                    <span class="option-description">1-2个工作日送达</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 支付方式 -->
+                    <div class="form-section">
+                        <h2 class="section-title">支付方式</h2>
+                        <div class="payment-options">
+                            <div class="payment-option">
+                                <input type="radio" id="payment_alipay" name="payment_method" value="alipay" checked>
+                                <label for="payment_alipay">
+                                    <img src="/static/img/alipay-logo.svg" alt="支付宝">
+                                    <span>支付宝</span>
+                                </label>
+                            </div>
+                            <div class="payment-option">
+                                <input type="radio" id="payment_wechat" name="payment_method" value="wechat">
+                                <label for="payment_wechat">
+                                    <img src="/static/img/wechat-pay-logo.svg" alt="微信支付">
+                                    <span>微信支付</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group special-notes">
+                        <label for="order_notes">订单备注（可选）</label>
+                        <textarea id="order_notes" name="order_notes" rows="3"></textarea>
+                    </div>
+
+                    <input type="hidden" name="special_instructions" id="special_instructions" value="{{ special_instructions }}">
+                </form>
+            </div>
+            
+            <!-- 订单摘要部分 -->
+            <div class="order-summary-section">
+                <div class="order-summary">
+                    <h2 class="summary-title">订单摘要</h2>
+                    
+                    <!-- 订单商品列表 -->
+                    <div class="summary-items">
+                        {% for item in cart_items %}
+                        <div class="summary-item">
+                            <div class="item-image">
+                                {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% else %}
+                                <img src="/static/img/placeholder.jpg" alt="{{ item.product.name }}">
+                                {% endif %}
+                                <span class="item-quantity">{{ item.quantity }}</span>
+                            </div>
+                            <div class="item-details">
+                                <span class="item-name">{{ item.product.name }}</span>
+                            </div>
+                            <div class="item-price">{{ item.total_price }} 元</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- 折扣码 -->
+                    <div class="discount-code">
+                        <div class="form-group">
+                            <label for="discount_code">折扣码</label>
+                            <div class="discount-input-group">
+                                <input type="text" id="discount_code" name="discount_code">
+                                <button type="button" class="btn btn-outline apply-discount">应用</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 费用计算 -->
+                    <div class="summary-calculations">
+                        <div class="calculation-row">
+                            <span class="calculation-label">小计</span>
+                            <span class="calculation-value" id="subtotal-value">{{ cart_subtotal }} 元</span>
+                        </div>
+                        <div class="calculation-row">
+                            <span class="calculation-label">配送费</span>
+                            <span class="calculation-value" id="shipping-value">15 元</span>
+                        </div>
+                        <div class="calculation-row" id="discount-row" style="display: none;">
+                            <span class="calculation-label">折扣</span>
+                            <span class="calculation-value" id="discount-value">- 0 元</span>
+                        </div>
+                        <div class="calculation-row total-row">
+                            <span class="calculation-label">总计</span>
+                            <span class="calculation-value" id="total-value">{{ cart_total }} 元</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交订单按钮 -->
+                    <div class="checkout-actions">
+                        <button type="button" class="btn btn-primary place-order-btn">提交订单</button>
+                        <a href="{% url 'cart' %}" class="return-to-cart">返回购物车</a>
+                    </div>
+                </div>
+                
+                <!-- 安全购物提示 -->
+                <div class="secure-checkout-info">
+                    <div class="secure-badges">
+                        <div class="secure-badge">
+                            <i class="fa fa-lock"></i>
+                            <span>安全支付</span>
+                        </div>
+                        <div class="secure-badge">
+                            <i class="fa fa-shield"></i>
+                            <span>7天退换</span>
+                        </div>
+                        <div class="secure-badge">
+                            <i class="fa fa-check-circle"></i>
+                            <span>正品保证</span>
+                        </div>
+                    </div>
+                    <p class="secure-note">所有交易均使用SSL加密处理，确保您的个人信息安全。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认订单弹窗 -->
+<div class="modal" id="confirm-order-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>确认订单</h2>
+            <button type="button" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>您确定要提交这个订单吗？</p>
+            <p>订单确认后将无法修改。</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary modal-cancel">取消</button>
+            <button type="button" class="btn btn-primary modal-confirm">确认</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化变量
+        const subtotalValue = parseFloat('{{ cart_subtotal }}'.replace(/[^\d.]/g, ''));
+        let shippingValue = 15; // 默认标准配送
+        let discountValue = 0;
+        let totalValue = subtotalValue + shippingValue - discountValue;
+        
+        // 更新总价显示
+        function updateTotal() {
+            document.getElementById('shipping-value').textContent = shippingValue + ' 元';
+            document.getElementById('total-value').textContent = (subtotalValue + shippingValue - discountValue) + ' 元';
+            
+            // 显示或隐藏折扣行
+            const discountRow = document.getElementById('discount-row');
+            if (discountValue > 0) {
+                document.getElementById('discount-value').textContent = '- ' + discountValue + ' 元';
+                discountRow.style.display = 'flex';
+            } else {
+                discountRow.style.display = 'none';
+            }
+        }
+        
+        // 配送方式切换
+        const shippingOptions = document.querySelectorAll('input[name="shipping_method"]');
+        shippingOptions.forEach(option => {
+            option.addEventListener('change', function() {
+                if (this.value === 'standard') {
+                    shippingValue = 15;
+                } else if (this.value === 'express') {
+                    shippingValue = 30;
+                }
+                updateTotal();
+            });
+        });
+        
+        // 应用折扣码
+        const applyDiscountBtn = document.querySelector('.apply-discount');
+        if (applyDiscountBtn) {
+            applyDiscountBtn.addEventListener('click', function() {
+                const discountCode = document.getElementById('discount_code').value.trim();
+                
+                if (!discountCode) {
+                    alert('请输入折扣码');
+                    return;
+                }
+                
+                // 这里应该是向后端验证折扣码的AJAX请求
+                // 为演示目的，我们简单模拟几个固定的折扣码
+                if (discountCode === 'WELCOME10') {
+                    discountValue = Math.round(subtotalValue * 0.1);
+                    alert('成功应用折扣: 10% 优惠');
+                } else if (discountCode === 'FREESHIP') {
+                    discountValue = shippingValue;
+                    alert('成功应用折扣: 免运费');
+                } else {
+                    alert('无效的折扣码');
+                    discountValue = 0;
+                }
+                
+                updateTotal();
+            });
+        }
+        
+        // 订单确认弹窗
+        const orderBtn = document.querySelector('.place-order-btn');
+        const confirmModal = document.getElementById('confirm-order-modal');
+        const closeBtn = document.querySelector('.modal-close');
+        const cancelBtn = document.querySelector('.modal-cancel');
+        const confirmBtn = document.querySelector('.modal-confirm');
+        
+        // 打开确认弹窗
+        if (orderBtn) {
+            orderBtn.addEventListener('click', function() {
+                // 表单验证
+                const form = document.getElementById('checkout-form');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                confirmModal.style.display = 'block';
+            });
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            confirmModal.style.display = 'none';
+        }
+        
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        
+        // 确认订单提交
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                const form = document.getElementById('checkout-form');
+                
+                // 更新特殊说明
+                const specialInstructions = new URLSearchParams(window.location.search).get('instructions');
+                if (specialInstructions) {
+                    document.getElementById('special_instructions').value = specialInstructions;
+                }
+                
+                // 提交订单表单
+                form.submit();
+                
+                closeModal();
+            });
+        }
+        
+        // 点击弹窗外部关闭弹窗
+        window.addEventListener('click', function(event) {
+            if (event.target === confirmModal) {
+                closeModal();
+            }
+        });
+        
+        // 自动填充地址栏的URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('instructions')) {
+            document.getElementById('order_notes').value = urlParams.get('instructions');
+        }
+    });
+</script>
+{% endblock %} 

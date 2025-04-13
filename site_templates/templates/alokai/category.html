@@ -1,0 +1,24 @@
+{% extends 'alokai/base.html' %}
+
+{% block title %}{{ category.name }} - {{ site_config.name }}{% endblock %}
+
+{% block content %}
+    <!-- 分类导航 -->
+    <alokai-category-navigation
+        :category="category"
+        :sub-categories="sub_categories"
+    ></alokai-category-navigation>
+
+    <!-- 商品列表 -->
+    <alokai-product-list
+        :products="products"
+        :filters="filters"
+        :sort-options="sort_options"
+        :pagination="pagination"
+    ></alokai-product-list>
+
+    <!-- 分类广告 -->
+    <alokai-category-ad
+        :ad="category.ad"
+    ></alokai-category-ad>
+{% endblock %}

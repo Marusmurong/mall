@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}账号已被封禁{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card mt-5">
+        <div class="card-header bg-danger text-white">
+          <h4 class="mb-0"><i class="fas fa-ban mr-2"></i>账号已被封禁</h4>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning">
+            <p><strong>封禁原因:</strong> {{ ban_info.reason }}</p>
+            
+            {% if ban_info.is_permanent %}
+              <p><strong>封禁状态:</strong> 永久封禁</p>
+            {% else %}
+              <p><strong>封禁状态:</strong> 临时封禁</p>
+              <p><strong>解封时间:</strong> {{ ban_info.until|date:"Y-m-d H:i" }}</p>
+              <p><small>系统将自动在此时间解除封禁</small></p>
+            {% endif %}
+          </div>
+          
+          <div class="mt-4">
+            <h5>需要帮助?</h5>
+            <p>如果您认为这是一个错误，或者希望申诉，请联系管理员：</p>
+            <ul>
+              <li>发送邮件至: <a href="mailto:admin@example.com">admin@example.com</a></li>
+              <li>在申诉中请说明您的用户名和被封禁的情况</li>
+            </ul>
+          </div>
+          
+          <div class="mt-4 text-center">
+            <a href="{% url 'logout' %}" class="btn btn-secondary">退出登录</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

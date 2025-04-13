@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>登录 API 测试</h1>
+    
+    <div class="container">
+        <h2>登录测试</h2>
+        <p>用户名: <input type="text" id="username" value="marus"></p>
+        <p>密码: <input type="password" id="password" value="admin123"></p>
+        <button onclick="testLogin()">测试登录</button>
+        <div>
+            <h3>响应</h3>
+            <pre id="loginResponse">等待响应...</pre>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>使用令牌获取心愿单</h2>
+        <p>令牌: <input type="text" id="token" style="width: 300px;"></p>
+        <button onclick="testWishlist()">测试心愿单 API</button>
+        <div>
+            <h3>响应</h3>
+            <pre id="wishlistResponse">等待响应...</pre>
+        </div>
+    </div>
+
+    <script>
+        // 测试登录 API
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const responseElement = document.getElementById('loginResponse');
+            
+            responseElement.textContent = "正在请求...";
+            
+            try {
+                // 直接使用 fetch API 发送请求
+                const response = await fetch('http://127.0.0.1:8001/api/v1/auth/token/?site=default', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.text();
+                responseElement.textContent = formatJSON(data);
+                
+                // 如果登录成功，自动填充令牌
+                try {
+                    const jsonData = JSON.parse(data);
+                    if (jsonData.code === 0 && jsonData.data && jsonData.data.access) {
+                        document.getElementById('token').value = jsonData.data.access;
+                    }
+                } catch (e) {
+                    console.error('解析 JSON 失败:', e);
+                }
+            } catch (error) {
+                responseElement.textContent = "请求出错: " + error.message;
+            }
+        }
+        
+        // 测试心愿单 API
+        async function testWishlist() {
+            const token = document.getElementById('token').value;
+            const responseElement = document.getElementById('wishlistResponse');
+            
+            if (!token) {
+                responseElement.textContent = "请先登录获取令牌";
+                return;
+            }
+            
+            responseElement.textContent = "正在请求...";
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8001/api/v1/wishlist/lists/?site=default', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.text();
+                responseElement.textContent = formatJSON(data);
+            } catch (error) {
+                responseElement.textContent = "请求出错: " + error.message;
+            }
+        }
+        
+        // 格式化 JSON
+        function formatJSON(jsonString) {
+            try {
+                const obj = JSON.parse(jsonString);
+                return JSON.stringify(obj, null, 2);
+            } catch (e) {
+                return jsonString;
+            }
+        }
+    </script>
+</body>
+</html>

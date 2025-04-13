@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}订单详情{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>订单详情</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">订单信息</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>订单号：</strong> #{{ order.id }}</p>
+            <p><strong>状态：</strong> {{ order.get_status_display }}</p>
+            <p><strong>创建时间：</strong> {{ order.created_at|date:"Y-m-d H:i:s" }}</p>
+            <p><strong>收货地址：</strong> {{ order.shipping_address }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">商品清单</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>商品</th>
+                            <th>单价</th>
+                            <th>数量</th>
+                            <th>小计</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>¥{{ item.price }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>¥{{ item.total_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>总计：</strong></td>
+                            <td><strong>¥{{ order.total_amount }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if order.status == 'pending' %}
+    <div class="text-center">
+        <form action="{% url 'order:cancel' order.id %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">取消订单</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

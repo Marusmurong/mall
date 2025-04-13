@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_name }} - 精品商城</title>
+    
+    <!-- Alokai平台提供的核心样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/alokai-platform.css">
+    
+    <!-- 站点特定样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/site-specific.css">
+    
+    <!-- 初始化站点配置 -->
+    <script>
+        window.siteConfig = {
+            siteId: '{{ current_site_id }}',
+            apiUrl: 'http://localhost:8000/api/v1',
+            token: '{{ DEFAULT_API_TOKEN }}',
+            theme: '{{ site_config.theme }}' || 'default'
+        };
+    </script>
+</head>
+<body>
+    <!-- Alokai平台的核心应用 -->
+    <div id="alokai-app"></div>
+
+    <!-- Alokai平台的核心库 -->
+    <script src="https://cdn.alokai.com/libs/alokai-core.js"></script>
+    
+    <!-- 站点特定的配置 -->
+    <script src="https://cdn.alokai.com/config/site-config.js"></script>
+    
+    <!-- 站点特定的样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/{{ site_config.theme }}.css">
+</body>
+</html>

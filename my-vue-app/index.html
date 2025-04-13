@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue.js应用</title>
+    
+    <!-- Alokai平台核心样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/alokai-core.css">
+    
+    <!-- 站点主题样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/themes/default.css">
+    
+    <style>
+        #app {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 24px;
+            color: #666;
+        }
+        
+        .error {
+            color: red;
+            padding: 10px;
+            border: 1px solid #ffcccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div v-if="loading" class="loading">加载中...</div>
+        <div v-else-if="error" class="error">{{ error }}</div>
+        <div v-else>
+            <h1>{{ siteConfig.name }}</h1>
+            <div v-for="product in siteConfig.featured_products" :key="product.id" style="margin: 10px 0;">
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.price }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    siteConfig: null,
+                    loading: true,
+                    error: null
+                }
+            },
+            async mounted() {
+                try {
+                    const response = await fetch('http://localhost:8000/api/v1/sites/config');
+                    if (!response.ok) {
+                        throw new Error('API请求失败');
+                    }
+                    this.siteConfig = await response.json();
+                    this.error = null;
+                } catch (error) {
+                    this.error = error.message;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+</html>

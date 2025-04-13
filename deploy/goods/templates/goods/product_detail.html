@@ -1,0 +1,55 @@
+{% extends 'goods/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        {% else %}
+        <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+            <span class="text-muted">暂无图片</span>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-7">
+        <h2>{{ product.name }}</h2>
+        
+        <div class="mb-3">
+            <span class="product-price me-2">${{ product.price|floatformat:2 }}</span>
+            {% if product.original_price %}
+            <span class="product-original-price">${{ product.original_price|floatformat:2 }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <span class="badge bg-{% if product.stock > 0 %}success{% else %}danger{% endif %}">
+                {% if product.stock > 0 %}有货 ({{ product.stock }}件){% else %}缺货{% endif %}
+            </span>
+            <span class="badge bg-secondary ms-2">销量: {{ product.sales }}</span>
+            <span class="badge bg-primary ms-2">{{ product.category.name }}</span>
+            
+            {% if product.is_recommended %}
+            <span class="badge bg-warning text-dark ms-2">推荐</span>
+            {% endif %}
+            {% if product.is_hot %}
+            <span class="badge bg-danger ms-2">热门</span>
+            {% endif %}
+            {% if product.is_new %}
+            <span class="badge bg-info ms-2">新品</span>
+            {% endif %}
+        </div>
+        
+        <div class="mb-4">
+            <h5>商品描述</h5>
+            <p>{{ product.description|linebreaks }}</p>
+        </div>
+        
+        <div class="d-grid gap-2">
+            <a href="{% url 'add_to_wishlist' product.id %}" class="btn btn-primary">添加到心愿单</a>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">返回商品列表</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

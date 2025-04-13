@@ -1,0 +1,36 @@
+{% extends 'alokai/base.html' %}
+
+{% block title %}{{ site_config.name }} - 首页{% endblock %}
+
+{% block content %}
+    <!-- 轮播图 -->
+    <alokai-carousel
+        :items="site_config.banners"
+        :interval="5000"
+        :autoplay="true"
+    ></alokai-carousel>
+
+    <!-- 特色商品 -->
+    <alokai-featured-products
+        :products="site_config.featured_products"
+        :title="'特色商品'"
+        :columns="4"
+    ></alokai-featured-products>
+
+    <!-- 分类导航 -->
+    <alokai-category-grid
+        :categories="site_config.categories"
+        :title="'商品分类'"
+    ></alokai-category-grid>
+
+    <!-- 促销活动 -->
+    <alokai-promotions
+        :promotions="site_config.promotions"
+        :title="'促销活动'"
+    ></alokai-promotions>
+
+    <!-- 站点公告 -->
+    <alokai-announcement
+        :message="site_config.announcement"
+    ></alokai-announcement>
+{% endblock %}

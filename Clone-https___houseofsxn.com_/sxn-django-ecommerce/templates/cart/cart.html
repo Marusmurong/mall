@@ -1,0 +1,293 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Your Shopping Cart – House of SXN{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <div class="container">
+        <h1 class="page-title">CART</h1>
+
+        {% if cart_items %}
+        <div class="cart-grid">
+            <!-- Cart Items -->
+            <div class="cart-items">
+                <div class="cart-header">
+                    <div class="cart-header-product">PRODUCT</div>
+                    <div class="cart-header-price">PRICE</div>
+                    <div class="cart-header-quantity">QUANTITY</div>
+                    <div class="cart-header-total">TOTAL</div>
+                </div>
+
+                {% for item in cart_items %}
+                <div class="cart-item">
+                    <div class="cart-item-product">
+                        <div class="cart-item-image">
+                            <a href="{% url 'product_detail' item.product.slug %}">
+                                <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}">
+                            </a>
+                        </div>
+                        <div class="cart-item-details">
+                            <h3 class="cart-item-name">
+                                <a href="{% url 'product_detail' item.product.slug %}">{{ item.product.name }}</a>
+                            </h3>
+                            {% if item.size %}
+                            <p class="cart-item-size">Size: {{ item.size.name }}</p>
+                            {% endif %}
+                            <button type="button" class="cart-item-remove" data-item-id="{{ item.id }}">Remove</button>
+                        </div>
+                    </div>
+
+                    <div class="cart-item-price">${{ item.product.price }}</div>
+
+                    <div class="cart-item-quantity">
+                        <div class="quantity-control">
+                            <button type="button" class="quantity-decrease" data-item-id="{{ item.id }}">-</button>
+                            <input type="number" name="quantity" id="quantity-{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.available_stock }}" data-item-id="{{ item.id }}">
+                            <button type="button" class="quantity-increase" data-item-id="{{ item.id }}">+</button>
+                        </div>
+                    </div>
+
+                    <div class="cart-item-total">${{ item.total_price }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h2 class="summary-title">Order Summary</h2>
+
+                <div class="summary-subtotal">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-value">${{ cart_subtotal }}</span>
+                </div>
+
+                <div class="summary-shipping">
+                    <span class="summary-label">Shipping</span>
+                    <span class="summary-value">Calculated at checkout</span>
+                </div>
+
+                <div class="summary-total">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value">${{ cart_subtotal }}</span>
+                </div>
+
+                <!-- Special Instructions -->
+                <div class="special-instructions">
+                    <label for="special-instructions">Special instructions for seller</label>
+                    <textarea id="special-instructions" name="special_instructions" rows="3"></textarea>
+                </div>
+
+                <!-- Checkout Buttons -->
+                <div class="checkout-buttons">
+                    <button type="button" class="btn btn-primary checkout-btn">Check out</button>
+
+                    <div class="alternative-checkout">
+                        <div class="shop-pay-button">
+                            <span>Buy with</span>
+                            <img src="/static/img/shop-pay-logo.svg" alt="Shop Pay">
+                        </div>
+
+                        <div class="paypal-button">
+                            <img src="/static/img/paypal-button.svg" alt="PayPal">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Continue Shopping Link -->
+                <div class="continue-shopping">
+                    <a href="{% url 'home' %}">Continue shopping</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Policy Note -->
+        <div class="shipping-policy-note">
+            <p>Taxes and shipping calculated at checkout</p>
+        </div>
+
+        {% else %}
+        <!-- Empty Cart -->
+        <div class="empty-cart">
+            <p>Your cart is currently empty.</p>
+            <div class="continue-shopping">
+                <a href="{% url 'home' %}" class="btn btn-primary">Continue shopping</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Remove Item Confirmation Modal -->
+<div class="modal" id="remove-item-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Remove Item</h2>
+            <button type="button" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to remove this item from your cart?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary modal-confirm">Remove</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Quantity Controls
+        const decreaseBtns = document.querySelectorAll('.quantity-decrease');
+        const increaseBtns = document.querySelectorAll('.quantity-increase');
+        const quantityInputs = document.querySelectorAll('.cart-item-quantity input');
+
+        // Function to update cart item quantity
+        function updateQuantity(itemId, quantity) {
+            fetch('/cart/update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update cart UI
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating cart:', error);
+            });
+        }
+
+        // Decrease quantity button click
+        decreaseBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const input = document.getElementById(`quantity-${itemId}`);
+
+                if (input.value > 1) {
+                    input.value = parseInt(input.value) - 1;
+                    updateQuantity(itemId, input.value);
+                }
+            });
+        });
+
+        // Increase quantity button click
+        increaseBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const input = document.getElementById(`quantity-${itemId}`);
+                const maxStock = parseInt(input.getAttribute('max'));
+                const currentVal = parseInt(input.value);
+
+                if (currentVal < maxStock) {
+                    input.value = currentVal + 1;
+                    updateQuantity(itemId, input.value);
+                }
+            });
+        });
+
+        // Quantity input change
+        quantityInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const maxStock = parseInt(this.getAttribute('max'));
+                const minStock = parseInt(this.getAttribute('min'));
+                let value = parseInt(this.value);
+
+                if (isNaN(value) || value < minStock) {
+                    value = minStock;
+                } else if (value > maxStock) {
+                    value = maxStock;
+                }
+
+                this.value = value;
+                updateQuantity(itemId, value);
+            });
+        });
+
+        // Remove Item Functionality
+        const removeBtns = document.querySelectorAll('.cart-item-remove');
+        const removeModal = document.getElementById('remove-item-modal');
+        const closeBtn = document.querySelector('.modal-close');
+        const cancelBtn = document.querySelector('.modal-cancel');
+        const confirmBtn = document.querySelector('.modal-confirm');
+        let itemToRemove = null;
+
+        // Show modal when remove button is clicked
+        removeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                itemToRemove = this.getAttribute('data-item-id');
+                removeModal.style.display = 'block';
+            });
+        });
+
+        // Close modal
+        function closeModal() {
+            removeModal.style.display = 'none';
+            itemToRemove = null;
+        }
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+        // Confirm remove item
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                if (itemToRemove) {
+                    fetch('/cart/remove/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({
+                            item_id: itemToRemove
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cart UI
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing item:', error);
+                    });
+                }
+                closeModal();
+            });
+        }
+
+        // Checkout Button
+        const checkoutBtn = document.querySelector('.checkout-btn');
+
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', function() {
+                // Get special instructions
+                const specialInstructions = document.getElementById('special-instructions').value;
+
+                // Redirect to checkout with special instructions
+                window.location.href = `/checkout/?instructions=${encodeURIComponent(specialInstructions)}`;
+            });
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === removeModal) {
+                closeModal();
+            }
+        });
+    });
+</script>
+{% endblock %}

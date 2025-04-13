@@ -1,0 +1,23 @@
+{% extends 'alokai/base.html' %}
+
+{% block title %}心愿单 - {{ site_config.name }}{% endblock %}
+
+{% block content %}
+    <!-- 心愿单列表 -->
+    <alokai-wishlist-list
+        :items="wishlist_items"
+        :total="wishlist_total"
+    ></alokai-wishlist-list>
+
+    <!-- 心愿单操作 -->
+    <alokai-wishlist-actions
+        :selected-items="selected_items"
+        :can-batch-add-to-cart="true"
+    ></alokai-wishlist-actions>
+
+    <!-- 心愿单推荐 -->
+    <alokai-wishlist-recommendations
+        :recommendations="recommendations"
+        :title="'你可能感兴趣的商品'"
+    ></alokai-wishlist-recommendations>
+{% endblock %}

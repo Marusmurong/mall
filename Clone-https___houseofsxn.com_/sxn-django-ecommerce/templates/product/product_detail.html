@@ -1,0 +1,334 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ product.name }} – House of SXN{% endblock %}
+{% block meta_description %}{{ product.meta_description }}{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <div class="container">
+        <div class="product-detail-grid">
+            <!-- Product Images Gallery -->
+            <div class="product-gallery">
+                <div class="main-image">
+                    <img src="{{ product.main_image.url }}" alt="{{ product.name }}" id="main-product-image">
+                </div>
+                <div class="thumbnail-gallery">
+                    <button class="thumbnail active" data-image="{{ product.main_image.url }}">
+                        <img src="{{ product.main_image.url }}" alt="{{ product.name }}">
+                    </button>
+                    {% for image in product.additional_images.all %}
+                    <button class="thumbnail" data-image="{{ image.image.url }}">
+                        <img src="{{ image.image.url }}" alt="{{ product.name }} - Image {{ forloop.counter }}">
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Product Information -->
+            <div class="product-info">
+                <h1 class="product-title">{{ product.name }}</h1>
+                <div class="product-price">${{ product.price }}</div>
+
+                {% if product.available_stock > 0 %}
+                <div class="product-status in-stock">In stock</div>
+                {% else %}
+                <div class="product-status out-of-stock">Sold Out</div>
+                {% endif %}
+
+                <!-- Add to Cart Form -->
+                <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form">
+                    {% csrf_token %}
+
+                    {% if product.has_sizes %}
+                    <div class="form-group size-selector">
+                        <label for="size">Size</label>
+                        <div class="size-options">
+                            {% for size in product.available_sizes %}
+                            <label class="size-option">
+                                <input type="radio" name="size" value="{{ size.id }}" {% if forloop.first %}checked{% endif %}>
+                                <span>{{ size.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group quantity-selector">
+                        <label for="quantity">Quantity</label>
+                        <div class="quantity-control">
+                            <button type="button" class="quantity-decrease">-</button>
+                            <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.available_stock }}">
+                            <button type="button" class="quantity-increase">+</button>
+                        </div>
+                    </div>
+
+                    {% if product.available_stock > 0 %}
+                    <button type="submit" class="btn btn-primary add-to-cart-btn">Add to cart</button>
+
+                    <button type="button" class="btn btn-secondary buy-now-btn">Buy now</button>
+
+                    <div class="payment-methods">
+                        <p>More payment options</p>
+                        <div class="shop-pay-button">
+                            <span>Buy with</span>
+                            <img src="/static/img/shop-pay-logo.svg" alt="Shop Pay">
+                        </div>
+                    </div>
+                    {% endif %}
+                </form>
+
+                <!-- Product Description -->
+                <div class="product-description">
+                    {{ product.description|safe }}
+                </div>
+
+                <!-- Sizing Information -->
+                {% if product.has_sizes %}
+                <div class="product-sizing">
+                    <h3>Sizing:</h3>
+                    <p>Women's (US)</p>
+
+                    <table class="sizing-table">
+                        <thead>
+                            <tr>
+                                <th>MEASUREMENT</th>
+                                <th>XS-S</th>
+                                <th>M-L</th>
+                                <th>XL-Queen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>BUST (in)</td>
+                                <td>31-35</td>
+                                <td>35-39</td>
+                                <td>39-44</td>
+                            </tr>
+                            <tr>
+                                <td>WAIST (in)</td>
+                                <td>24-29</td>
+                                <td>29-32</td>
+                                <td>32-37</td>
+                            </tr>
+                            <tr>
+                                <td>HIPS (in)</td>
+                                <td>33-39</td>
+                                <td>39-41</td>
+                                <td>42-43</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Shipping Information -->
+        <div class="product-shipping">
+            <details class="shipping-info-accordion">
+                <summary>Shipping information</summary>
+                <div class="shipping-content">
+                    <h3>Discreet Packaging</h3>
+                    <p>Your privacy is paramount. All purchases are securely packaged in plain brown packaging with no visible indication of the contents, and the return address simply states "SXN HQ"</p>
+
+                    <h3>Delivery Times</h3>
+                    <p>Most orders within the USA arrive within 3-8 business days after the order is placed. Please note that weekend deliveries are generally unavailable, and some shipments may require a signature upon receipt.</p>
+
+                    <p>For in-stock items, delivery times are as follows:</p>
+
+                    <table class="shipping-table">
+                        <thead>
+                            <tr>
+                                <th>Delivery Type</th>
+                                <th>Processing Time</th>
+                                <th>Delivery Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Ground</td>
+                                <td>1-2 Business Days</td>
+                                <td>3-8 Business Days</td>
+                            </tr>
+                            <tr>
+                                <td>Priority</td>
+                                <td>1 Business Day</td>
+                                <td>2-4 Business Days</td>
+                            </tr>
+                            <tr>
+                                <td>Next Day / Express</td>
+                                <td>1 Business Day</td>
+                                <td>Next Business Day</td>
+                            </tr>
+                            <tr>
+                                <td>International Priority*</td>
+                                <td>1 Business Day</td>
+                                <td>10-14 Days</td>
+                            </tr>
+                            <tr>
+                                <td>International Saver/Express*</td>
+                                <td>1 Business Day</td>
+                                <td>5-10 Days</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+
+        <!-- Product Disclaimer -->
+        <div class="product-disclaimer">
+            <details class="disclaimer-accordion">
+                <summary>Disclaimer</summary>
+                <div class="disclaimer-content">
+                    <p>All House of SXN products are intended for <strong>novelty use</strong> and are sold without any guarantees or warranties, either express or implied. The purchaser assumes full responsibility for the use or misuse of these items. House of SXN, including its affiliates and manufacturers, shall not be held liable for any injury, harm, or damage resulting from the use or misuse of this product.</p>
+
+                    <p>By purchasing, you acknowledge that you are of legal age and agree to use this product responsibly. Proper care and regular inspection are required to ensure safe usage.</p>
+
+                    <p><strong>Note:</strong> Please be aware that certain materials and finishes may be sensitive to some skin types. It is recommended to test for sensitivities prior to use and follow any included care instructions.</p>
+
+                    <p>Refer to the following <a href="{% url 'disclaimer' %}">page</a> for our full Disclaimer and Liability Notice</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- Ask a Question -->
+        <div class="product-question">
+            <details class="question-accordion">
+                <summary>Ask a question</summary>
+                <div class="question-content">
+                    <form method="post" action="{% url 'product_question' product.id %}" class="question-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="question-name">Name</label>
+                            <input type="text" name="name" id="question-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="question-email">Email</label>
+                            <input type="email" name="email" id="question-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="question-message">Message</label>
+                            <textarea name="message" id="question-message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                        <p class="captcha-notice">This site is protected by hCaptcha and the hCaptcha Privacy Policy and Terms of Service apply.</p>
+                    </form>
+                </div>
+            </details>
+        </div>
+
+        <!-- Related Products -->
+        <div class="related-products">
+            <h2 class="section-title">You may also like</h2>
+            <div class="product-grid">
+                {% for related_product in related_products %}
+                <div class="product-card">
+                    <a href="{% url 'product_detail' related_product.slug %}" class="product-link">
+                        <div class="product-image">
+                            <img src="{{ related_product.main_image.url }}" alt="{{ related_product.name }}">
+                            {% if related_product.second_image %}
+                            <img src="{{ related_product.second_image.url }}" alt="{{ related_product.name }}" class="hover-image">
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">{{ related_product.name }}</h3>
+                            <p class="product-price">${{ related_product.price }}</p>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Back to Category Link -->
+        <div class="back-link">
+            <a href="{% url 'category' product.category.slug %}" class="btn btn-outline">
+                ← Back to {{ product.category.name }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Product Gallery Functionality
+        const mainImage = document.getElementById('main-product-image');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                // Update main image
+                mainImage.src = this.getAttribute('data-image');
+
+                // Update active thumbnail
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Quantity Controls
+        const quantityInput = document.getElementById('quantity');
+        const decreaseBtn = document.querySelector('.quantity-decrease');
+        const increaseBtn = document.querySelector('.quantity-increase');
+
+        if (decreaseBtn && increaseBtn && quantityInput) {
+            decreaseBtn.addEventListener('click', function() {
+                if (quantityInput.value > 1) {
+                    quantityInput.value = parseInt(quantityInput.value) - 1;
+                }
+            });
+
+            increaseBtn.addEventListener('click', function() {
+                const maxStock = parseInt(quantityInput.getAttribute('max'));
+                const currentVal = parseInt(quantityInput.value);
+
+                if (currentVal < maxStock) {
+                    quantityInput.value = currentVal + 1;
+                }
+            });
+
+            // Validate manual input
+            quantityInput.addEventListener('change', function() {
+                const maxStock = parseInt(quantityInput.getAttribute('max'));
+                const minStock = parseInt(quantityInput.getAttribute('min'));
+                let value = parseInt(quantityInput.value);
+
+                if (isNaN(value) || value < minStock) {
+                    value = minStock;
+                } else if (value > maxStock) {
+                    value = maxStock;
+                }
+
+                quantityInput.value = value;
+            });
+        }
+
+        // Buy Now Button
+        const buyNowBtn = document.querySelector('.buy-now-btn');
+        const addToCartForm = document.querySelector('.add-to-cart-form');
+
+        if (buyNowBtn && addToCartForm) {
+            buyNowBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Add a hidden field to the form
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'buy_now';
+                hiddenInput.value = 'true';
+
+                addToCartForm.appendChild(hiddenInput);
+                addToCartForm.submit();
+
+                // Remove the hidden field after submission
+                setTimeout(() => {
+                    addToCartForm.removeChild(hiddenInput);
+                }, 100);
+            });
+        }
+    });
+</script>
+{% endblock %}

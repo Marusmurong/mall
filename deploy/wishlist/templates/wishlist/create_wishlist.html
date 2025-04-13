@@ -1,0 +1,92 @@
+{% extends 'wishlist/base.html' %}
+
+{% block inner_title %}创建心愿单{% endblock %}
+
+{% block wishlist_content %}
+<div class="wishlist-header mb-4">
+    <h2 class="wishlist-title">
+        <i class="fas fa-plus-circle me-2 text-primary"></i>创建新的心愿单
+    </h2>
+    <p class="text-muted">创建一个新的心愿单来收集您喜爱的商品</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-clipboard-list me-2 text-primary"></i>填写心愿单信息</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">心愿单名称</label>
+                        <input type="text" class="form-control form-control-lg" id="name" name="name" required
+                               placeholder="例如：生日愿望、我想要的皮革产品" maxlength="100" autofocus>
+                        <div class="form-text text-muted">
+                            <i class="fas fa-info-circle me-1"></i>给您的心愿单起一个独特的名称
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">备注（可选）</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4"
+                                  placeholder="添加一些关于这个心愿单的说明，例如：这是我的生日愿望清单..."></textarea>
+                    </div>
+                    
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="form-check form-switch d-flex align-items-center">
+                            <input class="form-check-input me-3" type="checkbox" id="is_public" name="is_public" style="width: 3em; height: 1.5em;">
+                            <div>
+                                <label class="form-check-label" for="is_public">
+                                    <span class="d-block fw-bold"><i class="fas fa-globe me-1"></i>公开心愿单</span>
+                                </label>
+                                <span class="text-muted d-block mt-1">公开后可以分享给朋友，他们能查看并购买您心愿单中的商品</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-3 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check-circle me-2"></i>创建心愿单
+                        </button>
+                        <a href="{% url 'wishlist:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回心愿单列表
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4 border-dashed shadow-sm">
+            <div class="card-body p-4">
+                <h5><i class="fas fa-lightbulb me-2 text-warning"></i>提示</h5>
+                <ul class="mb-0 ps-3">
+                    <li class="mb-2">创建完心愿单后，您可以浏览商品并将它们添加到心愿单中</li>
+                    <li class="mb-2">公开的心愿单可以通过链接分享给朋友</li>
+                    <li>您可以创建多个心愿单用于不同的场合或分类</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wishlist-title {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    .form-control-lg {
+        padding: 0.8rem 1rem;
+    }
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+        border-color: #dee2e6 !important;
+    }
+</style>
+{% endblock %} 

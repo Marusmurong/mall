@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "USDT支付" %} - {{ wishlist_item.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">{% trans "USDT支付" %}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">{% trans "支付说明" %}</h5>
+                        <p>{% trans "请按照以下步骤完成USDT支付:" %}</p>
+                        <ol>
+                            <li>{% trans "打开您的USDT钱包（如Binance、Coinbase等）" %}</li>
+                            <li>{% trans "向下方地址转账USDT" %}</li>
+                            <li>{% trans "复制并提交交易哈希（TxID）" %}</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="product-summary mb-4 p-3 border rounded">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-0">{{ wishlist_item.title }}</h5>
+                            <span class="badge bg-success p-2">{{ payment.amount }} {{ payment.currency }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-info mb-4 p-4 border rounded bg-light">
+                        <h5 class="mb-3">{% trans "支付信息" %}</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "网络" %}</label>
+                            <div class="form-control bg-white">{{ usdt_details.network|upper }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "收款地址" %}</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-white" value="{{ usdt_details.wallet_address }}" readonly id="wallet-address">
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('wallet-address')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "支付金额" %}</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-white" value="{{ payment.amount }}" readonly id="payment-amount">
+                                <span class="input-group-text">{{ payment.currency }}</span>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('payment-amount')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">{% trans "请确保转账金额与上述金额完全一致" %}</small>
+                        </div>
+                        
+                        {% if usdt_details.qr_code %}
+                            <div class="text-center mb-3">
+                                <p>{% trans "或扫描二维码" %}</p>
+                                <img src="{{ usdt_details.qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <h5 class="mb-3">{% trans "提交交易信息" %}</h5>
+                        
+                        <div class="mb-3">
+                            <label for="transaction_hash" class="form-label">{% trans "交易哈希 (TxID)" %}*</label>
+                            <input type="text" class="form-control" id="transaction_hash" name="transaction_hash" required>
+                            <div class="form-text">{% trans "请输入您在钱包中完成转账后得到的交易哈希" %}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sender_address" class="form-label">{% trans "发送地址" %}</label>
+                            <input type="text" class="form-control" id="sender_address" name="sender_address">
+                            <div class="form-text">{% trans "可选：您发送USDT的钱包地址" %}</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {% trans "提交交易信息" %}
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'payment_method_list' wishlist_item_id=wishlist_item.id %}" class="btn btn-outline-secondary">
+                            {% trans "更改支付方式" %}
+                        </a>
+                        <a href="{% url 'payment_status' payment_id=payment.id %}" class="btn btn-info">
+                            {% trans "检查支付状态" %}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        {% trans "支付 ID:" %} {{ payment.id }}<br>
+                        {% trans "创建时间:" %} {{ payment.created_at|date:"Y-m-d H:i:s" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        element.select();
+        element.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        
+        // 显示复制成功提示
+        const originalButtonText = element.nextElementSibling.innerHTML;
+        element.nextElementSibling.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            element.nextElementSibling.innerHTML = originalButtonText;
+        }, 2000);
+    }
+    
+    // 自动刷新支付状态
+    let checkInterval;
+    
+    function checkPaymentStatus() {
+        fetch('/payment/api/status/{{ payment.id }}/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed') {
+                // 支付成功，重定向到成功页面
+                window.location.href = "{% url 'payment_success' wishlist_item_id=wishlist_item.id %}";
+            }
+        })
+        .catch(error => console.error('Error checking payment status:', error));
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // 每30秒检查一次支付状态
+        checkInterval = setInterval(checkPaymentStatus, 30000);
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        // 清除定时器
+        clearInterval(checkInterval);
+    });
+</script>
+{% endblock %} 

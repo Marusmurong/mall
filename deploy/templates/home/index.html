@@ -1,0 +1,406 @@
+{% extends 'base/base.html' %}
+
+{% block title %}时尚皮革商城 - 高品质皮革商品{% endblock %}
+{% block meta_description %}时尚皮革商城提供高品质手工皮革商品，包括皮带、钱包、手包和配饰。采用优质材料，工艺精湛，设计时尚。{% endblock %}
+
+{% block content %}
+<!-- 英雄区域 -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">品质皮革，精工制作</h1>
+            <p class="hero-subtitle">每一件作品都是匠心的见证</p>
+            <div class="hero-buttons">
+                <a href="{% url 'product_list' %}" class="btn btn-primary">浏览商品</a>
+                <a href="#about" class="btn btn-outline">了解更多</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 特色分类 -->
+<section class="featured-categories">
+    <div class="container">
+        <h2 class="section-title">精选分类</h2>
+        <div class="category-grid">
+            {% for category in categories %}
+            <a href="{% url 'category' category_slug=category.name|lower %}" class="category-card">
+                <div class="category-image">
+                    {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% else %}
+                    <div class="placeholder-image">{{ category.name|first }}</div>
+                    {% endif %}
+                </div>
+                <div class="category-info">
+                    <h3 class="category-name">{{ category.name }}</h3>
+                    <span class="category-count">{{ category.product_set.count }} 件商品</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 热门商品 -->
+<section class="popular-products">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">热门商品</h2>
+            <a href="{% url 'product_list' %}" class="view-all-link">查看全部 <span>&rarr;</span></a>
+        </div>
+        <div class="product-slider">
+            {% for product in popular_products %}
+            <div class="product-card">
+                <a href="{% url 'product_detail' product.id %}" class="product-link">
+                    <div class="product-image">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-price">{{ product.price }} 元</p>
+                    </div>
+                </a>
+                {% if product.stock > 0 %}
+                <form method="post" action="#" class="quick-add-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="quick-add-btn">快速加入购物车</button>
+                </form>
+                {% else %}
+                <button class="sold-out-btn" disabled>已售罄</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 品牌故事 -->
+<section id="about" class="about-section">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-image">
+                <img src="/static/img/about-banner.jpg" alt="皮革工艺">
+            </div>
+            <div class="about-content">
+                <h2 class="section-title">我们的故事</h2>
+                <p>时尚皮革商城创立于2010年，源于对传统皮革工艺的热爱和对品质的追求。我们坚持使用顶级皮革材料，结合现代设计理念，打造兼具实用性和艺术性的皮具产品。</p>
+                <p>每一件商品都由经验丰富的工匠手工打造，注重细节处理，确保每一针每一线都精准到位。我们相信，真正的奢华不仅在于品牌，更在于品质、工艺和设计的完美结合。</p>
+                <a href="/about" class="btn btn-outline">了解更多</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 新品上市 -->
+<section class="new-arrivals">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">新品上市</h2>
+            <a href="{% url 'product_list' %}?sort=new" class="view-all-link">查看全部 <span>&rarr;</span></a>
+        </div>
+        <div class="product-grid">
+            {% for product in new_products %}
+            <div class="product-card">
+                <div class="new-tag">新品</div>
+                <a href="{% url 'product_detail' product.id %}" class="product-link">
+                    <div class="product-image">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-price">{{ product.price }} 元</p>
+                    </div>
+                </a>
+                {% if product.stock > 0 %}
+                <form method="post" action="#" class="quick-add-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="quick-add-btn">快速加入购物车</button>
+                </form>
+                {% else %}
+                <button class="sold-out-btn" disabled>已售罄</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 特色内容 -->
+<section class="features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">精选材料</h3>
+                <p class="feature-text">我们只使用顶级进口皮革，精挑细选每一张皮料，确保质感和耐用性。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">匠心工艺</h3>
+                <p class="feature-text">每件产品都由经验丰富的皮革工匠手工制作，注重细节，精益求精。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">品质保证</h3>
+                <p class="feature-text">我们为所有商品提供一年质保，确保您获得满意的购物体验。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 6l-4-4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">快速配送</h3>
+                <p class="feature-text">全国范围内提供快速配送服务，支持货到付款和轻松退换货。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 客户评价 -->
+<section class="testimonials-section">
+    <div class="container">
+        <h2 class="section-title">客户评价</h2>
+        <div class="testimonials-slider" id="testimonials-slider">
+            <div class="testimonials-container">
+                {% for testimonial in testimonials %}
+                <div class="testimonial-slide">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            {% for i in "12345"|make_list %}
+                            <span class="star{% if forloop.counter <= testimonial.rating %} filled{% endif %}">★</span>
+                            {% endfor %}
+                        </div>
+                        <p class="testimonial-text">{{ testimonial.content }}</p>
+                        <div class="testimonial-author">
+                            <span class="author-name">{{ testimonial.name }}</span>
+                            <span class="author-title">{{ testimonial.title }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="testimonial-slide">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <p class="testimonial-text">皮质非常柔软，做工精细，是我见过最好的皮带之一。包装也很精美，很适合送礼。</p>
+                        <div class="testimonial-author">
+                            <span class="author-name">张先生</span>
+                            <span class="author-title">北京</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-slide">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <p class="testimonial-text">钱包收到了，质感超出预期，牛皮的味道很纯正，缝线也很工整。店家还送了一个精美的卡包，非常满意。</p>
+                        <div class="testimonial-author">
+                            <span class="author-name">李女士</span>
+                            <span class="author-title">上海</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-slide">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        <p class="testimonial-text">给父亲买的手包，他非常喜欢。皮革很厚实，触感舒适，五金件也很有质感。就是价格稍贵，但物有所值。</p>
+                        <div class="testimonial-author">
+                            <span class="author-name">王先生</span>
+                            <span class="author-title">深圳</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="testimonial-controls">
+                <button class="testimonial-btn prev" id="testimonial-prev">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button class="testimonial-btn next" id="testimonial-next">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 订阅区域 -->
+<section class="subscription-section">
+    <div class="container">
+        <div class="subscription-box">
+            <div class="subscription-content">
+                <h2 class="section-title">订阅我们</h2>
+                <p>订阅我们的电子邮件，获取新品通知、独家优惠和皮革保养技巧。</p>
+            </div>
+            <form action="#" method="post" class="subscription-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" name="email" placeholder="您的电子邮箱地址" required>
+                    <button type="submit" class="btn btn-primary">订阅</button>
+                </div>
+                <div class="form-consent">
+                    <label>
+                        <input type="checkbox" name="consent" required>
+                        我同意接收来自时尚皮革商城的邮件
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 产品滑块
+        const productSlider = document.querySelector('.product-slider');
+        if (productSlider) {
+            // 此处可以添加产品滑块的功能，如果需要的话
+        }
+
+        // 快速添加到购物车动画
+        const quickAddForms = document.querySelectorAll('.quick-add-form');
+        if (quickAddForms.length) {
+            quickAddForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const button = this.querySelector('.quick-add-btn');
+                    button.classList.add('adding');
+                    button.textContent = '添加中...';
+                    
+                    // 模拟添加到购物车的过程
+                    setTimeout(() => {
+                        button.classList.remove('adding');
+                        button.classList.add('added');
+                        button.textContent = '已添加';
+                        
+                        // 提交表单
+                        this.submit();
+                        
+                        // 重置按钮状态（可选）
+                        setTimeout(() => {
+                            button.classList.remove('added');
+                            button.textContent = '快速加入购物车';
+                        }, 2000);
+                    }, 500);
+                });
+            });
+        }
+
+        // 客户评价滑块
+        const testimonialsContainer = document.querySelector('.testimonials-container');
+        const prevBtn = document.getElementById('testimonial-prev');
+        const nextBtn = document.getElementById('testimonial-next');
+        
+        if (testimonialsContainer && prevBtn && nextBtn) {
+            const testimonialSlides = testimonialsContainer.querySelectorAll('.testimonial-slide');
+            let currentSlide = 0;
+            let interval;
+            
+            // 设置滑块宽度
+            testimonialsContainer.style.width = `${testimonialSlides.length * 100}%`;
+            testimonialSlides.forEach(slide => {
+                slide.style.width = `${100 / testimonialSlides.length}%`;
+            });
+            
+            // 显示指定幻灯片
+            function showSlide(index) {
+                if (index < 0) {
+                    index = testimonialSlides.length - 1;
+                } else if (index >= testimonialSlides.length) {
+                    index = 0;
+                }
+                
+                currentSlide = index;
+                testimonialsContainer.style.transform = `translateX(-${currentSlide * (100 / testimonialSlides.length)}%)`;
+            }
+            
+            // 下一张幻灯片
+            function nextSlide() {
+                showSlide(currentSlide + 1);
+            }
+            
+            // 上一张幻灯片
+            function prevSlide() {
+                showSlide(currentSlide - 1);
+            }
+            
+            // 设置自动播放
+            function startAutoplay() {
+                interval = setInterval(nextSlide, 5000);
+            }
+            
+            // 停止自动播放
+            function stopAutoplay() {
+                clearInterval(interval);
+            }
+            
+            // 事件监听器
+            nextBtn.addEventListener('click', () => {
+                nextSlide();
+                stopAutoplay();
+                startAutoplay();
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                prevSlide();
+                stopAutoplay();
+                startAutoplay();
+            });
+            
+            // 悬停时暂停，移出时继续
+            const sliderContainer = document.getElementById('testimonials-slider');
+            if (sliderContainer) {
+                sliderContainer.addEventListener('mouseenter', stopAutoplay);
+                sliderContainer.addEventListener('mouseleave', startAutoplay);
+            }
+            
+            // 初始化自动播放
+            startAutoplay();
+        }
+    });
+</script>
+{% endblock %} 

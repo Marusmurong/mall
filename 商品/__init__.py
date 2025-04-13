@@ -1,0 +1,1 @@
+default_app_config = '商品.apps.商品Config' 

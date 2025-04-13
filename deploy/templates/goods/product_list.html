@@ -1,0 +1,198 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}所有商品 - 时尚皮革商城{% endblock %}
+
+{% block meta_description %}浏览我们精选的高品质皮革商品，包括各种时尚皮革服饰和配饰。{% endblock %}
+
+{% block content %}
+<div class="shop-page">
+    <div class="container">
+        <!-- 分类标题 -->
+        <div class="page-header">
+            <h1>{% if current_category %}{{ current_category }}{% else %}所有商品{% endif %}</h1>
+        </div>
+
+        <!-- 面包屑导航 -->
+        <nav class="breadcrumb">
+            <ol>
+                <li><a href="{% url 'home' %}">首页</a></li>
+                <li><span>{% if current_category %}{{ current_category }}{% else %}商品{% endif %}</span></li>
+            </ol>
+        </nav>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <div class="filter-options">
+                <div class="filter-group">
+                    <label for="sort-products">排序方式:</label>
+                    <select id="sort-products">
+                        <option value="featured">推荐</option>
+                        <option value="price-asc">价格: 从低到高</option>
+                        <option value="price-desc">价格: 从高到低</option>
+                        <option value="newest">最新上架</option>
+                        <option value="bestselling">畅销商品</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类导航 -->
+        <div class="category-nav">
+            <ul>
+                <li class="{% if not current_category %}active{% endif %}">
+                    <a href="{% url 'product_list' %}">全部</a>
+                </li>
+                {% for category in categories %}
+                <li class="{% if current_category.id == category.id %}active{% endif %}">
+                    <a href="{% url 'product_list' %}?category={{ category.id }}">{{ category.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- 商品网格 -->
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <a href="{% url 'product_detail' product.id %}" class="product-link">
+                    <div class="product-image">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'img/placeholder.jpg' %}" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-price">{{ product.price }} 元</p>
+                    </div>
+                </a>
+                {% if product.stock > 0 %}
+                <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn-primary add-to-cart">加入购物车</button>
+                </form>
+                {% else %}
+                <p class="out-of-stock">已售罄</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="no-products">
+                <p>暂无商品</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 分页 -->
+        {% if products.has_other_pages %}
+        <div class="pagination">
+            {% if products.has_previous %}
+            <a href="?page={{ products.previous_page_number }}{% if current_category %}&category={{ current_category.id }}{% endif %}" class="page-link">&laquo; 上一页</a>
+            {% endif %}
+            
+            {% for num in products.paginator.page_range %}
+            {% if products.number == num %}
+            <span class="page-link active">{{ num }}</span>
+            {% else %}
+            <a href="?page={{ num }}{% if current_category %}&category={{ current_category.id }}{% endif %}" class="page-link">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}{% if current_category %}&category={{ current_category.id }}{% endif %}" class="page-link">下一页 &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 排序功能
+    const sortSelect = document.getElementById('sort-products');
+    if(sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const url = new URL(window.location);
+            url.searchParams.set('sort', this.value);
+            window.location = url;
+        });
+        
+        // 设置当前排序方式
+        const currentSort = new URLSearchParams(window.location.search).get('sort');
+        if(currentSort) {
+            sortSelect.value = currentSort;
+        }
+    }
+    
+    // 加入购物车功能
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            // 添加到购物车的AJAX请求
+            fetch('/cart/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    alert('商品已加入购物车');
+                } else {
+                    alert('加入购物车失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('加入购物车时出错');
+            });
+        });
+    });
+    
+    // 加入心愿单功能
+    const addToWishlistButtons = document.querySelectorAll('.add-to-wishlist');
+    addToWishlistButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            // 添加到心愿单的AJAX请求
+            fetch('/wishlist/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({
+                    product_id: productId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    this.classList.add('in-wishlist');
+                    alert('商品已加入心愿单');
+                } else {
+                    alert('加入心愿单失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('加入心愿单时出错');
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

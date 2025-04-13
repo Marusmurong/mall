@@ -1,0 +1,201 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}House of SXN | Luxury Leather Fashion Online Store{% endblock %}
+
+{% block content %}
+<!-- Hero Video Section -->
+<section class="hero-video">
+    <div class="video-container">
+        <video autoplay muted loop playsinline class="hero-background-video">
+            <source src="{% static 'video/hero-video.mp4' %}" type="video/mp4">
+        </video>
+        <div class="hero-content">
+            <h1 class="hero-title">LUXURY LEATHER FETISH WEAR</h1>
+            <a href="{% url 'goods:product_list' %}" class="btn btn-primary">Shop Now</a>
+        </div>
+    </div>
+</section>
+
+<!-- Category Showcase -->
+<section class="category-showcase">
+    <div class="container">
+        <h2 class="section-title">SHOP ALL</h2>
+        <div class="category-grid">
+            {% for category in categories %}
+            <a href="{% url 'goods:product_list' %}?category={{ category.name }}" class="category-item">
+                {% with category.goods.first as first_product %}
+                    {% if first_product and first_product.image %}
+                        <img src="{{ first_product.image.url }}" alt="{{ category.name }}" class="category-image">
+                    {% else %}
+                        <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ category.name }}" class="category-image">
+                    {% endif %}
+                {% endwith %}
+                <h3 class="category-name">{{ category.name|upper }}</h3>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="featured-products">
+    <div class="container">
+        <h2 class="section-title">LEATHER FETISH WEAR</h2>
+        <div class="product-grid">
+            {% for product in featured_products %}
+            <div class="product-card">
+                <a href="{% url 'goods:product_detail' product.id %}" class="product-link">
+                    <div class="product-image">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ product.name }}">
+                        {% endif %}
+                        {% with product.images.all|first as second_image %}
+                        {% if second_image %}
+                        <img src="{{ second_image.image.url }}" alt="{{ product.name }}" class="hover-image">
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-price">${{ product.price }}</p>
+                    </div>
+                </a>
+                {% if product.stock > 0 %}
+                <a href="{% url 'wishlist:add' product.id %}" class="btn btn-primary">Add to Wishlist</a>
+                {% else %}
+                <p class="out-of-stock">Sold Out</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="no-products">
+                <p>No featured products available at the moment</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="view-all">
+            <a href="{% url 'goods:product_list' %}" class="btn btn-outline">View All</a>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about-section">
+    <div class="container">
+        <div class="about-content">
+            <div class="about-text">
+                <h2 class="section-title">ABOUT US</h2>
+                <p>House of SXN is the world-renowned designer and retailer of the finest bondage leather accessories and stylish fetish leather clothing. Our luxury leather accessories are known for their exquisite craftsmanship and premium design, providing customers with a unique experience.</p>
+                <p>All our products are handcrafted from carefully selected high-quality materials, ensuring that each piece is a work of art. We are dedicated to empowering our customers through our creations.</p>
+                <a href="/about/" class="btn btn-secondary">Learn More</a>
+            </div>
+            <div class="about-image">
+                <img src="{% static 'img/about-us.jpg' %}" alt="About House of SXN">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+    <div class="container">
+        <h2 class="section-title">TESTIMONIALS</h2>
+        <div class="testimonial-slider">
+            <div class="testimonial active">
+                <div class="testimonial-content">
+                    <p class="testimonial-text">"The quality is stunning and the workmanship is superb. Every detail has been carefully considered, and this is the best leather product I've ever owned."</p>
+                    <p class="testimonial-author">- John D., New York</p>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-content">
+                    <p class="testimonial-text">"The design is truly unique and different from anything else. The material is soft and comfortable, and it feels great to wear. Will definitely purchase again!"</p>
+                    <p class="testimonial-author">- Sarah M., London</p>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-content">
+                    <p class="testimonial-text">"The packaging was thoughtful and discreet. The customer service team was quick to respond and very professional. Overall shopping experience was perfect."</p>
+                    <p class="testimonial-author">- Robert K., Los Angeles</p>
+                </div>
+            </div>
+            <div class="testimonial-controls">
+                <button class="prev-testimonial" aria-label="Previous testimonial"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10.828 12l4.95 4.95-1.414 1.414L8 12l6.364-6.364 1.414 1.414z"/></svg></button>
+                <div class="testimonial-dots">
+                    <button class="dot active" data-slide="0" aria-label="Go to testimonial 1"></button>
+                    <button class="dot" data-slide="1" aria-label="Go to testimonial 2"></button>
+                    <button class="dot" data-slide="2" aria-label="Go to testimonial 3"></button>
+                </div>
+                <button class="next-testimonial" aria-label="Next testimonial"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M13.172 12l-4.95-4.95 1.414-1.414L16 12l-6.364 6.364-1.414-1.414z"/></svg></button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter">
+    <div class="container">
+        <div class="newsletter-content">
+            <h2 class="section-title">SUBSCRIBE TO OUR NEWSLETTER</h2>
+            <p>Stay informed about the latest products, special offers, and exclusive events</p>
+            <form method="post" action="/newsletter-signup/" class="newsletter-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" name="email" id="newsletter-email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </div>
+                <p class="privacy-notice">By subscribing, you agree to our <a href="/privacy-policy/">Privacy Policy</a></p>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Testimonial slider
+    document.addEventListener('DOMContentLoaded', function() {
+        const testimonials = document.querySelectorAll('.testimonial');
+        const testimonialDots = document.querySelectorAll('.testimonial-dots .dot');
+        const prevTestimonial = document.querySelector('.prev-testimonial');
+        const nextTestimonial = document.querySelector('.next-testimonial');
+        let currentTestimonial = 0;
+
+        function showTestimonial(n) {
+            testimonials.forEach(testimonial => testimonial.classList.remove('active'));
+            testimonialDots.forEach(dot => dot.classList.remove('active'));
+
+            currentTestimonial = (n + testimonials.length) % testimonials.length;
+
+            testimonials[currentTestimonial].classList.add('active');
+            testimonialDots[currentTestimonial].classList.add('active');
+        }
+
+        function nextTestimonialSlide() {
+            showTestimonial(currentTestimonial + 1);
+        }
+
+        function prevTestimonialSlide() {
+            showTestimonial(currentTestimonial - 1);
+        }
+
+        // Click events
+        if (prevTestimonial) prevTestimonial.addEventListener('click', prevTestimonialSlide);
+        if (nextTestimonial) nextTestimonial.addEventListener('click', nextTestimonialSlide);
+
+        testimonialDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showTestimonial(index);
+            });
+        });
+
+        // Auto slide
+        setInterval(nextTestimonialSlide, 7000);
+
+        // Initialize
+        showTestimonial(0);
+    });
+</script>
+{% endblock %}

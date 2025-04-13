@@ -1,0 +1,196 @@
+{% extends 'wishlist/base.html' %}
+
+{% block inner_title %}添加到心愿单{% endblock %}
+
+{% block wishlist_content %}
+<div class="wishlist-header mb-4">
+    <h2 class="wishlist-title">
+        <i class="fas fa-heart me-2 text-primary"></i>添加到心愿单
+    </h2>
+    <p class="text-muted">将商品添加到您的收藏清单中</p>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card product-card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-box me-2 text-primary"></i>商品信息</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                             class="product-image me-4">
+                    {% else %}
+                        <div class="product-image-placeholder me-4">
+                            <i class="fas fa-image"></i>
+                        </div>
+                    {% endif %}
+                    <div class="product-details">
+                        <h5 class="product-name">{{ product.name }}</h5>
+                        <div class="product-price-section">
+                            <span class="product-price">${{ product.price|floatformat:2 }}</span>
+                            {% if product.original_price %}
+                                <span class="product-original-price"><del>${{ product.original_price|floatformat:2 }}</del></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="product-description mt-4">
+                    <p>{{ product.description|truncatewords:30 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card wishlist-form-card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-clipboard-list me-2 text-primary"></i>选择心愿单</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="wishlist_id" class="form-label">选择现有心愿单或创建新的</label>
+                        <select class="form-select form-select-lg" id="wishlist_id" name="wishlist_id" required>
+                            {% if wishlists %}
+                                <optgroup label="您的心愿单">
+                                {% for wishlist in wishlists %}
+                                    <option value="{{ wishlist.id }}">{{ wishlist.name }}</option>
+                                {% endfor %}
+                                </optgroup>
+                            {% endif %}
+                            <option value="new">➕ 创建新的心愿单</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4 card p-3 border-dashed" id="newWishlistNameGroup" style="display: none;">
+                        <label for="new_wishlist_name" class="form-label">新心愿单名称</label>
+                        <input type="text" class="form-control" id="new_wishlist_name" name="new_wishlist_name"
+                               placeholder="例如：我的最爱、礼物清单等" maxlength="100">
+                        <div class="form-text text-muted mt-2">
+                            <i class="fas fa-info-circle me-1"></i>您可以在创建后随时编辑心愿单详情
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label">数量</label>
+                            <div class="input-group">
+                                <button type="button" class="btn btn-outline-secondary" id="decreaseQuantity">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="form-control text-center" id="quantity" name="quantity" 
+                                       min="1" value="1" required>
+                                <button type="button" class="btn btn-outline-secondary" id="increaseQuantity">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">备注（可选）</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"
+                                 placeholder="例如：特别喜欢的款式、尺寸要求等..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-heart me-2"></i>添加到心愿单
+                        </button>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回商品
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wishlist-title {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    .product-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+    .product-image-placeholder {
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        font-size: 2rem;
+        color: #adb5bd;
+        border-radius: 6px;
+    }
+    .product-name {
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    .product-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #dc3545;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    .product-original-price {
+        color: #6c757d;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+        background-color: #f8f9fa;
+    }
+    .wishlist-form-card {
+        height: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wishlistSelect = document.getElementById('wishlist_id');
+        const newWishlistGroup = document.getElementById('newWishlistNameGroup');
+        const newWishlistInput = document.getElementById('new_wishlist_name');
+        
+        // 切换心愿单选择/创建
+        wishlistSelect.addEventListener('change', function() {
+            if (this.value === 'new') {
+                newWishlistGroup.style.display = 'block';
+                newWishlistInput.setAttribute('required', 'required');
+                newWishlistInput.focus();
+            } else {
+                newWishlistGroup.style.display = 'none';
+                newWishlistInput.removeAttribute('required');
+            }
+        });
+        
+        // 数量增减按钮
+        const quantityInput = document.getElementById('quantity');
+        const decreaseBtn = document.getElementById('decreaseQuantity');
+        const increaseBtn = document.getElementById('increaseQuantity');
+        
+        decreaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+        
+        increaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(quantityInput.value);
+            quantityInput.value = currentValue + 1;
+        });
+    });
+</script>
+{% endblock %} 

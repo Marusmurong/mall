@@ -1,0 +1,116 @@
+{% extends 'wishlist/base.html' %}
+
+{% block inner_title %}我的心愿单{% endblock %}
+
+{% block wishlist_content %}
+<div class="wishlist-header mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2 class="wishlist-title">我的心愿单</h2>
+            <p class="text-muted">管理您的收藏和心仪商品</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'wishlist:create' %}" class="btn btn-dark btn-with-icon">
+                <i class="fas fa-plus-circle me-2"></i>创建新心愿单
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if wishlists %}
+    <div class="row">
+        {% for wishlist in wishlists %}
+            <div class="col-md-6 mb-4">
+                <div class="card wishlist-card shadow-sm h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ wishlist.name }}</h5>
+                        <span class="badge {% if wishlist.is_public %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                            {% if wishlist.is_public %}公开{% else %}私密{% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="wishlist-info">
+                            <div class="wishlist-info-item mb-2">
+                                <i class="fas fa-shopping-bag me-2 text-primary"></i>
+                                <span>包含 <strong>{{ wishlist.items.count }}</strong> 件商品</span>
+                            </div>
+                            <div class="wishlist-info-item mb-2">
+                                <i class="fas fa-tag me-2 text-primary"></i>
+                                <span>总价: <strong>${{ wishlist.get_total_price|floatformat:2 }}</strong></span>
+                            </div>
+                            <div class="wishlist-info-item mb-2">
+                                <i class="fas fa-eye me-2 text-primary"></i>
+                                <span>访问量: <strong>{{ wishlist.view_count }}</strong></span>
+                                {% if wishlist.last_viewed_at %}
+                                <small class="ms-2 text-muted">(最后访问: {{ wishlist.last_viewed_at|date:"m-d H:i" }})</small>
+                                {% endif %}
+                            </div>
+                            <div class="wishlist-info-item text-muted">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                <span>创建于: {{ wishlist.created_at|date:"Y-m-d H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 pt-0">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'wishlist:detail' wishlist.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i> 查看详情
+                            </a>
+                            {% if wishlist.is_public %}
+                                <a href="{% url 'wishlist:share' wishlist.share_code %}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-share-alt me-1"></i> 分享链接
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-wishlist text-center py-5">
+        <div class="empty-wishlist-icon mb-4">
+            <i class="fas fa-heart text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h3>您还没有创建任何心愿单</h3>
+        <p class="text-muted mb-4">将您喜爱的商品添加到心愿单，方便以后查看或购买</p>
+        <a href="{% url 'wishlist:create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle me-2"></i>创建第一个心愿单
+        </a>
+    </div>
+{% endif %}
+
+<style>
+    .wishlist-title {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    .wishlist-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: none;
+        overflow: hidden;
+    }
+    .wishlist-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .wishlist-card .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.25rem 1.25rem;
+    }
+    .wishlist-info-item {
+        display: flex;
+        align-items: center;
+    }
+    .empty-wishlist {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 3rem;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.4em 0.8em;
+    }
+</style>
+{% endblock %} 

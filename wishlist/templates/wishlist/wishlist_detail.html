@@ -1,0 +1,235 @@
+{% extends 'wishlist/base.html' %}
+{% load i18n %}
+
+{% block inner_title %}{{ wishlist.name }}{% endblock %}
+
+{% block wishlist_content %}
+<div class="wishlist-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2 class="wishlist-title">{{ wishlist.name }}</h2>
+            <div class="wishlist-meta">
+                <span class="text-muted me-3"><i class="fas fa-calendar-alt me-1"></i> 创建于: {{ wishlist.created_at|date:"Y-m-d H:i" }}</span>
+                <span class="text-muted"><i class="fas fa-eye me-1"></i> 访问量: {{ wishlist.view_count }}</span>
+                {% if wishlist.last_viewed_at %}
+                <small class="text-muted ms-1">(最后访问: {{ wishlist.last_viewed_at|date:"m-d H:i" }})</small>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="form-check form-switch d-inline-flex align-items-center public-switch">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input class="form-check-input me-2" type="checkbox" id="publicSwitch" name="is_public" 
+                          {% if wishlist.is_public %}checked{% endif %} onchange="this.form.submit()">
+                    <label class="form-check-label" for="publicSwitch">
+                        {% if wishlist.is_public %}<i class="fas fa-globe-asia me-1 text-success"></i>{% else %}<i class="fas fa-lock me-1"></i>{% endif %}
+                        公开心愿单
+                    </label>
+                    <input type="hidden" name="action" value="toggle_public">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if wishlist.is_public %}
+<div class="share-box mb-4 p-4 bg-light rounded shadow-sm">
+    <h5><i class="fas fa-share-alt me-2 text-primary"></i>分享心愿单</h5>
+    <p class="text-muted">将以下链接分享给朋友，让他们为您购买心愿单中的商品：</p>
+    <div class="input-group">
+        <input type="text" class="form-control" id="shareUrl" 
+               value="{{ request.scheme }}://{{ request.get_host }}{% url 'wishlist:share' wishlist.share_code %}" readonly>
+        <button class="btn btn-primary" type="button" onclick="copyShareUrl()">
+            <i class="fas fa-copy me-1"></i>复制
+        </button>
+    </div>
+</div>
+{% endif %}
+
+{% if wishlist.notes %}
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-white">
+        <i class="fas fa-sticky-note me-2 text-primary"></i>备注
+    </div>
+    <div class="card-body">
+        {{ wishlist.notes|linebreaks }}
+    </div>
+</div>
+{% endif %}
+
+<div class="wishlist-items-section">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="wishlist-section-title"><i class="fas fa-list me-2 text-primary"></i>商品列表</h3>
+        <a href="{% url 'goods:product_list' %}" class="btn btn-outline-dark btn-sm">
+            <i class="fas fa-plus me-1"></i>添加更多商品
+        </a>
+    </div>
+    
+    {% if items %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>商品</th>
+                            <th>单价</th>
+                            <th>数量</th>
+                            <th>小计</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if item.image %}
+                                        <img src="{{ MEDIA_URL }}{{ item.image }}" alt="{{ item.name }}" 
+                                            class="item-thumbnail me-3">
+                                    {% else %}
+                                        <div class="no-image-placeholder me-3"><i class="fas fa-image"></i></div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0">{{ item.name }}</h6>
+                                        {% if item.notes %}<small class="text-muted">{{ item.notes }}</small>{% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="align-middle">${{ item.price|floatformat:2 }}</td>
+                            <td class="align-middle">
+                                <form method="post" action="" class="d-flex align-items-center quantity-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="update_quantity">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                        min="1" class="form-control form-control-sm quantity-input">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary ms-2">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="align-middle">${{ item.price|floatformat:2 }}</td>
+                            <td class="align-middle">
+                                <form method="post" action="" onsubmit="return confirm('确定要移除这个商品吗？');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="remove_item">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>总计:</strong></td>
+                            <td colspan="2"><strong>${{ wishlist.get_total_price|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-wishlist text-center py-5 bg-light rounded">
+            <div class="empty-wishlist-icon mb-3">
+                <i class="fas fa-shopping-basket text-muted" style="font-size: 3rem;"></i>
+            </div>
+            <h4>您的心愿单中还没有商品</h4>
+            <p class="text-muted mb-4">浏览商品并添加到您的心愿单中</p>
+            <a href="{% url 'goods:product_list' %}" class="btn btn-primary">
+                <i class="fas fa-shopping-bag me-2"></i>去选购商品
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .wishlist-title {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    .wishlist-section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .public-switch {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 50px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .public-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+    .item-thumbnail {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    .no-image-placeholder {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        color: #adb5bd;
+        border-radius: 4px;
+    }
+    .quantity-input {
+        width: 60px;
+    }
+    .table th, .table td {
+        padding: 1rem;
+    }
+    .empty-wishlist {
+        padding: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyShareUrl() {
+        var copyText = document.getElementById("shareUrl");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        
+        // 创建一个临时的提示元素
+        var toast = document.createElement("div");
+        toast.className = "copy-toast";
+        toast.innerHTML = '<i class="fas fa-check-circle me-2"></i>链接已复制到剪贴板！';
+        document.body.appendChild(toast);
+        
+        // 2秒后移除提示
+        setTimeout(function() {
+            toast.style.opacity = "0";
+            setTimeout(function() {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 2000);
+    }
+</script>
+
+<style>
+    .copy-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        transition: opacity 0.3s ease;
+        opacity: 1;
+    }
+</style>
+{% endblock %} 

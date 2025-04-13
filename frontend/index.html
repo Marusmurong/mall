@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alokai 商城</title>
+    
+    <!-- Alokai平台核心样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/alokai-core.css">
+    
+    <!-- 站点主题样式 -->
+    <link rel="stylesheet" href="https://cdn.alokai.com/styles/themes/default.css">
+    
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Alokai平台核心库 -->
+    <script src="https://cdn.alokai.com/libs/alokai-core.js"></script>
+    
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div v-if="loading" class="loading">加载中...</div>
+        <div v-else-if="error" class="error">{{ error }}</div>
+        <div v-else>
+            <h1>{{ siteConfig.name }}</h1>
+            <div v-for="product in siteConfig.featured_products" :key="product.id">
+                <h2>{{ product.name }}</h2>
+                <p>{{ product.price }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    siteConfig: null,
+                    loading: true,
+                    error: null
+                }
+            },
+            async mounted() {
+                try {
+                    const response = await fetch('/api/v1/sites/config');
+                    if (!response.ok) {
+                        throw new Error('API请求失败');
+                    }
+                    this.siteConfig = await response.json();
+                    this.error = null;
+                } catch (error) {
+                    this.error = error.message;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+</html>
