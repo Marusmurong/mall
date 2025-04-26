@@ -1,15 +1,16 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_config.name }} - 精品商城{% endblock %}</title>
     
-    <!-- Alokai平台核心样式 -->
-    <link rel="stylesheet" href="https://cdn.alokai.com/styles/alokai-core.css">
+    <!-- 核心样式 (本地资源) -->
+    <link rel="stylesheet" href="{% static 'css/core.css' %}">
     
-    <!-- 站点主题样式 -->
-    <link rel="stylesheet" href="https://cdn.alokai.com/styles/themes/{{ site_config.theme }}.css">
+    <!-- 站点主题样式 (本地资源) -->
+    <link rel="stylesheet" href="{% static 'css/themes/' %}{{ site_config.theme }}.css">
     
     <!-- 自定义样式 -->
     <link rel="stylesheet" href="{% static 'css/site-specific.css' %}">
@@ -17,20 +18,20 @@
     <!-- SEO优化 -->
     {% block meta %}{% endblock %}
     
-    <!-- Alokai平台配置 -->
+    <!-- 站点配置 -->
     <script>
-        window.alokaiConfig = {
+        window.siteConfig = {
             siteId: '{{ site_config.id }}',
-            apiUrl: '{{ settings.API_BASE_URL }}',
-            token: '{{ settings.DEFAULT_API_TOKEN }}',
+            apiUrl: '{{ LOCAL_API_CONFIG.API_URL }}',
+            token: '{{ DEFAULT_API_TOKEN }}',
             theme: '{{ site_config.theme }}',
             features: {{ site_config.features|safe }}
         };
     </script>
 </head>
 <body>
-    <!-- Alokai平台应用容器 -->
-    <div id="alokai-app">
+    <!-- 应用容器 -->
+    <div id="app">
         <!-- 站点选择器 -->
         {% if user.is_staff %}
         <div class="site-selector">
@@ -46,33 +47,33 @@
         </main>
     </div>
 
-    <!-- Alokai平台核心库 -->
-    <script src="https://cdn.alokai.com/libs/alokai-core.js"></script>
+    <!-- 核心库 (本地资源) -->
+    <script src="{% static 'js/core.js' %}"></script>
     
-    <!-- 站点特定配置 -->
-    <script src="https://cdn.alokai.com/config/site-config.js"></script>
+    <!-- 站点特定配置 (本地资源) -->
+    <script src="{% static 'js/site-config.js' %}"></script>
     
     <!-- 初始化应用 -->
     <script>
-        // 初始化Alokai平台
-        const alokai = new AlokaiPlatform(window.alokaiConfig);
+        // 初始化平台
+        const platform = new Platform(window.siteConfig);
         
         // 加载站点配置
-        alokai.loadSiteConfig()
+        platform.loadSiteConfig()
             .then(config => {
                 // 初始化主题
-                alokai.initTheme(config.theme);
+                platform.initTheme(config.theme);
                 
                 // 初始化路由
-                alokai.initRouter();
+                platform.initRouter();
                 
                 // 初始化组件
-                alokai.initComponents();
+                platform.initComponents();
             })
             .catch(error => {
                 console.error('初始化失败:', error);
                 // 显示错误页面
-                alokai.showErrorPage(error);
+                platform.showErrorPage(error);
             });
     </script>
 </body>

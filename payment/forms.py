@@ -52,7 +52,25 @@ class PaymentMethodConfigForm(forms.ModelForm):
     cc_provider = forms.ChoiceField(
         label=_('信用卡支付提供商'), 
         required=False,
-        choices=[('stripe', 'Stripe'), ('other', '其他')],
+        choices=[('stripe', 'Stripe'), ('paypal', 'PayPal信用卡支付'), ('other', '其他')],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    # Coinbase商务配置字段
+    coinbase_api_key = forms.CharField(
+        label=_('Coinbase API密钥'), 
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    coinbase_webhook_secret = forms.CharField(
+        label=_('Webhook密钥'), 
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    coinbase_checkout_style = forms.ChoiceField(
+        label=_('结账页面样式'), 
+        required=False,
+        choices=[('hosted', '托管页面'), ('inline', '内嵌页面')],
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -80,6 +98,11 @@ class PaymentMethodConfigForm(forms.ModelForm):
                 self.fields['cc_api_key'].initial = instance.get_config('api_key', '')
                 self.fields['cc_api_secret'].initial = instance.get_config('api_secret', '')
                 self.fields['cc_provider'].initial = instance.get_config('provider', 'stripe')
+                
+            elif instance.payment_type == 'coinbase_commerce':
+                self.fields['coinbase_api_key'].initial = instance.get_config('api_key', '')
+                self.fields['coinbase_webhook_secret'].initial = instance.get_config('webhook_secret', '')
+                self.fields['coinbase_checkout_style'].initial = instance.get_config('checkout_style', 'hosted')
     
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -104,6 +127,13 @@ class PaymentMethodConfigForm(forms.ModelForm):
                 'api_key': self.cleaned_data.get('cc_api_key', ''),
                 'api_secret': self.cleaned_data.get('cc_api_secret', ''),
                 'provider': self.cleaned_data.get('cc_provider', 'stripe')
+            }
+            
+        elif instance.payment_type == 'coinbase_commerce':
+            instance.config = {
+                'api_key': self.cleaned_data.get('coinbase_api_key', ''),
+                'webhook_secret': self.cleaned_data.get('coinbase_webhook_secret', ''),
+                'checkout_style': self.cleaned_data.get('coinbase_checkout_style', 'hosted')
             }
         
         if commit:

@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "支付成功" %}{% endblock %}
+{% block title %}{% trans "Payment Successful" %}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -10,15 +10,15 @@
         <div class="col-md-8 offset-md-2">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h3 class="card-title mb-0">{% trans "支付成功" %}</h3>
+                    <h3 class="card-title mb-0">{% trans "Payment Successful" %}</h3>
                 </div>
                 <div class="card-body text-center">
                     <div class="mb-4">
                         <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
                     </div>
                     
-                    <h4 class="mb-3">{% trans "谢谢您的支付！" %}</h4>
-                    <p class="mb-4">{% trans "您已成功为以下物品付款" %}:</p>
+                    <h4 class="mb-3">{% trans "Thank you for your payment!" %}</h4>
+                    <p class="mb-4">{% trans "You have successfully paid for the following item" %}:</p>
                     
                     <div class="product-summary mb-4 p-3 border rounded mx-auto" style="max-width: 500px;">
                         <div class="d-flex justify-content-between">
@@ -31,22 +31,22 @@
                     
                     {% if payment %}
                         <div class="payment-info mb-4 p-3 border rounded bg-light mx-auto" style="max-width: 500px;">
-                            <h5 class="mb-3">{% trans "支付详情" %}</h5>
+                            <h5 class="mb-3">{% trans "Payment Details" %}</h5>
                             <table class="table table-borderless">
                                 <tr>
-                                    <td class="text-start">{% trans "支付方式" %}:</td>
+                                    <td class="text-start">{% trans "Payment Method" %}:</td>
                                     <td class="text-end">{{ payment.payment_method.name }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-start">{% trans "金额" %}:</td>
+                                    <td class="text-start">{% trans "Amount" %}:</td>
                                     <td class="text-end">{{ payment.amount }} {{ payment.currency }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-start">{% trans "交易 ID" %}:</td>
+                                    <td class="text-start">{% trans "Transaction ID" %}:</td>
                                     <td class="text-end">{{ payment.id }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-start">{% trans "支付时间" %}:</td>
+                                    <td class="text-start">{% trans "Payment Time" %}:</td>
                                     <td class="text-end">{{ payment.completed_at|date:"Y-m-d H:i:s" }}</td>
                                 </tr>
                             </table>
@@ -54,16 +54,16 @@
                     {% endif %}
                     
                     <div class="mb-4">
-                        <p>{% trans "物品所有者将收到通知，并尽快处理您的购买。" %}</p>
-                        <p>{% trans "交易记录已保存在我们的系统中，您可以随时查看。" %}</p>
+                        <p>{% trans "The item owner will be notified and will process your purchase as soon as possible." %}</p>
+                        <p>{% trans "Transaction record has been saved in our system and you can view it anytime." %}</p>
                     </div>
                     
                     <div class="d-grid gap-2 col-md-8 mx-auto">
                         <a href="{% url 'wishlist_detail' pk=wishlist_item.wishlist.id %}" class="btn btn-primary btn-lg">
-                            {% trans "返回心愿单" %}
+                            {% trans "Return to Wishlist" %}
                         </a>
                         <a href="{% url 'home' %}" class="btn btn-outline-secondary">
-                            {% trans "返回首页" %}
+                            {% trans "Return to Homepage" %}
                         </a>
                     </div>
                 </div>

@@ -137,10 +137,10 @@ def wishlist_view(request):
     return render(request, 'site_templates/alokai/wishlist.html', context)
 
 def get_site_config(site_id):
-    """从Alokai平台获取站点配置"""
+    """从本地API获取站点配置"""
     try:
         response = requests.get(
-            f'https://platform.alokai.com/api/v1/sites/{site_id}/config',
+            f'{settings.LOCAL_API_CONFIG["API_URL"]}/sites/{site_id}/config',
             headers={'Authorization': f'Bearer {DEFAULT_API_TOKEN}'},
             timeout=5
         )
@@ -149,6 +149,8 @@ def get_site_config(site_id):
     except Exception as e:
         print(f"获取站点配置失败: {e}")
     return {
+        'id': site_id,
+        'name': SITE_NAMES.get(site_id, 'Default Mall'),
         'theme': 'default',
         'features': {
             'wishlist': True,

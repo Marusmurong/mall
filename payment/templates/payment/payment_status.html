@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "支付状态" %}{% endblock %}
+{% block title %}{% trans "Payment Status" %}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -10,7 +10,7 @@
         <div class="col-md-8 offset-md-2">
             <div class="card shadow">
                 <div class="card-header bg-info text-white">
-                    <h3 class="card-title mb-0">{% trans "支付状态" %}</h3>
+                    <h3 class="card-title mb-0">{% trans "Payment Status" %}</h3>
                 </div>
                 <div class="card-body">
                     <div class="product-summary mb-4 p-3 border rounded">
@@ -21,45 +21,45 @@
                     </div>
                     
                     <div class="payment-info mb-4 p-4 border rounded bg-light">
-                        <h5 class="mb-3">{% trans "支付信息" %}</h5>
+                        <h5 class="mb-3">{% trans "Payment Information" %}</h5>
                         <table class="table">
                             <tr>
-                                <th>{% trans "支付ID" %}</th>
+                                <th>{% trans "Payment ID" %}</th>
                                 <td>{{ payment.id }}</td>
                             </tr>
                             <tr>
-                                <th>{% trans "支付方式" %}</th>
+                                <th>{% trans "Payment Method" %}</th>
                                 <td>{{ payment.payment_method.name }}</td>
                             </tr>
                             <tr>
-                                <th>{% trans "金额" %}</th>
+                                <th>{% trans "Amount" %}</th>
                                 <td>{{ payment.amount }} {{ payment.currency }}</td>
                             </tr>
                             <tr>
-                                <th>{% trans "状态" %}</th>
+                                <th>{% trans "Status" %}</th>
                                 <td>
                                     {% if payment.status == 'pending' %}
-                                        <span class="badge bg-warning">{% trans "待处理" %}</span>
+                                        <span class="badge bg-warning">{% trans "Pending" %}</span>
                                     {% elif payment.status == 'processing' %}
-                                        <span class="badge bg-info">{% trans "处理中" %}</span>
+                                        <span class="badge bg-info">{% trans "Processing" %}</span>
                                     {% elif payment.status == 'completed' %}
-                                        <span class="badge bg-success">{% trans "已完成" %}</span>
+                                        <span class="badge bg-success">{% trans "Completed" %}</span>
                                     {% elif payment.status == 'failed' %}
-                                        <span class="badge bg-danger">{% trans "失败" %}</span>
+                                        <span class="badge bg-danger">{% trans "Failed" %}</span>
                                     {% elif payment.status == 'cancelled' %}
-                                        <span class="badge bg-secondary">{% trans "已取消" %}</span>
+                                        <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
                                     {% else %}
                                         <span class="badge bg-secondary">{{ payment.status }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             <tr>
-                                <th>{% trans "创建时间" %}</th>
+                                <th>{% trans "Created At" %}</th>
                                 <td>{{ payment.created_at|date:"Y-m-d H:i:s" }}</td>
                             </tr>
                             {% if payment.status_message %}
                                 <tr>
-                                    <th>{% trans "状态信息" %}</th>
+                                    <th>{% trans "Status Message" %}</th>
                                     <td>{{ payment.status_message }}</td>
                                 </tr>
                             {% endif %}
@@ -68,14 +68,14 @@
                     
                     {% if status_result %}
                         <div class="status-result mb-4">
-                            <h5 class="mb-3">{% trans "状态检查结果" %}</h5>
+                            <h5 class="mb-3">{% trans "Status Check Result" %}</h5>
                             <div class="alert {% if status_result.status == 'completed' %}alert-success{% elif status_result.status == 'failed' %}alert-danger{% else %}alert-info{% endif %}">
                                 <p class="mb-0">{{ status_result.message }}</p>
                             </div>
                             
                             {% if status_result.details %}
                                 <div class="mt-3 p-3 border rounded bg-light">
-                                    <h6>{% trans "详细信息" %}:</h6>
+                                    <h6>{% trans "Details" %}:</h6>
                                     <pre class="mb-0"><code>{{ status_result.details|pprint }}</code></pre>
                                 </div>
                             {% endif %}
@@ -84,7 +84,7 @@
                     
                     <div class="d-grid gap-2 mb-3">
                         <button id="refresh-status" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sync-alt me-2"></i> {% trans "刷新状态" %}
+                            <i class="fas fa-sync-alt me-2"></i> {% trans "Refresh Status" %}
                         </button>
                     </div>
                     
@@ -92,24 +92,24 @@
                         {% if payment.status != 'completed' %}
                             {% if payment.payment_method.payment_type == 'usdt' %}
                                 <a href="{% url 'usdt_payment_detail' payment_id=payment.id %}" class="btn btn-outline-primary">
-                                    {% trans "返回支付页面" %}
+                                    {% trans "Return to Payment Page" %}
                                 </a>
                             {% elif payment.payment_method.payment_type == 'paypal' %}
                                 <a href="{% url 'paypal_checkout' payment_id=payment.id %}" class="btn btn-outline-primary">
-                                    {% trans "返回支付页面" %}
+                                    {% trans "Return to Payment Page" %}
                                 </a>
                             {% elif payment.payment_method.payment_type == 'credit_card' %}
                                 <a href="{% url 'credit_card_checkout' payment_id=payment.id %}" class="btn btn-outline-primary">
-                                    {% trans "返回支付页面" %}
+                                    {% trans "Return to Payment Page" %}
                                 </a>
                             {% endif %}
                             
                             <a href="{% url 'payment_cancel' wishlist_item_id=payment.wishlist_item.id %}" class="btn btn-outline-danger">
-                                {% trans "取消支付" %}
+                                {% trans "Cancel Payment" %}
                             </a>
                         {% else %}
                             <a href="{% url 'wishlist_detail' pk=payment.wishlist_item.wishlist.id %}" class="btn btn-outline-primary">
-                                {% trans "返回心愿单" %}
+                                {% trans "Return to Wishlist" %}
                             </a>
                         {% endif %}
                     </div>
@@ -117,7 +117,7 @@
                 <div class="card-footer">
                     <div class="text-center">
                         <small class="text-muted">
-                            {% trans "自动更新" %}: <span id="countdown">30</span> {% trans "秒" %}
+                            {% trans "Auto Update" %}: <span id="countdown">30</span> {% trans "seconds" %}
                         </small>
                     </div>
                 </div>
@@ -133,16 +133,16 @@
     let countdownInterval;
     
     function startCountdown() {
-        // 清除现有定时器
+        // Clear existing timer
         if (countdownInterval) {
             clearInterval(countdownInterval);
         }
         
-        // 重置倒计时值
+        // Reset countdown value
         countdownValue = 30;
         document.getElementById('countdown').textContent = countdownValue;
         
-        // 开始新的倒计时
+        // Start new countdown
         countdownInterval = setInterval(function() {
             countdownValue--;
             document.getElementById('countdown').textContent = countdownValue;
@@ -165,34 +165,34 @@
         .then(response => response.json())
         .then(data => {
             if (data.status === 'completed') {
-                // 支付成功，重定向到成功页面
+                // Payment successful, redirect to success page
                 window.location.href = "{% url 'payment_success' wishlist_item_id=payment.wishlist_item.id %}";
             } else {
-                // 重新加载页面以显示最新状态
+                // Reload page to show latest status
                 window.location.reload();
             }
         })
         .catch(error => {
             console.error('Error checking payment status:', error);
-            // 出错时也重新开始倒计时
+            // Restart countdown on error
             startCountdown();
         });
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-        // 初始化倒计时
+        // Initialize countdown
         startCountdown();
         
-        // 刷新按钮事件
+        // Refresh button event
         document.getElementById('refresh-status').addEventListener('click', function() {
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> {% trans "正在检查..." %}';
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> {% trans "Checking..." %}';
             checkPaymentStatus();
         });
     });
     
     window.addEventListener('beforeunload', function() {
-        // 清除定时器
+        // Clear timer
         if (countdownInterval) {
             clearInterval(countdownInterval);
         }

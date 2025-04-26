@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "支付取消" %}{% endblock %}
+{% block title %}{% trans "Payment Cancelled" %}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -10,34 +10,37 @@
         <div class="col-md-8 offset-md-2">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
-                    <h3 class="card-title mb-0">{% trans "支付已取消" %}</h3>
+                    <h3 class="card-title mb-0">{% trans "Payment Cancelled" %}</h3>
                 </div>
                 <div class="card-body text-center">
                     <div class="mb-4">
                         <i class="fas fa-times-circle text-warning" style="font-size: 5rem;"></i>
                     </div>
                     
-                    <h4 class="mb-3">{% trans "您已取消支付流程" %}</h4>
-                    <p class="mb-4">{% trans "您取消了以下物品的付款" %}:</p>
+                    <h4 class="mb-3">{% trans "Your payment has been cancelled" %}</h4>
+                    <p class="mb-4">{% trans "You've cancelled the payment process for the following item" %}:</p>
                     
                     <div class="product-summary mb-4 p-3 border rounded mx-auto" style="max-width: 500px;">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="mb-0">{{ wishlist_item.title }}</h5>
-                            <span class="badge bg-secondary p-2">{{ wishlist_item.price }} {{ wishlist_item.currency }}</span>
-                        </div>
+                        <h5>{{ wishlist_item.title }}</h5>
+                        <p class="text-muted mb-0">
+                            {% trans "Price" %}: {{ wishlist_item.price }} {{ wishlist_item.currency }}
+                        </p>
                     </div>
                     
                     <div class="mb-4">
-                        <p>{% trans "如果您在支付过程中遇到任何问题，请随时联系我们的客户支持团队。" %}</p>
-                        <p>{% trans "或者，您可以尝试使用其他支付方式。" %}</p>
+                        <p>{% trans "No charges have been made to your account." %}</p>
+                        <p>{% trans "You can retry the payment at any time." %}</p>
                     </div>
                     
                     <div class="d-grid gap-2 col-md-8 mx-auto">
-                        <a href="{% url 'payment_method_list' wishlist_item_id=wishlist_item.id %}" class="btn btn-primary btn-lg">
-                            {% trans "重新选择支付方式" %}
+                        <a href="{% url 'payment_select_method' wishlist_item_id=wishlist_item.id %}" class="btn btn-primary btn-lg">
+                            {% trans "Try Payment Again" %}
                         </a>
                         <a href="{% url 'wishlist_detail' pk=wishlist_item.wishlist.id %}" class="btn btn-outline-secondary">
-                            {% trans "返回心愿单" %}
+                            {% trans "Return to Wishlist" %}
+                        </a>
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            {% trans "Return to Homepage" %}
                         </a>
                     </div>
                 </div>
