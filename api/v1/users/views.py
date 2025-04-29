@@ -7,6 +7,7 @@ from django.db.models import Q
 from .serializers import UserSerializer, UserRegisterSerializer, ShippingAddressSerializer
 from users.models import ShippingAddress
 from api.exceptions import BusinessException
+from rest_framework.views import APIView
 
 User = get_user_model()
 
@@ -98,3 +99,145 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(address)
         return Response(serializer.data)
+
+
+class TelegramTokenView(APIView):
+    """
+    生成Telegram连接令牌
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        # 生成一个随机的token，包含用户ID信息以便于后续验证
+        import uuid
+        import hashlib
+        import time
+        from django.utils import timezone
+        
+        user = request.user
+        # 创建一个唯一的token，包含用户ID和时间戳
+        token_base = f"{user.id}:{uuid.uuid4()}:{int(time.time())}"
+        # 使用SHA-256哈希算法生成token
+        token = hashlib.sha256(token_base.encode()).hexdigest()[:32]
+        
+        # 将token保存到用户模型中，以便后续验证
+        # 使用UserProfile模型存储Telegram相关信息
+        profile = user.profile
+        profile.telegram_token = token
+        profile.telegram_token_created_at = timezone.now()
+        profile.save()
+        
+        # 返回标准格式的响应
+        return Response({
+            "code": 0,
+            "message": "成功生成Telegram绑定令牌",
+            "data": {
+                "token": token,
+                "expires_in": 3600  # 令牌有效期1小时
+            }
+        })
+
+
+class TelegramBindView(APIView):
+    """
+    处理Telegram绑定请求
+    此API由Telegram机器人调用，用于验证用户提供的token并完成绑定
+    """
+    permission_classes = [permissions.AllowAny]  # Telegram机器人调用，不需要认证
+    
+    def post(self, request):
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        token = request.data.get('token')
+        telegram_username = request.data.get('username')
+        telegram_chat_id = request.data.get('chat_id')
+        
+        if not all([token, telegram_username, telegram_chat_id]):
+            return Response({
+                "code": 400,
+                "message": "缺少必要参数"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 查找拥有此token的用户
+        from users.models import UserProfile
+        try:
+            profile = UserProfile.objects.get(telegram_token=token)
+            
+            # 检查token是否过期（1小时有效期）
+            if profile.telegram_token_created_at:
+                token_age = timezone.now() - profile.telegram_token_created_at
+                if token_age > timedelta(hours=1):
+                    return Response({
+                        "code": 400,
+                        "message": "令牌已过期，请重新生成"
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 完成绑定
+            profile.telegram_connected = True
+            profile.telegram_username = telegram_username
+            profile.telegram_chat_id = telegram_chat_id
+            # 清除token，防止重复使用
+            profile.telegram_token = ''
+            profile.save()
+            
+            return Response({
+                "code": 0,
+                "message": "Telegram绑定成功",
+                "data": {
+                    "username": profile.user.username,
+                    "email": profile.user.email
+                }
+            })
+            
+        except UserProfile.DoesNotExist:
+            return Response({
+                "code": 404,
+                "message": "无效的令牌"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+class TelegramStatusView(APIView):
+    """
+    获取Telegram连接状态
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        # 检查用户是否已绑定Telegram
+        profile = user.profile
+        telegram_connected = profile.telegram_connected
+        telegram_username = profile.telegram_username if telegram_connected else ''
+        
+        return Response({
+            "code": 0,
+            "message": "成功获取Telegram绑定状态",
+            "data": {
+                "connected": telegram_connected,
+                "username": telegram_username
+            }
+        })
+
+
+class TelegramDisconnectView(APIView):
+    """
+    断开Telegram连接
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        # 清除用户的Telegram绑定信息
+        profile = user.profile
+        profile.telegram_connected = False
+        profile.telegram_username = ''
+        profile.telegram_chat_id = ''
+        profile.telegram_token = ''
+        profile.telegram_token_created_at = None
+        profile.save()
+        
+        return Response({
+            "code": 0,
+            "message": "成功解除Telegram绑定"
+        })

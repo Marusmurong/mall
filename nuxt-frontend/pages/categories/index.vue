@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- 顶部分类导航 -->
+    <!-- Top categories navigation -->
     <div class="bg-white shadow-sm mb-6">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="overflow-x-auto py-4">
@@ -12,7 +12,7 @@
                 !selectedCategory ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               ]"
             >
-              全部商品
+              All Products
             </button>
             <button 
               v-for="category in categories" 
@@ -32,9 +32,9 @@
       </div>
     </div>
     
-    <!-- 主要内容区域 -->
+    <!-- Main content area -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-      <!-- 移动端筛选按钮 -->
+      <!-- Mobile filter button -->
       <div class="lg:hidden mb-4">
         <button 
           @click="mobileFilterOpen = true"
@@ -43,31 +43,31 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          筛选
+          Filter
         </button>
       </div>
       
       <div class="flex flex-col lg:flex-row gap-6">
-        <!-- 筛选侧边栏 - 桌面版 -->
+        <!-- Filter sidebar - Desktop -->
         <div class="hidden lg:block w-64 flex-shrink-0">
           <div class="bg-white rounded-lg shadow-sm p-4 sticky top-4">
-            <h3 class="font-medium text-gray-900 mb-4">筛选选项</h3>
+            <h3 class="font-medium text-gray-900 mb-4">Filter Options</h3>
             
-            <!-- 价格区间 -->
+            <!-- Price range -->
             <div class="mb-6">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">价格区间</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Price Range</h4>
               <div class="flex items-center space-x-2">
                 <input 
                   v-model="priceMin" 
                   type="number" 
-                  placeholder="最低价" 
+                  placeholder="Min price" 
                   class="form-input rounded-md border-gray-300 w-24 text-sm"
                 >
                 <span>-</span>
                 <input 
                   v-model="priceMax" 
                   type="number" 
-                  placeholder="最高价" 
+                  placeholder="Max price" 
                   class="form-input rounded-md border-gray-300 w-24 text-sm"
                 >
               </div>
@@ -75,32 +75,32 @@
                 @click="applyFilters"
                 class="mt-2 w-full px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm rounded"
               >
-                应用价格
+                Apply Price
               </button>
             </div>
             
-            <!-- 商品属性 -->
+            <!-- Product attributes -->
             <div class="mb-6">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">商品属性</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Product Attributes</h4>
               <div class="space-y-2">
                 <label class="flex items-center">
                   <input type="checkbox" v-model="filterNew" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                  <span class="ml-2 text-sm text-gray-700">新品</span>
+                  <span class="ml-2 text-sm text-gray-700">New Arrivals</span>
                 </label>
                 <label class="flex items-center">
                   <input type="checkbox" v-model="filterHot" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                  <span class="ml-2 text-sm text-gray-700">热销</span>
+                  <span class="ml-2 text-sm text-gray-700">Hot Sales</span>
                 </label>
                 <label class="flex items-center">
                   <input type="checkbox" v-model="filterDiscount" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                  <span class="ml-2 text-sm text-gray-700">特价</span>
+                  <span class="ml-2 text-sm text-gray-700">On Sale</span>
                 </label>
               </div>
             </div>
             
-            <!-- 子分类 -->
+            <!-- Subcategories -->
             <div v-if="selectedCategory && selectedCategory.children && selectedCategory.children.length" class="mb-6">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">{{ selectedCategory.name }}分类</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">{{ selectedCategory.name }} Categories</h4>
               <div class="space-y-2">
                 <label 
                   v-for="child in selectedCategory.children" 
@@ -118,44 +118,44 @@
               </div>
             </div>
             
-            <!-- 重置按钮 -->
+            <!-- Reset button -->
             <button 
               @click="resetFilters"
               class="w-full px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded"
             >
-              重置筛选
+              Reset Filters
             </button>
           </div>
         </div>
         
-        <!-- 商品展示区域 -->
+        <!-- Products display area -->
         <div class="flex-grow">
-          <!-- 排序选项 -->
+          <!-- Sort options -->
           <div class="mb-4 flex justify-between items-center">
             <h1 class="text-xl font-bold">
-              {{ selectedCategory ? selectedCategory.name : '所有商品' }}
-              <span class="text-sm font-normal text-gray-500 ml-2">{{ filteredProducts.length }} 件商品</span>
+              {{ selectedCategory ? selectedCategory.name : 'All Products' }}
+              <span class="text-sm font-normal text-gray-500 ml-2">{{ products.length }} products</span>
             </h1>
             <div class="flex items-center">
-              <span class="text-sm text-gray-700 mr-2">排序:</span>
+              <span class="text-sm text-gray-700 mr-2">Sort by:</span>
               <select v-model="sortBy" class="form-select rounded-md border-gray-300 text-sm">
-                <option value="default">默认排序</option>
-                <option value="price_asc">价格从低到高</option>
-                <option value="price_desc">价格从高到低</option>
-                <option value="newest">最新上架</option>
-                <option value="sales">销量优先</option>
+                <option value="default">Default</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="newest">Newest</option>
+                <option value="sales">Best Selling</option>
               </select>
             </div>
           </div>
           
-          <!-- 商品列表 -->
+          <!-- Product list -->
           <div v-if="loading" class="flex justify-center py-10">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
           </div>
           
-          <div v-else-if="filteredProducts.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div v-else-if="products.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <ProductCard 
-              v-for="product in filteredProducts" 
+              v-for="product in products" 
               :key="product.id"
               :product="product"
             />
@@ -165,14 +165,47 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
             </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-900">暂无商品</h3>
-            <p class="mt-1 text-gray-500">没有找到符合条件的商品，请尝试其他筛选条件。</p>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">No Products Found</h3>
+            <p class="mt-1 text-gray-500">No products match your filter criteria. Please try different filters.</p>
+          </div>
+          
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="mt-8 flex justify-center">
+            <nav class="flex items-center gap-2">
+              <button 
+                @click="changePage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                class="px-3 py-1 rounded border"
+                :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-50'"
+              >
+                Previous
+              </button>
+              
+              <button 
+                v-for="pageNum in displayedPages" 
+                :key="pageNum"
+                @click="changePage(pageNum)"
+                class="px-3 py-1 rounded border"
+                :class="pageNum === currentPage ? 'bg-primary-600 text-white border-primary-600' : 'hover:bg-gray-50'"
+              >
+                {{ pageNum }}
+              </button>
+              
+              <button 
+                @click="changePage(currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                class="px-3 py-1 rounded border"
+                :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-50'"
+              >
+                Next
+              </button>
+            </nav>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- 移动端筛选侧边栏 -->
+    <!-- Mobile filter sidebar -->
     <div 
       v-if="mobileFilterOpen" 
       class="fixed inset-0 flex z-40 lg:hidden"
@@ -182,7 +215,7 @@
       
       <div class="relative max-w-xs w-full bg-white shadow-xl pb-12 flex flex-col h-full">
         <div class="px-4 py-5 flex items-center justify-between">
-          <h2 class="text-lg font-medium text-gray-900">筛选选项</h2>
+          <h2 class="text-lg font-medium text-gray-900">Filter Options</h2>
           <button 
             @click="mobileFilterOpen = false"
             class="-mr-2 w-10 h-10 bg-white p-2 rounded-md flex items-center justify-center text-gray-400 hover:bg-gray-50 focus:outline-none"
@@ -193,51 +226,51 @@
           </button>
         </div>
         
-        <!-- 筛选选项 - 移动端 -->
+        <!-- Filter options - Mobile -->
         <div class="mt-4 border-t border-gray-200 overflow-y-auto h-full">
           <div class="px-4 py-6">
-            <!-- 价格区间 -->
+            <!-- Price range -->
             <div class="mb-6">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">价格区间</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Price Range</h4>
               <div class="flex items-center space-x-2">
                 <input 
                   v-model="priceMin" 
                   type="number" 
-                  placeholder="最低价" 
+                  placeholder="Min price" 
                   class="form-input rounded-md border-gray-300 w-24 text-sm"
                 >
                 <span>-</span>
                 <input 
                   v-model="priceMax" 
                   type="number" 
-                  placeholder="最高价" 
+                  placeholder="Max price" 
                   class="form-input rounded-md border-gray-300 w-24 text-sm"
                 >
               </div>
             </div>
             
-            <!-- 商品属性 -->
+            <!-- Product attributes -->
             <div class="mb-6">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">商品属性</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Product Attributes</h4>
               <div class="space-y-2">
                 <label class="flex items-center">
                   <input type="checkbox" v-model="filterNew" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                  <span class="ml-2 text-sm text-gray-700">新品</span>
+                  <span class="ml-2 text-sm text-gray-700">New Arrivals</span>
                 </label>
                 <label class="flex items-center">
                   <input type="checkbox" v-model="filterHot" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                  <span class="ml-2 text-sm text-gray-700">热销</span>
+                  <span class="ml-2 text-sm text-gray-700">Hot Sales</span>
                 </label>
                 <label class="flex items-center">
                   <input type="checkbox" v-model="filterDiscount" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                  <span class="ml-2 text-sm text-gray-700">特价</span>
+                  <span class="ml-2 text-sm text-gray-700">On Sale</span>
                 </label>
               </div>
             </div>
             
-            <!-- 子分类 -->
+            <!-- Subcategories -->
             <div v-if="selectedCategory && selectedCategory.children && selectedCategory.children.length" class="mb-6">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">{{ selectedCategory.name }}分类</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">{{ selectedCategory.name }} Categories</h4>
               <div class="space-y-2">
                 <label 
                   v-for="child in selectedCategory.children" 
@@ -257,20 +290,20 @@
           </div>
         </div>
         
-        <!-- 底部按钮 -->
+        <!-- Bottom buttons -->
         <div class="border-t border-gray-200 px-4 py-6 mt-auto">
           <div class="flex space-x-3">
             <button 
               @click="resetFilters"
               class="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              重置
+              Reset
             </button>
             <button 
               @click="applyFilters(); mobileFilterOpen = false"
               class="flex-1 px-4 py-2 bg-primary-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-primary-700"
             >
-              应用筛选
+              Apply Filter
             </button>
           </div>
         </div>
@@ -280,11 +313,11 @@
 </template>
 
 <script setup>
-// 获取API服务
+// Get API service
 const api = useApi()
 const route = useRoute()
 
-// 状态
+// State
 const categories = ref([])
 const products = ref([])
 const loading = ref(true)
@@ -292,8 +325,11 @@ const error = ref(null)
 const selectedCategory = ref(null)
 const selectedSubcategories = ref([])
 const mobileFilterOpen = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalPages = ref(1)
 
-// 筛选和排序
+// Filter and sort
 const sortBy = ref('default')
 const priceMin = ref('')
 const priceMax = ref('')
@@ -301,60 +337,55 @@ const filterNew = ref(false)
 const filterHot = ref(false)
 const filterDiscount = ref(false)
 
-// 获取所有分类
+// Get all categories
 const fetchCategories = async () => {
   try {
-    console.log('开始获取分类树')
+    console.log('Starting to get category tree')
     const response = await api.categories.getTree()
-    console.log('分类树响应:', response)
+    console.log('Category tree response:', response)
     categories.value = response || []
-    console.log('分类数量:', categories.value.length)
+    console.log('Category count:', categories.value.length)
   } catch (err) {
-    console.error('获取分类失败:', err)
+    console.error('Failed to get categories:', err)
   }
 }
 
-// 获取商品
-const fetchProducts = async (categoryId = null) => {
+// Get products
+const fetchProducts = async (categoryId = null, page = 1) => {
   try {
     loading.value = true
     error.value = null
-    
-    let productsData
-    if (categoryId) {
-      console.log('开始获取分类商品, ID:', categoryId)
-      // 使用查询参数获取分类商品
-      productsData = await api.products.getAll({ category: categoryId })
-      console.log('分类商品响应:', productsData)
-    } else {
-      console.log('开始获取所有商品')
-      productsData = await api.products.getAll()
-      console.log('所有商品响应:', productsData)
+    let params = {
+      page,
+      page_size: pageSize.value,
+      site: 'default'
     }
-    
+    if (categoryId) params.category = categoryId
+    // 如有其它筛选条件，可在此添加到 params
+    const productsData = await api.products.getAll(params)
     products.value = productsData?.results || []
-    console.log('商品数量:', products.value.length)
+    totalPages.value = Math.ceil((productsData?.count || 0) / pageSize.value)
   } catch (err) {
-    console.error('获取商品失败:', err)
-    error.value = err.message || '获取商品数据失败'
+    error.value = err.message || 'Failed to get product data'
   } finally {
     loading.value = false
   }
 }
 
-// 选择分类
+// Select category
 const selectCategory = async (category) => {
   selectedCategory.value = category
   selectedSubcategories.value = []
-  await fetchProducts(category.id)
+  currentPage.value = 1
+  await fetchProducts(category.id, 1)
 }
 
-// 应用筛选
+// Apply filter
 const applyFilters = () => {
-  // 触发计算属性重新计算
+  // Trigger re-calculation of computed properties
 }
 
-// 重置筛选
+// Reset filter
 const resetFilters = () => {
   priceMin.value = ''
   priceMax.value = ''
@@ -364,114 +395,50 @@ const resetFilters = () => {
   selectedSubcategories.value = []
 }
 
-// 筛选后的商品列表
-const filteredProducts = computed(() => {
-  let result = [...products.value]
-  
-  // 应用子分类筛选
-  if (selectedSubcategories.value.length > 0) {
-    result = result.filter(product => 
-      product.categories && product.categories.some(cat => 
-        selectedSubcategories.value.includes(cat.id)
-      )
-    )
-  }
-  
-  // 应用商品属性筛选
-  if (filterNew.value) {
-    result = result.filter(product => product.is_new)
-  }
-  
-  if (filterHot.value) {
-    result = result.filter(product => product.is_hot)
-  }
-  
-  if (filterDiscount.value) {
-    result = result.filter(product => {
-      return product.discount_price || 
-        (product.original_price && product.original_price !== product.price)
-    })
-  }
-  
-  // 应用价格筛选
-  if (priceMin.value) {
-    result = result.filter(product => {
-      const price = product.discount_price || product.price
-      return parseFloat(price) >= Number(priceMin.value)
-    })
-  }
-  
-  if (priceMax.value) {
-    result = result.filter(product => {
-      const price = product.discount_price || product.price
-      return parseFloat(price) <= Number(priceMax.value)
-    })
-  }
-  
-  // 应用排序
-  switch (sortBy.value) {
-    case 'price_asc':
-      result.sort((a, b) => {
-        const priceA = parseFloat(a.discount_price || a.price)
-        const priceB = parseFloat(b.discount_price || b.price)
-        return priceA - priceB
-      })
-      break
-    case 'price_desc':
-      result.sort((a, b) => {
-        const priceA = parseFloat(a.discount_price || a.price)
-        const priceB = parseFloat(b.discount_price || b.price)
-        return priceB - priceA
-      })
-      break
-    case 'newest':
-      result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      break
-    case 'sales':
-      result.sort((a, b) => (b.sales || 0) - (a.sales || 0))
-      break
-  }
-  
-  return result
-})
+// Change page
+const changePage = async (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  await fetchProducts(selectedCategory.value?.id, currentPage.value)
+}
 
-// 页面加载时获取数据
+// Page load, get data
 onMounted(async () => {
-  console.log('页面加载, 开始获取数据')
+  console.log('Page load, starting to get data')
   try {
     await fetchCategories()
-    
-    // 检查URL中是否有分类ID
+    currentPage.value = 1
+    // Check URL for category ID
     if (route.query.category) {
       const categoryId = route.query.category
-      console.log('从 URL 获取分类 ID:', categoryId)
+      console.log('Getting category ID from URL:', categoryId)
       const category = categories.value.find(c => c.id === categoryId)
       if (category) {
-        console.log('找到对应分类:', category.name)
+        console.log('Found matching category:', category.name)
         await selectCategory(category)
       } else {
-        console.log('未找到对应分类, 获取所有商品')
-        await fetchProducts()
+        console.log('No matching category found, getting all products')
+        await fetchProducts(null, 1)
       }
     } else {
-      console.log('无分类参数, 获取所有商品')
-      await fetchProducts()
+      console.log('No category parameter, getting all products')
+      await fetchProducts(null, 1)
     }
   } catch (err) {
-    console.error('页面加载数据失败:', err)
+    console.error('Page load data failed:', err)
   }
 })
 
-// 定义页面元数据
+// Define page metadata
 definePageMeta({
   layout: 'default',
-  title: '商品分类',
-  description: '浏览我们的全部商品，找到您喜爱的产品'
+  title: 'Product Category',
+  description: 'Browse our entire product catalog and find the products you love'
 })
 </script>
 
 <style scoped>
-/* 自定义滚动条样式 */
+/* Custom scrollbar styles */
 .overflow-x-auto {
   scrollbar-width: thin;
   scrollbar-color: #e5e7eb #f9fafb;

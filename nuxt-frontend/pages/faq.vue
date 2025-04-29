@@ -1,36 +1,36 @@
 <template>
   <div class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-8">常见问题</h1>
+    <h1 class="text-3xl font-bold mb-8">Frequently Asked Questions</h1>
     
     <div class="space-y-6">
       <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-3">如何创建账户？</h2>
-        <p class="text-gray-700">点击页面右上角的"注册"按钮，填写必要的信息即可创建账户。</p>
+        <h2 class="text-xl font-semibold mb-3">How do I create an account?</h2>
+        <p class="text-gray-700">Click the "Register" button in the top right corner of the page and fill in the required information to create an account.</p>
       </div>
       
       <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-3">如何修改我的订单？</h2>
-        <p class="text-gray-700">订单提交后的1小时内，您可以在"我的订单"页面找到该订单并点击"修改订单"按钮进行修改。</p>
+        <h2 class="text-xl font-semibold mb-3">How can I modify my order?</h2>
+        <p class="text-gray-700">Within 1 hour after submitting your order, you can find the order on the "My Orders" page and click the "Modify Order" button to make changes.</p>
       </div>
       
       <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-3">退货政策是什么？</h2>
-        <p class="text-gray-700">我们提供30天无理由退货服务。商品必须保持原样，包括所有标签和包装。请查看我们的退货政策页面了解更多详情。</p>
+        <h2 class="text-xl font-semibold mb-3">What is your return policy?</h2>
+        <p class="text-gray-700">We offer a 30-day no-questions-asked return policy. Items must be in their original condition, including all tags and packaging. Please check our Return Policy page for more details.</p>
       </div>
       
       <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-3">如何跟踪我的订单？</h2>
-        <p class="text-gray-700">登录您的账户后，在"我的订单"页面可以查看所有订单的状态和跟踪信息。</p>
+        <h2 class="text-xl font-semibold mb-3">How can I track my order?</h2>
+        <p class="text-gray-700">After logging into your account, you can view the status and tracking information for all your orders on the "My Orders" page.</p>
       </div>
       
       <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-3">支持哪些支付方式？</h2>
-        <p class="text-gray-700">我们支持信用卡、借记卡、支付宝、微信支付等多种支付方式。</p>
+        <h2 class="text-xl font-semibold mb-3">What payment methods do you support?</h2>
+        <p class="text-gray-700">We support various payment methods including Credit/Debit Cards, PayPal, USDT (TRC20), and Coinbase Commerce for cryptocurrency payments.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-// FAQ页面
+// FAQ page
 </script>

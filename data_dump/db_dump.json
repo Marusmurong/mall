@@ -1,0 +1,47 @@
+Applied Swagger fixes to all viewsets.
+Swagger文档生成修复已应用
+[
+{
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$870000$B4BeLafXOvGPPgkbPBiazr$WyaHZGfiw9am+IAE5Gkvzn0A7sMThS6fyhnfRIQNPP8=",
+        "last_login": "2025-04-26T17:14:55.545Z",
+        "is_superuser": true,
+        "username": "marus",
+        "first_name": "",
+        "last_name": "",
+        "email": "marusmurong@gmail.com",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2025-04-26T17:13:39.060Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$870000$E9vMYDI3uN5GRgAev0JAUt$XY/HFy9svJjzqxS8TNV40vOWL7aTIe666oVcXs/Mu7k=",
+        "last_login": null,
+        "is_superuser": true,
+        "username": "Marus",
+        "first_name": "",
+        "last_name": "",
+        "email": "marus@bochats.com",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2025-04-26T17:14:38.448Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "5ab5zlryitt13bvtj8j4te0stqk5ue90",
+    "fields": {
+        "session_data": ".eJyVVktzmzAQ_isZzrEtBBI4x957663OePRYQA0gD8LxZDL-75XkJDUyMukFGWvZ_R7Lovdkz45jsz8aGPZKJk9Jmjxe_8eZeIHebcg_rK_1Wuh-HBRfu5D1x65Z_9QS2h8fsZMEDTONfRphigQmuEAMJIhMQCpKkadVQUhu7xgFlFecFliWmeCEAc-LLVQpEylHFbikHfRHY3P9ft8lPetglzw97JLd7mhTULfkIrVLwZlfckR3yaONUBbzJbZi5qFiK9Pow0H19Yqz-hLSOfzGBd1N7mOPQ3vZrLWWZnO53laaFBJsGC8hoKSLSBHC58eH-0wIRu6uEAWPlxZshFoPbxEII6tNWDk7P0__SOegVCKzC02zyt1lhETUbOCL3D0ZI-m-KJ2UaVplxn0Pp83nTYSU2wpJke9xsHJiup03dBaCGqGLwKhVdQODhtrmIa5f0EI9sM4BKzLmoFBa2iUHzm4Lce_i5zN3Zb7KvE1z6bhWFAKSY73netx8ZrS_DYyjbdJYEwtdhyTLGa2pLB0JiqjTuuQceQNufA7q93pUlbJNrHQfBdDZV_9G6W2odDGDquQMX1m_OBoq1cJK9a9aCVjs6evkU5J6kDBsLtcIqVYduGaDnGvmdO6F3CLkJKU8A18bqJdbzNceoDr2UsLIVBuB0Oke3lZcte3qxF4hxDA3n6ZyUgLEmyyLOP9W15H6jSVuB1dYN5xOKZrrNoIr_8rI8lu-igGkGt0clou2TnPHO_nA3lxfbj7X-KxasfbG4rl5Na1MCfeDqkLV_codjI2Wiy6HCOgiAkKl7zWBsrt2B3hOwButX_7b-SJ0_mZ2OpMJ9uLgrPiW8-4UYhY9v8465eaOMhuXJMLFbYVEtrPKZu6FLSV2uEmR-a6ywIN6Hu_GNMqfHJiUA5jYaP7YvWrrLwwYhWLODe2CSddiBfKdtixm3Wq-PBenWQlOHeOytB-5KVVjv62Wqr3Gzk_u48sOIbXZkxPYQ5Kr6T8_Bc5DH_8VM62SsYqqYzWEByYcjiScnp-T819NS3Y2:1u8jJs:NDjvQ0NgBZw2jbiMh8hUdb-mc6mEUmw1gmrMFG4tUTY",
+        "expire_date": "2025-05-10T17:28:04.034Z"
+    }
+}

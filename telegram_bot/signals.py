@@ -6,6 +6,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from wishlist.models import Wishlist, WishlistItem
+from payment.models import Payment
 
 logger = logging.getLogger(__name__)
 
@@ -106,4 +107,91 @@ def notify_wishlist_item_purchased(sender, instance, created, **kwargs):
                 
                 logger.info(f"已发送心愿单物品购买通知: 用户 {user_id}, 物品 {instance.id}, 购买者 {buyer_id}")
             except Exception as e:
-                logger.error(f"发送心愿单物品购买通知失败: {str(e)}") 
+                logger.error(f"发送心愿单物品购买通知失败: {str(e)}")
+
+
+@receiver(post_save, sender=Payment)
+def notify_payment_status_change(sender, instance, created, **kwargs):
+    """Send notification when payment status changes, especially for completed and failed payments"""
+    # Get the previous status if available
+    previous_status = getattr(instance, '_previous_status', None)
+    current_status = instance.status
+    
+    # Only process if this is a status change (not a new payment) and has a related wishlist item
+    if not created and previous_status != current_status and instance.wishlist_item:
+        try:
+            # Get user from wishlist item
+            wishlist_item = instance.wishlist_item
+            user_id = wishlist_item.wishlist.user.id
+            
+            # Get payer info if available
+            payer_info = ""
+            if instance.payer:
+                payer_info = f"User {instance.payer.username} "
+            elif instance.payer_name:
+                payer_info = f"{instance.payer_name} "
+            
+            # Prepare notification content based on status
+            if current_status == 'completed':
+                # Payment completed successfully
+                message = f"""
+💰 Payment completed successfully!
+
+Item: <b>{wishlist_item.title}</b>
+Price: {instance.amount} {instance.currency}
+Payment method: {instance.payment_method.name}
+
+{payer_info}has successfully completed the payment.
+
+<a href="https://example.com/wishlist/{wishlist_item.wishlist.id}/">View wishlist details</a>
+                """
+                notification_type = "payment_completed"
+                
+            elif current_status == 'failed':
+                # Payment failed
+                message = f"""
+❌ Payment failed!
+
+Item: <b>{wishlist_item.title}</b>
+Price: {instance.amount} {instance.currency}
+Payment method: {instance.payment_method.name}
+
+{payer_info}attempted to make a payment but it was unsuccessful.
+Reason: {instance.status_message or "Unknown error"}
+
+<a href="https://example.com/wishlist/{wishlist_item.wishlist.id}/">View wishlist details</a>
+                """
+                notification_type = "payment_failed"
+                
+            else:
+                # Other status change
+                message = f"""
+ℹ️ Payment status changed to {current_status}!
+
+Item: <b>{wishlist_item.title}</b>
+Price: {instance.amount} {instance.currency}
+Payment method: {instance.payment_method.name}
+
+{payer_info}payment status has been updated.
+
+<a href="https://example.com/wishlist/{wishlist_item.wishlist.id}/">View wishlist details</a>
+                """
+                notification_type = "payment_status_change"
+            
+            # Send to Channels
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "telegram_notifications",
+                {
+                    "type": "send_notification",
+                    "user_id": user_id,
+                    "notification_type": notification_type,
+                    "content": message,
+                    "related_object_type": "payment",
+                    "related_object_id": str(instance.id),
+                }
+            )
+            
+            logger.info(f"Payment status notification sent: User {user_id}, Payment {instance.id}, Status {current_status}")
+        except Exception as e:
+            logger.error(f"Failed to send payment status notification: {str(e)}") 

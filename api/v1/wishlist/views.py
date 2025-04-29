@@ -35,6 +35,11 @@ class WishlistViewSet(viewsets.ModelViewSet):
         # 未登录用户返回空查询集
         return Wishlist.objects.none()
     
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
     def retrieve(self, request, *args, **kwargs):
         """
         查看心愿单详情
@@ -190,33 +195,36 @@ class WishlistViewSet(viewsets.ModelViewSet):
         """
         if not request.user.is_authenticated:
             return Response({"detail": "需要登录"}, status=status.HTTP_401_UNAUTHORIZED)
-            
+        
         # 获取用户的所有心愿单
         wishlists = Wishlist.objects.filter(user=request.user)
-        
-        # 获取总浏览量
-        views_count = WishlistView.objects.filter(wishlist__in=wishlists).count()
         
         # 获取所有心愿单商品
         items = WishlistItem.objects.filter(wishlist__in=wishlists)
         
-        # 已购买商品统计
+        # 兼容前端字段
+        total_wishlists = wishlists.count()
+        total_items = items.count()
+        completed_items = items.filter(purchased=True).count()
+        total_amount = items.aggregate(total=Sum('price'))['total'] or 0
+        
+        # 其余统计
+        views_count = WishlistView.objects.filter(wishlist__in=wishlists).count()
         purchased_items = items.filter(purchased=True)
         purchased_count = purchased_items.count()
         purchased_amount = purchased_items.aggregate(total=Sum('price'))['total'] or 0
-        
-        # 未购买商品统计
         unpurchased_items = items.filter(purchased=False)
         unpurchased_count = unpurchased_items.count()
         unpurchased_amount = unpurchased_items.aggregate(total=Sum('price'))['total'] or 0
-        
-        # 支付完成的商品统计
         payment_completed_items = items.filter(payment_completed=True)
         payment_completed_count = payment_completed_items.count()
         payment_completed_amount = payment_completed_items.aggregate(total=Sum('price'))['total'] or 0
         
         return Response({
-            "wishlists_count": wishlists.count(),
+            "total_wishlists": total_wishlists,
+            "total_items": total_items,
+            "completed_items": completed_items,
+            "total_amount": total_amount,
             "views_count": views_count,
             "purchased": {
                 "count": purchased_count,
@@ -274,6 +282,11 @@ class WishlistItemViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return WishlistItemCreateSerializer
         return WishlistItemSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     def get_queryset(self):
         """获取当前用户心愿单中的物品"""

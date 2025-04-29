@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- 根据路由决定是否使用默认布局 -->
+    <!-- Decide whether to use default layout based on route -->
     <template v-if="isWishlistSharePage">
       <NuxtPage />
     </template>
@@ -15,7 +15,7 @@
 <script setup>
 import { useRoute } from 'vue-router'
 
-// 判断当前是否是心愿单分享页面
+// Check if current page is a wishlist share page
 const route = useRoute()
 const isWishlistSharePage = computed(() => {
   return route.path.startsWith('/wishlist/share/')

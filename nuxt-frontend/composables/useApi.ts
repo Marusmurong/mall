@@ -1,14 +1,14 @@
 import { $fetch, FetchOptions } from 'ofetch'
 import type { RuntimeConfig } from 'nuxt/schema'
 
-// 声明全局类型，让TypeScript识别这些组合式API
+// Declare global types for TypeScript to recognize these composable APIs
 declare global {
   const useRuntimeConfig: () => RuntimeConfig
   const useCookie: any
 }
 
 export const useApi = () => {
-  // 获取运行时配置
+  // Get runtime configuration
   const config = useRuntimeConfig()
   const { apiBase, currentSite } = config.public as {
     apiBase: string
@@ -16,7 +16,7 @@ export const useApi = () => {
     currentSite: string
   }
   
-  // 创建带有基本配置的fetch实例
+  // Create fetch instance with basic configuration
   const apiFetch = $fetch.create({
     baseURL: apiBase,
     headers: {
@@ -26,10 +26,27 @@ export const useApi = () => {
     credentials: 'include',
   })
   
-  // 通用请求方法
+  // Generic request method
+  const isPublicApi = (url: string) => {
+    return (
+      url.includes('/categories') ||
+      url.includes('/products') ||
+      url.includes('/v1/wishlist/lists/list_public')
+      // 可扩展其它允许匿名访问的API
+    )
+  }
+
+  const clearAuth = () => {
+    try {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      document.cookie = 'sessionid=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/'
+    } catch (e) {}
+  }
+
   const request = async (endpoint: string, options: FetchOptions = {}) => {
     try {
-      // 添加站点标识到URL参数
+      // Add site identifier to URL parameters
       let urlStr = endpoint;
       if (!urlStr.includes('?')) {
         urlStr += `?site=${currentSite}`;
@@ -37,7 +54,7 @@ export const useApi = () => {
         urlStr += `&site=${currentSite}`;
       }
       
-      // 构建完整URL
+      // Build complete URL
       if (!urlStr.startsWith('http')) {
         urlStr = `${apiBase}${urlStr}`;
       }
@@ -46,20 +63,20 @@ export const useApi = () => {
       console.log('API Base URL:', apiBase);
       console.log('Runtime Config:', config.public);
       
-      // 获取认证token (如果有)
-      // 首先从localStorage获取token
+      // Get authentication token (if available)
+      // First try to get token from localStorage
       let token: string | null = null;
       if (typeof window !== 'undefined') {
         token = localStorage.getItem('token');
       }
       
-      // 如果localStorage中没有，尝试从cookie获取
+      // If not in localStorage, try to get from cookie
       if (!token) {
         const tokenCookie = useCookie('auth_token');
         token = tokenCookie.value;
       }
       
-      console.log('使用的认证令牌:', token);
+      console.log('Authentication token used:', token);
       
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -71,45 +88,71 @@ export const useApi = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      // 准备请求选项
+      // Prepare request options
       const fetchOptions: RequestInit = {
         method: options.method || 'GET',
         headers,
         credentials: 'include'
       };
       
-      // 如果有请求体，添加到选项中
+      // Add request body to options if present
       if (options.body) {
         fetchOptions.body = JSON.stringify(options.body);
       }
       
-      // 发送请求
-      console.log('Fetch options:', fetchOptions);
-      const response = await fetch(urlStr, fetchOptions);
+      let response, responseText;
+      try {
+        response = await fetch(urlStr, fetchOptions);
+        responseText = await response.text();
+      } catch (fetchError) {
+        throw fetchError;
+      }
       
-      // 检查响应状态
+      // 检查403且为公开API，自动清除token并重试一次
+      if (response && response.status === 403 && isPublicApi(urlStr)) {
+        clearAuth();
+        // 再次匿名请求
+        const retryOptions: RequestInit = {
+          method: options.method || 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }
+        };
+        
+        // 正确处理body字段
+        if (options.body) {
+          retryOptions.body = typeof options.body === 'string' 
+            ? options.body 
+            : JSON.stringify(options.body);
+        }
+        
+        response = await fetch(urlStr, retryOptions);
+        responseText = await response.text();
+      }
+      
+      // Check response status
       if (!response.ok) {
         console.error(`API Error: ${response.status} ${response.statusText}`);
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
+        console.error('Error response:', responseText);
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
       
-      const responseText = await response.text();
       console.log(`API Response from ${urlStr}:`, responseText);
       
-      // 如果响应为空，返回空对象
+      // Return empty object if response is empty
       if (!responseText.trim()) {
         return {};
       }
       
-      // 解析响应
+      // Parse response
       try {
         const data = JSON.parse(responseText);
         
-        // 处理不同的API响应格式
+        // Handle different API response formats
         if (data.code !== undefined) {
-          // 处理 {code, message, data} 格式
+          // Handle {code, message, data} format
           if (data.code === 0) {
             return data.data || {};
           } else {
@@ -117,102 +160,102 @@ export const useApi = () => {
             throw new Error(data.message || 'API request failed');
           }
         } else {
-          // 直接返回数据
+          // Return data directly
           return data;
         }
       } catch (parseError) {
         console.error('Failed to parse API response:', parseError);
-        // 如果无法解析为JSON，返回原始文本
+        // Return raw text if cannot parse as JSON
         return responseText;
       }
     } catch (error) {
-      console.error('API请求错误:', error);
+      console.error('API request error:', error);
       throw error;
     }
   }
   
-  // 各种API方法
+  // Various API methods
   return {
-    // 分类相关API
+    // Categories related APIs
     categories: {
-      // 获取所有分类
+      // Get all categories
       getAll: () => request('/v1/categories/'),
-      // 获取分类树
+      // Get category tree
       getTree: () => request('/v1/categories/tree/'),
-      // 获取分类详情
+      // Get category details
       getById: (id: string) => request(`/v1/categories/${id}/`),
-      // 获取分类下的商品
+      // Get products in category
       getProducts: (id: string) => request(`/v1/categories/${id}/products/`)
     },
     
-    // 商品相关API
+    // Products related APIs
     products: {
-      // 获取商品列表
+      // Get product list
       getAll: (params = {}) => request('/v1/products/', { params }),
-      // 获取商品详情
+      // Get product details
       getById: (id: string) => request(`/v1/products/${id}/`),
-      // 获取推荐商品
+      // Get recommended products
       getRecommended: () => request('/v1/products/recommended/'),
-      // 获取热门商品
+      // Get hot products
       getHot: () => request('/v1/products/hot/'),
-      // 获取新品
+      // Get new products
       getNew: () => request('/v1/products/new/'),
-      // 搜索商品
+      // Search products
       search: (keyword: string) => request('/v1/products/', { params: { keyword } })
     },
     
-    // 心愿单相关API
+    // Wishlist related APIs
     wishlist: {
-      // 获取用户的所有心愿单
+      // Get all user wishlists
       getUserWishlists: () => request('/v1/wishlist/lists/'),
-      // 获取当前用户的默认心愿单
+      // Get current user's default wishlist
       getCurrent: () => request('/v1/wishlist/lists/current/'),
-      // 获取指定心愿单详情
-      getById: (id: string) => request(`/v1/wishlist/lists/${id}/`),
-      // 通过分享码获取心愿单
-      getByShareCode: (shareCode: string) => request(`/v1/wishlist/lists/share/${shareCode}/`),
-      // 获取公开的心愿单列表
-      getPublic: () => request('/v1/wishlist/lists/list_public/'),
-      // 创建心愿单
-      create: (data: any) => request('/v1/wishlist/lists/', { method: 'POST', body: data }),
-      // 更新心愿单
-      update: (id: string, data: any) => request(`/v1/wishlist/lists/${id}/`, { method: 'PATCH', body: data }),
-      // 删除心愿单
-      delete: (id: string) => request(`/v1/wishlist/lists/${id}/`, { method: 'DELETE' }),
-      // 添加商品到心愿单
+      // Add item to wishlist (Django API)
       addItem: (data: any) => request('/v1/wishlist/items/', { method: 'POST', body: data }),
-      // 更新心愿单商品
-      updateItem: (id: string, data: any) => request(`/v1/wishlist/items/${id}/`, { method: 'PATCH', body: data }),
-      // 删除心愿单商品
+      // Remove item from wishlist
       removeItem: (id: string) => request(`/v1/wishlist/items/${id}/`, { method: 'DELETE' }),
-      // 标记商品为已购买
-      purchaseItem: (id: string) => request(`/v1/wishlist/items/${id}/purchase/`, { method: 'POST' }),
-      // 记录心愿单浏览量
+      // Update wishlist item
+      updateItem: (id: string, data: any) => request(`/v1/wishlist/items/${id}/`, { method: 'PATCH', body: data }),
+      // Get wishlist by share code
+      getByShareCode: (shareCode: string) => request(`/v1/wishlist/lists/share/${shareCode}/`),
+      // Get public wishlist list
+      getPublic: () => request('/v1/wishlist/lists/list_public/'),
+      // Create wishlist
+      create: (data: any) => request('/v1/wishlist/lists/', { method: 'POST', body: data }),
+      // Update wishlist
+      update: (id: string, data: any) => request(`/v1/wishlist/lists/${id}/`, { method: 'PATCH', body: data }),
+      // Delete wishlist
+      delete: (id: string) => request(`/v1/wishlist/lists/${id}/`, { method: 'DELETE' }),
+      // Mark item as purchased
+      purchaseItem: (id: string, data: any = {}) => request(`/v1/wishlist/items/${id}/purchase/`, { method: 'POST', body: data }),
+      // Purchase full wishlist (all unpurchased items)
+      purchaseFullWishlist: (data: any) => request(`/v1/wishlist/lists/${data.wishlist_id}/purchase_all/`, { method: 'POST', body: data }),
+      // Record wishlist view
       recordView: (id: string) => request(`/v1/wishlist/lists/${id}/view/`, { method: 'POST' }),
-      // 获取心愿单统计数据
+      // Get wishlist statistics
       getStats: (id: string) => request(`/v1/wishlist/lists/${id}/stats/`),
-      // 获取所有心愿单的汇总统计数据
+      // Get summary statistics for all wishlists
       getAllStats: () => request('/v1/wishlist/stats/'),
-      // 获取心愿单分享链接
+      // Get wishlist share link
       getShareLink: (id: string) => request(`/v1/wishlist/lists/${id}/share-link/`),
-      // 检查商品是否已在心愿单中
+      // Check if product is in wishlist
       checkProductInWishlist: (productId: string) => request(`/v1/wishlist/check-product/${productId}/`),
-      // 获取用户的心愿单商品列表
+      // Get user's wishlist items
       getUserItems: () => request('/v1/wishlist/user-items/')
     },
     
-    // 用户认证相关API
+    // User authentication related APIs
     auth: {
-      // 登录
+      // Login
       login: async (credentials: { username: string, password: string }) => {
-        // 添加站点标识符到URL参数
+        // Add site identifier to URL parameters
         const urlStr = `${config.public.authBase}/token/?site=${currentSite}`
         
         console.log('Sending login request to:', urlStr)
         console.log('With credentials:', credentials)
         
         try {
-          // 使用FormData格式发送请求
+          // Send request using FormData format
           const formData = new FormData()
           formData.append('username', credentials.username)
           formData.append('password', credentials.password)
@@ -229,7 +272,7 @@ export const useApi = () => {
           
           try {
             const data = JSON.parse(responseText)
-            // 处理API响应格式
+            // Handle API response format
             if (data.code === 0 && data.data) {
               return data.data
             } else {
@@ -244,17 +287,17 @@ export const useApi = () => {
           throw fetchError
         }
       },
-      // 刷新token
+      // Refresh token
       refreshToken: async (refreshToken: string) => {
-        // 添加站点标识符到URL参数
+        // Add site identifier to URL parameters
         const urlStr = `${config.public.authBase}/token/refresh/?site=${currentSite}`
         
         try {
-          // 按照测试页面的格式构造请求体
+          // Construct request body according to test page format
           const formData = new FormData()
           formData.append('refresh', refreshToken)
           
-          // 发送请求
+          // Send request
           const response = await fetch(urlStr, {
             method: 'POST',
             credentials: 'include',
@@ -266,7 +309,7 @@ export const useApi = () => {
           
           try {
             const data = JSON.parse(responseText)
-            // 处理API响应格式
+            // Handle API response format
             if (data.code === 0 && data.data) {
               return data.data
             } else {
@@ -283,38 +326,52 @@ export const useApi = () => {
       }
     },
     
-    // 支付相关API
+    // Payments related APIs
     payments: {
-      // 获取支付方式列表
+      // Get payment methods
       getMethods: () => request('/v1/payments/methods/'),
-      // 创建支付
+      // Create payment
       create: (data: any) => request('/v1/payments/', { method: 'POST', body: data }),
-      // 获取支付详情
+      // Get payment details
       getById: (id: string) => request(`/v1/payments/${id}/`),
-      // 为心愿单商品创建支付
-      createForWishlistItem: (itemId: string) => request(`/v1/payments/wishlist-item/${itemId}/`, { method: 'POST' }),
-      // 查询支付状态
+      // Create payment for wishlist item
+      createForWishlistItem: (itemId: string, options: any = {}) => 
+        request(`/v1/payments/wishlist-item/${itemId}/`, { 
+          method: 'POST', 
+          body: { 
+            ...options,
+            notify_telegram: true,            // 成功时通知
+            notify_telegram_on_failure: true  // 失败时也通知
+          } 
+        }),
+      // Check payment status
       checkStatus: (id: string) => request(`/v1/payments/${id}/status/`),
-      // 取消支付
+      // Cancel payment
       cancel: (id: string) => request(`/v1/payments/${id}/cancel/`, { method: 'POST' }),
     },
     
-    // 用户相关API
+    // User related APIs
     user: {
-      // 获取用户信息
+      // Get user profile
       getProfile: () => request('/v1/user/profile/'),
-      // 更新用户信息
+      // Update user profile
       updateProfile: (data: any) => request('/v1/user/profile/', { method: 'PATCH', body: data }),
-      // 注册
+      // Register
       register: (data: any) => {
-        // 确保邀请码参数正确传递
+        // Ensure invite code parameter is correctly passed
         const registerData = {
           ...data,
-          // 如果已经有invite_code就使用它，否则使用inviteCode
+          // Use invite_code if it exists, otherwise use inviteCode
           invite_code: data.invite_code || data.inviteCode
         };
         return request('/v1/user/register/', { method: 'POST', body: registerData });
-      }
+      },
+      // Generate Telegram connection token
+      generateTelegramToken: () => request('/v1/user/telegram/token/', { method: 'POST' }),
+      // Get Telegram connection status
+      getTelegramStatus: () => request('/v1/user/telegram/status/'),
+      // Disconnect Telegram
+      disconnectTelegram: () => request('/v1/user/telegram/disconnect/', { method: 'POST' })
     }
   }
 }

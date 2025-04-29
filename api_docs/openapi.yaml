@@ -1,0 +1,26 @@
+info:
+  description: 多站点电商系统API文档
+  title: Mall API
+  version: v1
+paths:
+  /api/v1/sites/:
+    get:
+      description: 获取所有可用站点列表
+      operationId: sites_list
+      parameters: []
+      responses:
+        '200':
+          description: 成功获取站点列表
+  /api/v1/sites/{site_id}/config:
+    get:
+      description: 获取站点配置信息
+      operationId: site_config
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        type: string
+      responses:
+        '200':
+          description: 成功获取站点配置
+swagger: '2.0'

@@ -3,25 +3,25 @@
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>{{ product ? '添加到心愿单' : '创建心愿单' }}</h3>
+          <h3>{{ product ? 'Add to Wishlist' : 'Create Wishlist' }}</h3>
           <button class="close-btn" @click="closeModal">&times;</button>
         </div>
         
         <div class="modal-body">
-          <!-- 加载状态 -->
+          <!-- Loading State -->
           <div v-if="loading" class="loading-container">
             <div class="spinner"></div>
-            <p>加载中...</p>
+            <p>Loading...</p>
           </div>
           
-          <!-- 错误信息 -->
+          <!-- Error Message -->
           <div v-if="error" class="error-message">
             {{ error }}
           </div>
           
-          <!-- 选择现有心愿单 -->
+          <!-- Select Existing Wishlist -->
           <div v-if="product && wishlists.length > 0" class="existing-wishlists">
-            <h4>选择心愿单</h4>
+            <h4>Select Wishlist</h4>
             <div class="wishlist-list">
               <div 
                 v-for="wishlist in wishlists" 
@@ -32,38 +32,38 @@
               >
                 <div class="wishlist-name">{{ wishlist.name }}</div>
                 <div class="wishlist-info">
-                  <span>{{ wishlist.items?.length || 0 }}个商品</span>
-                  <span>{{ wishlist.is_public ? '公开' : '私密' }}</span>
+                  <span>{{ wishlist.items?.length || 0 }} items</span>
+                  <span>{{ wishlist.is_public ? 'Public' : 'Private' }}</span>
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- 或者创建新的心愿单 -->
+          <!-- Or Create New Wishlist -->
           <div class="create-new-wishlist">
             <div class="divider" v-if="product && wishlists.length > 0">
-              <span>或者</span>
+              <span>or</span>
             </div>
             
-            <h4>{{ product && wishlists.length > 0 ? '创建新的心愿单' : '创建心愿单' }}</h4>
+            <h4>{{ product && wishlists.length > 0 ? 'Create New Wishlist' : 'Create Wishlist' }}</h4>
             
             <div class="form-group">
-              <label for="wishlist-name">名称</label>
+              <label for="wishlist-name">Name</label>
               <input 
                 type="text" 
                 id="wishlist-name" 
                 v-model="newWishlist.name" 
-                placeholder="心愿单名称"
+                placeholder="Wishlist name"
                 required
               />
             </div>
             
             <div class="form-group">
-              <label for="wishlist-description">描述 (可选)</label>
+              <label for="wishlist-description">Description (Optional)</label>
               <textarea 
                 id="wishlist-description" 
                 v-model="newWishlist.description" 
-                placeholder="心愿单描述"
+                placeholder="Wishlist description"
                 rows="3"
               ></textarea>
             </div>
@@ -75,12 +75,12 @@
                   id="wishlist-public" 
                   v-model="newWishlist.is_public"
                 />
-                <label for="wishlist-public">公开心愿单 (可被其他用户查看)</label>
+                <label for="wishlist-public">Public wishlist (can be viewed by others)</label>
               </div>
             </div>
           </div>
           
-          <!-- 商品信息 (如果有) -->
+          <!-- Product Info (if any) -->
           <div v-if="product" class="product-info">
             <div class="product-image">
               <img :src="product.image" :alt="product.name" />
@@ -93,13 +93,13 @@
         </div>
         
         <div class="modal-footer">
-          <button class="cancel-btn" @click="closeModal">取消</button>
+          <button class="cancel-btn" @click="closeModal">Cancel</button>
           <button 
             class="save-btn" 
             @click="saveToWishlist" 
             :disabled="loading || (!selectedWishlistId && !newWishlist.name)"
           >
-            {{ product ? '添加到心愿单' : '创建心愿单' }}
+            {{ product ? 'Add to Wishlist' : 'Create Wishlist' }}
           </button>
         </div>
       </div>
@@ -168,13 +168,13 @@ export default {
         const wishlistStore = useWishlistStore()
         await wishlistStore.fetchUserWishlists()
         
-        // 如果有心愿单，默认选中第一个
+        // Select the first wishlist by default if available
         if (this.wishlists.length > 0) {
           this.selectedWishlistId = this.wishlists[0].id
         }
       } catch (error) {
-        this.error = '获取心愿单失败，请稍后再试'
-        console.error('获取心愿单失败:', error)
+        this.error = 'Failed to get wishlists, please try again later'
+        console.error('Failed to get wishlists:', error)
       } finally {
         this.loading = false
       }
@@ -198,21 +198,21 @@ export default {
       try {
         const wishlistStore = useWishlistStore()
         
-        // 如果是创建新心愿单
+        // If creating a new wishlist
         if (!this.selectedWishlistId) {
           const result = await wishlistStore.createWishlist(this.newWishlist)
           
           if (!result.success) {
-            this.error = result.error || '创建心愿单失败'
+            this.error = result.error || 'Failed to create wishlist'
             return
           }
           
-          // 如果有商品，添加到新创建的心愿单
+          // If there's a product, add it to the newly created wishlist
           if (this.product) {
             const addResult = await wishlistStore.addToWishlist(this.product, result.wishlist.id)
             
             if (!addResult.success) {
-              this.error = addResult.error || '添加商品到心愿单失败'
+              this.error = addResult.error || 'Failed to add product to wishlist'
               return
             }
           }
@@ -223,12 +223,12 @@ export default {
             wishlistName: result.wishlist.name
           })
         } 
-        // 添加商品到现有心愿单
+        // Add product to existing wishlist
         else if (this.product) {
           const result = await wishlistStore.addToWishlist(this.product, this.selectedWishlistId)
           
           if (!result.success) {
-            this.error = result.error || '添加商品到心愿单失败'
+            this.error = result.error || 'Failed to add product to wishlist'
             return
           }
           
@@ -237,21 +237,21 @@ export default {
           this.$emit('success', {
             action: 'add',
             wishlistId: this.selectedWishlistId,
-            wishlistName: wishlist ? wishlist.name : '心愿单'
+            wishlistName: wishlist ? wishlist.name : 'Wishlist'
           })
         }
         
         this.closeModal()
       } catch (error) {
-        this.error = '操作失败，请稍后再试'
-        console.error('心愿单操作失败:', error)
+        this.error = 'Operation failed, please try again later'
+        console.error('Wishlist operation failed:', error)
       } finally {
         this.loading = false
       }
     },
     
     closeModal() {
-      // 重置表单
+      // Reset form
       this.selectedWishlistId = null
       this.newWishlist = {
         name: '',

@@ -60,7 +60,19 @@
     "thank_you": "Thank You",
     "error": "Error",
     "please_try_again": "Please try again",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "admin": "Admin",
+    "normal": "Normal",
+    "change_logo": "Change Logo",
+    "upload_site_logo": "Upload Site Logo",
+    "select_image": "Select Image",
+    "preview": "Preview",
+    "uploading": "Uploading...",
+    "search_products": "Search products...",
+    "user_login": "User Login",
+    "user": "User",
+    "greeting": "Hello",
+    "close": "Close"
   },
   "home": {
     "featured_products": "Featured Products",
@@ -117,6 +129,32 @@
     "reset_password": "Reset Password",
     "reset_password_message": "Enter your email and we'll send you a link to reset your password",
     "reset_password_sent": "Reset password link sent",
-    "reset_password_success": "Password reset successful"
+    "reset_password_success": "Password reset successful",
+    "username": "Username",
+    "invite_code": "Invite Code",
+    "enter_invite_code": "Please enter invite code",
+    "invite_code_help": "Registration requires an invite code, please contact an existing user to get one",
+    "enter_username_password": "Please enter username and password",
+    "login_failed": "Login failed, please check your credentials",
+    "login_error": "Error during login, please try again later",
+    "passwords_not_match": "Passwords do not match",
+    "registration_failed": "Registration failed, please try again later",
+    "registration_error": "Error during registration, please try again later"
+  },
+  "footer": {
+    "about_us": "About Us",
+    "company_profile": "Company Profile",
+    "contact_us": "Contact Us",
+    "join_us": "Join Us",
+    "shopping_guide": "Shopping Guide",
+    "shopping_process": "Shopping Process",
+    "payment_methods": "Payment Methods",
+    "delivery_methods": "Delivery Methods",
+    "after_sales": "After-Sales Service",
+    "return_policy": "Return Policy",
+    "warranty_terms": "Warranty Terms",
+    "faq": "FAQ",
+    "contact_info": "Contact Information",
+    "copyright": "Mall Multi-site E-commerce System. All rights reserved."
   }
 }

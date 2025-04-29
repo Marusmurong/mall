@@ -1,6 +1,6 @@
 <template>
   <div class="card group">
-    <!-- 商品图片 -->
+    <!-- Product Image -->
     <div class="relative overflow-hidden aspect-square">
       <NuxtLink :to="`/products/${product.id}`">
         <img 
@@ -10,25 +10,25 @@
         >
       </NuxtLink>
       
-      <!-- 快速操作按钮 -->
+      <!-- Quick Action Buttons -->
       <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
         <div class="flex space-x-2">
-          <!-- 添加到购物车 -->
+          <!-- Add to Cart -->
           <button 
             @click="addToCart"
             class="p-2 bg-white rounded-full shadow-md hover:bg-primary-50 transition-colors"
-            title="添加到购物车"
+            :title="$t('common.add_to_cart')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </button>
           
-          <!-- 添加到心愿单 -->
+          <!-- Add to Wishlist -->
           <button 
             @click="toggleWishlist"
             class="p-2 bg-white rounded-full shadow-md hover:bg-primary-50 transition-colors"
-            :title="isInWishlist ? '从心愿单移除' : '添加到心愿单'"
+            :title="isInWishlist ? $t('common.remove_from_wishlist') : $t('common.add_to_wishlist')"
             :disabled="isCheckingWishlists"
             :class="{'opacity-50 cursor-wait': isCheckingWishlists}"
           >
@@ -40,11 +40,11 @@
             </svg>
           </button>
           
-          <!-- 快速查看 -->
+          <!-- Quick View -->
           <NuxtLink 
             :to="`/products/${product.id}`"
             class="p-2 bg-white rounded-full shadow-md hover:bg-primary-50 transition-colors"
-            title="查看详情"
+            :title="$t('common.view_details')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -54,35 +54,37 @@
         </div>
       </div>
       
-      <!-- 标签 -->
+      <!-- Tags -->
       <div class="absolute top-2 left-2 flex flex-col space-y-1">
-        <span v-if="product.is_new" class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">新品</span>
-        <span v-if="product.is_hot" class="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">热销</span>
+        <span v-if="product.is_new" class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">{{ $t('product.new') }}</span>
+        <span v-if="product.is_hot" class="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">{{ $t('product.hot') }}</span>
         <span v-if="hasDiscount" class="px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded">
-          {{ discountPercentage }}% 折扣
+          {{ discountPercentage }}% {{ $t('product.discount') }}
         </span>
       </div>
     </div>
     
-    <!-- 商品信息 -->
+    <!-- Product Info -->
     <div class="p-4">
-      <!-- 分类 -->
-      <div class="text-xs text-gray-500 mb-1">{{ product.category?.name || '未分类' }}</div>
+      <!-- Category -->
+      <div class="text-xs text-gray-500 mb-1">{{ product.category?.name || $t('product.uncategorized') }}</div>
       
-      <!-- 商品名称 -->
+      <!-- Product Name -->
       <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
         <NuxtLink :to="`/products/${product.id}`">{{ product.name }}</NuxtLink>
       </h3>
       
-      <!-- 价格 -->
+      <!-- Price -->
       <div class="flex items-center space-x-2">
-        <span v-if="discountPrice" class="text-sm font-medium text-gray-900">¥{{ discountPrice }}</span>
+        <span v-if="discountPrice" class="text-sm font-medium text-secondary-600">
+          ${{ discountPrice }}
+        </span>
         <span :class="[discountPrice ? 'text-xs text-gray-500 line-through' : 'text-sm font-medium text-gray-900']">
-          ¥{{ product.price }}
+          ${{ product.price }}
         </span>
       </div>
       
-      <!-- 评分 -->
+      <!-- Rating -->
       <div v-if="product.rating" class="flex items-center mt-1">
         <div class="flex">
           <template v-for="i in 5" :key="i">
@@ -97,12 +99,12 @@
             </svg>
           </template>
         </div>
-        <span class="text-xs text-gray-500 ml-1">{{ product.rating_count || 0 }}评</span>
+        <span class="text-xs text-gray-500 ml-1">{{ product.rating_count || 0 }}{{ $t('product.reviews_count') }}</span>
       </div>
     </div>
   </div>
   
-  <!-- 心愿单选择弹窗 -->
+  <!-- Wishlist Selection Modal -->
   <WishlistSelectModal 
     :show="showWishlistModal" 
     :product="props.product" 
@@ -119,57 +121,61 @@ const props = defineProps({
   }
 })
 
-// 导入心愿单选择弹窗组件
+// Import Wishlist Selection Modal Component
 import WishlistSelectModal from './WishlistSelectModal.vue'
 
-// 获取状态管理
+// Get State Management
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
-// 商品图片
+// Product Image
 const productImage = computed(() => {
-  // 直接使用API返回的image字段
+  // 如果有图片 URL，直接使用
   if (props.product.image) return props.product.image
-  // 兼容可能的其他格式
-  if (props.product.images && props.product.images.length > 0) {
+  // 如果有图片数组，使用第一张图片
+  if (props.product.images?.length > 0) {
+    // 如果图片项是字符串，直接使用
     if (typeof props.product.images[0] === 'string') return props.product.images[0]
+    // 如果图片项是对象，尝试获取 image 字段
     if (props.product.images[0].image) return props.product.images[0].image
   }
+  // 如果没有图片，使用占位图
   return '/images/product-placeholder.jpg'
 })
 
-// 折扣价格
+// Discount Price
 const discountPrice = computed(() => {
-  // 如果有discount_price字段，直接使用
+  // If there is a discount_price field, use it directly
   if (props.product.discount_price) return props.product.discount_price
-  // 如果original_price与price不同，说明有折扣
+  // If original_price is different from price, it means there is a discount
   if (props.product.original_price && props.product.original_price !== props.product.price) {
     return props.product.price
   }
   return null
 })
 
-// 是否在心愿单中
+// Is in Wishlist
 const isInWishlist = computed(() => {
   return wishlistStore.isInAnyWishlist(props.product.id)
 })
 
-// 是否有折扣
+// Has Discount
 const hasDiscount = computed(() => {
   return !!discountPrice.value
 })
 
-// 折扣百分比
+// Discount Percentage
 const discountPercentage = computed(() => {
   if (!hasDiscount.value) return 0
   
-  // 如果有original_price，使用它计算折扣
+  // If there is original_price, use it to calculate the discount
   if (props.product.original_price) {
     return Math.round((1 - parseFloat(props.product.price) / parseFloat(props.product.original_price)) * 100)
   }
   
-  // 如果有discount_price，使用它计算折扣
+  // If there is discount_price, use it to calculate the discount
   if (props.product.discount_price) {
     return Math.round((1 - parseFloat(props.product.discount_price) / parseFloat(props.product.price)) * 100)
   }
@@ -177,34 +183,34 @@ const discountPercentage = computed(() => {
   return 0
 })
 
-// 添加到购物车
+// Add to Cart
 const addToCart = () => {
   cartStore.addToCart(props.product)
   
-  // 显示提示信息
-  // 这里可以使用toast通知组件
-  alert('已添加到购物车')
+  // Show notification
+  // A toast notification component can be used here
+  alert(t('product.added_to_cart'))
 }
 
-// 显示/隐藏心愿单选择弹窗
+// Show/Hide Wishlist Selection Modal
 const showWishlistModal = ref(false)
-// 正在检查心愿单状态
+// Checking Wishlist Status
 const isCheckingWishlists = ref(false)
 
-// 处理心愿单添加结果
+// Handle Wishlist Added Result
 const handleWishlistAdded = (result) => {
   if (result.success) {
-    alert(result.message || '已添加到心愿单')
+    alert(result.message || t('wishlist.item_added'))
   } else {
-    alert(result.message || '操作失败')
+    alert(result.message || t('common.error'))
   }
 }
 
-// 添加/移除心愿单
+// Add/Remove Wishlist
 const toggleWishlist = async () => {
-  // 检查用户是否已登录
+  // Check if user is logged in
   if (!authStore.isAuthenticated) {
-    const confirmed = confirm('请先登录才能添加到心愿单。\n是否前往登录页面？')
+    const confirmed = confirm(t('wishlist.login_required'))
     if (confirmed) {
       navigateTo(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
     }
@@ -212,61 +218,59 @@ const toggleWishlist = async () => {
   }
   
   if (isInWishlist.value) {
-    // 从心愿单中移除
-    // 需要获取心愿单中的商品ID
+    // Remove from wishlist
+    // Need to get the product ID in the wishlist
     const wishlistItem = wishlistStore.getWishlistItems.find(item => item.product?.id === props.product.id)
     if (wishlistItem) {
       const result = await wishlistStore.removeFromWishlist(wishlistItem.id)
       if (result.success) {
-        alert('已从心愿单移除')
+        alert(t('wishlist.item_removed'))
       } else {
-        alert(result.error || '操作失败')
+        alert(result.error || t('common.error'))
       }
     }
   } else {
-    // 检查是否有心愿单，如果没有则先创建一个默认心愿单
+    // Check if there is a wishlist, if not, create a default wishlist first
     isCheckingWishlists.value = true
     
     try {
-      // 先获取用户的心愿单列表
+      // First get the user's wishlist list
       await wishlistStore.fetchUserWishlists()
       
-      // 如果用户没有心愿单，直接创建并添加商品
+      // If the user does not have a wishlist, create and add the product directly
       if (wishlistStore.getUserWishlists.length === 0) {
-        const confirmed = confirm('您还没有心愿单，是否创建一个新的心愿单？')
+        const confirmed = confirm(t('wishlist.create_default_confirm'))
         
         if (confirmed) {
           const createResult = await wishlistStore.createWishlist({
-            name: '我的心愿单',
+            name: t('wishlist.my_wishlist'),
             description: '',
             is_public: true
           })
           
           if (createResult.success && createResult.wishlist) {
-            // 创建成功后直接添加商品
+            // Add the product directly after successful creation
             const addResult = await wishlistStore.addToWishlist(props.product, createResult.wishlist.id)
             
             if (addResult.success) {
-              alert('已添加到新创建的心愿单')
+              alert(t('wishlist.added_to_new_wishlist'))
             } else {
-              alert(addResult.error || '添加失败')
+              alert(addResult.error || t('common.error'))
             }
           } else {
-            alert(createResult.error || '创建心愿单失败')
+            alert(createResult.error || t('common.error'))
           }
         }
       } else {
-        // 如果用户有心愿单，显示选择弹窗
+        // If the user has a wishlist, show the selection modal
         showWishlistModal.value = true
       }
     } catch (error) {
-      console.error('检查心愿单失败:', error)
-      alert('操作失败，请重试')
+      console.error('Failed to check wishlist:', error)
+      alert(t('common.error'))
     } finally {
       isCheckingWishlists.value = false
     }
   }
 }
 </script>
-
-

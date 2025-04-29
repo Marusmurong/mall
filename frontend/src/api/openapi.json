@@ -1,0 +1,41 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Mall API",
+    "description": "多站点电商系统API文档",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/sites/": {
+      "get": {
+        "operationId": "sites_list",
+        "description": "获取所有可用站点列表",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功获取站点列表"
+          }
+        }
+      }
+    },
+    "/api/v1/sites/{site_id}/config": {
+      "get": {
+        "operationId": "site_config",
+        "description": "获取站点配置信息",
+        "parameters": [
+          {
+            "name": "site_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取站点配置"
+          }
+        }
+      }
+    }
+  }
+}

@@ -82,13 +82,13 @@
             </div>
             <div class="stat-card">
               <div class="stat-title">已付款</div>
-              <div class="stat-value">{{ getPaymentCompletedCount() }}</div>
-              <div class="stat-desc">金额: ¥{{ formatPrice(getPaymentCompletedAmount()) }}</div>
+              <div class="stat-value text-blue-600">{{ getPaymentCompletedCount() }}</div>
+              <div class="stat-desc">金额: {{ formatPrice(getPaymentCompletedAmount()) }}</div>
             </div>
             <div class="stat-card">
               <div class="stat-title">未付款</div>
-              <div class="stat-value">{{ getUnpaidCount() }}</div>
-              <div class="stat-desc">金额: ¥{{ formatPrice(getUnpaidAmount()) }}</div>
+              <div class="stat-value text-orange-600">{{ getUnpaidCount() }}</div>
+              <div class="stat-desc">金额: {{ formatPrice(getUnpaidAmount()) }}</div>
             </div>
           </div>
           
@@ -165,9 +165,9 @@
                   
                   <!-- 价格信息 -->
                   <div class="mt-2 flex items-baseline">
-                    <span class="text-xl font-bold text-primary-600">¥{{ formatPrice(item.price) }}</span>
+                    <span class="text-xl font-bold text-primary-600">{{ formatPrice(item.price) }}</span>
                     <span v-if="item.original_price" class="ml-2 text-sm text-gray-500 line-through">
-                      ¥{{ formatPrice(item.original_price) }}
+                      {{ formatPrice(item.original_price) }}
                     </span>
                   </div>
                   
@@ -336,14 +336,18 @@
 </template>
 
 <script setup>
-// 路由参数
-const route = useRoute()
-const wishlistId = computed(() => route.params.id)
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '~/stores/auth'
+import { useWishlistStore } from '~/stores/wishlist'
+import { useCurrency } from '~/composables/useCurrency'
 
-// 获取状态管理
+// 获取路由和状态
+const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const wishlistStore = useWishlistStore()
-const cartStore = useCartStore()
+const { formatPrice } = useCurrency()
 
 // 状态
 const loading = ref(true)
@@ -369,7 +373,7 @@ const fetchWishlistDetail = async () => {
     const baseUrl = runtimeConfig.public.apiBase
     console.log('使用API基础URL:', baseUrl)
     
-    const response = await fetch(`${baseUrl}/v1/wishlist/lists/${wishlistId.value}/?site=default`, {
+    const response = await fetch(`${baseUrl}/v1/wishlist/lists/${route.params.id}/?site=default`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -416,7 +420,7 @@ const recordView = async () => {
     const runtimeConfig = useRuntimeConfig()
     const baseUrl = runtimeConfig.public.apiBase
     
-    const response = await fetch(`${baseUrl}/v1/wishlist/lists/${wishlistId.value}/view/?site=default`, {
+    const response = await fetch(`${baseUrl}/v1/wishlist/lists/${route.params.id}/view/?site=default`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -438,7 +442,7 @@ const fetchStats = async () => {
     const runtimeConfig = useRuntimeConfig()
     const baseUrl = runtimeConfig.public.apiBase
     
-    const response = await fetch(`${baseUrl}/v1/wishlist/lists/${wishlistId.value}/stats/?site=default`, {
+    const response = await fetch(`${baseUrl}/v1/wishlist/lists/${route.params.id}/stats/?site=default`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -509,7 +513,7 @@ const removeFromWishlist = async (item) => {
 // 添加到购物车
 const addToCart = async (item) => {
   try {
-    await cartStore.addToCart({
+    await wishlistStore.addToCart({
       product_id: item.product_id,
       quantity: 1,
       // 其他必要的商品信息
@@ -569,12 +573,6 @@ const copyShareUrl = () => {
     })
 }
 
-// 格式化价格
-const formatPrice = (price) => {
-  if (!price) return '0.00'
-  return Number(price).toFixed(2)
-}
-
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -592,9 +590,9 @@ const recordWishlistView = async () => {
   if (!wishlist.value?.id) return
   
   try {
-    await api.wishlist.recordView(wishlist.value.id)
+    await wishlistStore.recordView(wishlist.value.id)
     // 更新统计数据
-    fetchWishlistStats()
+    fetchStats()
   } catch (error) {
     console.error('记录浏览失败:', error)
   }

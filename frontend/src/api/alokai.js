@@ -35,11 +35,6 @@ api.interceptors.response.use(
 )
 
 export default {
-  // 站点配置
-  async getSiteConfig() {
-    return api.get('/sites/config').then(response => response.data)
-  },
-
   // 用户相关
   async login(credentials) {
     return api.post('/auth/login', credentials)

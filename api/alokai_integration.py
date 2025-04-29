@@ -1,8 +1,7 @@
 """
-Alokai API管理平台集成配置
+本地API系统集成配置 (原Alokai API接入替换)
 
-这个模块提供与Alokai API管理平台集成所需的配置和工具函数。
-根据Alokai的具体集成方式，可能需要调整此配置。
+本模块提供API管理功能，所有功能直接调用本地API实现。
 """
 
 import json
@@ -14,17 +13,16 @@ from functools import wraps
 
 logger = logging.getLogger(__name__)
 
-# Alokai API网关配置
-ALOKAI_CONFIG = {
-    'api_key': getattr(settings, 'ALOKAI_API_KEY', ''),
-    'secret': getattr(settings, 'ALOKAI_SECRET', ''),
-    'gateway_url': getattr(settings, 'ALOKAI_GATEWAY_URL', 'https://api.alokai.example.com'),
-    'service_name': getattr(settings, 'ALOKAI_SERVICE_NAME', 'mall-multi-site-api'),
+# 本地API配置
+LOCAL_API_CONFIG = {
+    'api_key': 'local_api_key',
+    'gateway_url': 'http://localhost:8000/api/v1',
+    'service_name': 'mall-multi-site-api',
 }
 
-def register_api_with_alokai(api_name, api_path, methods, description=''):
+def register_api_with_gateway(api_name, api_path, methods, description=''):
     """
-    向Alokai注册一个API端点
+    注册一个API端点到本地API网关
     
     Args:
         api_name: API名称
@@ -35,44 +33,12 @@ def register_api_with_alokai(api_name, api_path, methods, description=''):
     Returns:
         bool: 是否注册成功
     """
-    if not ALOKAI_CONFIG['api_key']:
-        logger.warning("Alokai API Key未配置，无法注册API")
-        return False
-    
-    try:
-        payload = {
-            'name': api_name,
-            'path': api_path,
-            'methods': methods,
-            'description': description,
-            'service': ALOKAI_CONFIG['service_name']
-        }
-        
-        # 这里应该根据Alokai的实际API调整请求
-        response = requests.post(
-            f"{ALOKAI_CONFIG['gateway_url']}/register", 
-            headers={
-                'X-API-Key': ALOKAI_CONFIG['api_key'],
-                'Content-Type': 'application/json'
-            },
-            data=json.dumps(payload)
-        )
-        
-        if response.status_code == 200:
-            logger.info(f"API {api_name} 注册到Alokai成功")
-            return True
-        else:
-            logger.error(f"API {api_name} 注册到Alokai失败: {response.text}")
-            return False
-            
-    except Exception as e:
-        logger.exception(f"注册API到Alokai时发生错误: {str(e)}")
-        return False
+    logger.info(f"已注册本地API: {api_name}, 路径: {api_path}")
+    return True
 
-def alokai_api_monitoring(view_func):
+def api_monitoring(view_func):
     """
     装饰器，用于API调用监控和分析
-    将API调用数据发送到Alokai
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -85,61 +51,22 @@ def alokai_api_monitoring(view_func):
         # 计算执行时间
         execution_time = time.time() - start_time
         
-        # 如果配置了Alokai，发送监控数据
-        if ALOKAI_CONFIG['api_key']:
-            try:
-                # 提取请求信息
-                endpoint = request.path
-                method = request.method
-                status_code = response.status_code if hasattr(response, 'status_code') else 200
-                
-                # 准备监控数据
-                monitoring_data = {
-                    'endpoint': endpoint,
-                    'method': method,
-                    'status_code': status_code,
-                    'execution_time': execution_time,
-                    'timestamp': time.time(),
-                    'service': ALOKAI_CONFIG['service_name']
-                }
-                
-                # 异步发送监控数据（在实际应用中应该使用异步任务）
-                # 这里使用一个简单的线程来模拟异步
-                import threading
-                def send_monitoring_data():
-                    try:
-                        requests.post(
-                            f"{ALOKAI_CONFIG['gateway_url']}/metrics", 
-                            headers={
-                                'X-API-Key': ALOKAI_CONFIG['api_key'],
-                                'Content-Type': 'application/json'
-                            },
-                            data=json.dumps(monitoring_data),
-                            timeout=2  # 设置短超时，避免影响主请求
-                        )
-                    except Exception as e:
-                        logger.error(f"发送监控数据到Alokai失败: {str(e)}")
-                
-                # 启动线程发送数据
-                threading.Thread(target=send_monitoring_data).start()
-                
-            except Exception as e:
-                logger.exception(f"处理Alokai监控数据时发生错误: {str(e)}")
+        # 记录API调用日志
+        endpoint = request.path
+        method = request.method
+        status_code = response.status_code if hasattr(response, 'status_code') else 200
+        
+        logger.info(f"API调用: {method} {endpoint}, 状态码: {status_code}, 执行时间: {execution_time:.4f}秒")
         
         return response
     
     return wrapper
 
-def export_openapi_to_alokai():
+def export_openapi_to_gateway():
     """
-    将OpenAPI/Swagger文档导出到Alokai
+    导出OpenAPI/Swagger文档到本地系统
     """
     from drf_yasg.generators import OpenAPISchemaGenerator
-    from django.urls import get_resolver
-    
-    if not ALOKAI_CONFIG['api_key']:
-        logger.warning("Alokai API Key未配置，无法导出API文档")
-        return False
     
     try:
         # 生成OpenAPI文档
@@ -147,23 +74,17 @@ def export_openapi_to_alokai():
         schema = generator.get_schema()
         schema_json = json.dumps(schema)
         
-        # 发送到Alokai
-        response = requests.post(
-            f"{ALOKAI_CONFIG['gateway_url']}/import-openapi", 
-            headers={
-                'X-API-Key': ALOKAI_CONFIG['api_key'],
-                'Content-Type': 'application/json'
-            },
-            data=schema_json
-        )
+        # 保存到文件系统
+        import os
+        docs_dir = os.path.join(settings.BASE_DIR, 'api_docs')
+        os.makedirs(docs_dir, exist_ok=True)
         
-        if response.status_code == 200:
-            logger.info("OpenAPI文档成功导出到Alokai")
-            return True
-        else:
-            logger.error(f"导出OpenAPI文档到Alokai失败: {response.text}")
-            return False
+        with open(os.path.join(docs_dir, 'openapi.json'), 'w') as f:
+            f.write(schema_json)
+            
+        logger.info("OpenAPI文档已成功导出到本地系统")
+        return True
             
     except Exception as e:
-        logger.exception(f"导出OpenAPI文档到Alokai时发生错误: {str(e)}")
+        logger.exception(f"导出OpenAPI文档时发生错误: {str(e)}")
         return False

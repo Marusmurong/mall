@@ -1,90 +1,93 @@
 <template>
-  <div class="py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- 加载状态 -->
-      <div v-if="loading" class="flex justify-center py-10">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+  <div class="container mx-auto px-4 py-8">
+    <div>
+      <!-- Loading state -->
+      <div v-if="loading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-500"></div>
       </div>
       
+      <!-- Product Details -->
       <template v-else-if="product">
-        <!-- 面包屑导航 -->
-        <nav class="flex mb-8" aria-label="Breadcrumb">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
           <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-              <NuxtLink to="/" class="text-gray-500 hover:text-gray-700">
-                首页
+              <NuxtLink to="/" class="text-sm text-gray-700 hover:text-primary-600">
+                Home
               </NuxtLink>
             </li>
             <li>
               <div class="flex items-center">
-                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                 </svg>
-                <NuxtLink to="/categories" class="ml-1 text-gray-500 hover:text-gray-700 md:ml-2">
-                  分类
-                </NuxtLink>
-              </div>
-            </li>
-            <li v-if="product.category">
-              <div class="flex items-center">
-                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                </svg>
-                <NuxtLink :to="`/categories/${product.category.id}`" class="ml-1 text-gray-500 hover:text-gray-700 md:ml-2">
+                <NuxtLink v-if="product.category" :to="`/categories/${product.category.id}`" class="text-sm text-gray-700 hover:text-primary-600">
                   {{ product.category.name }}
                 </NuxtLink>
+                <span v-else class="text-sm text-gray-500">Categories</span>
               </div>
             </li>
             <li aria-current="page">
               <div class="flex items-center">
-                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                 </svg>
-                <span class="ml-1 text-gray-500 md:ml-2 font-medium line-clamp-1">{{ product.name }}</span>
+                <span class="text-sm text-gray-500 md:ml-2">{{ product.name }}</span>
               </div>
             </li>
           </ol>
         </nav>
         
-        <!-- 商品详情 -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-            <!-- 商品图片 -->
+        <!-- Product -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+            <!-- Product Images -->
             <div>
-              <!-- 主图 -->
-              <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
-                <img 
-                  :src="currentImage" 
-                  :alt="product.name" 
-                  class="w-full h-full object-contain"
+              <!-- Main Image -->
+              <div class="mb-4 relative">
+                <img :src="currentImage" :alt="product.name" class="w-full h-auto object-contain rounded-lg border border-gray-200 bg-white" style="max-height: 400px;">
+                
+                <!-- Image Controls -->
+                <button 
+                  v-if="productImages.length > 1" 
+                  @click="currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length"
+                  class="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-2 rounded-full"
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button 
+                  v-if="productImages.length > 1" 
+                  @click="currentImageIndex = (currentImageIndex + 1) % productImages.length"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-2 rounded-full"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
               
-              <!-- 缩略图 -->
-              <div v-if="productImages.length > 1" class="grid grid-cols-5 gap-2">
+              <!-- Thumbnail Images -->
+              <div v-if="productImages.length > 1" class="flex space-x-2 overflow-x-auto">
                 <button 
                   v-for="(image, index) in productImages" 
                   :key="index"
                   @click="currentImageIndex = index"
-                  class="aspect-square bg-gray-100 rounded-md overflow-hidden border-2"
-                  :class="currentImageIndex === index ? 'border-primary-500' : 'border-transparent'"
+                  class="w-16 h-16 rounded border"
+                  :class="currentImageIndex === index ? 'border-primary-500' : 'border-gray-200'"
                 >
-                  <img 
-                    :src="image" 
-                    :alt="`${product.name} - 图片 ${index + 1}`" 
-                    class="w-full h-full object-contain"
-                  >
+                  <img :src="image" :alt="`${product.name} ${index + 1}`" class="w-full h-full object-cover rounded">
                 </button>
               </div>
             </div>
             
-            <!-- 商品信息 -->
+            <!-- Product Info -->
             <div>
-              <!-- 商品标题 -->
               <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
               
-              <!-- 评分 -->
-              <div v-if="product.rating" class="flex items-center mb-4">
+              <!-- Rating -->
+              <div class="flex items-center mb-4" v-if="product.rating">
                 <div class="flex">
                   <template v-for="i in 5" :key="i">
                     <svg 
@@ -98,50 +101,52 @@
                     </svg>
                   </template>
                 </div>
-                <span class="text-sm text-gray-500 ml-2">{{ product.rating }} ({{ product.rating_count || 0 }}条评价)</span>
+                <span class="text-sm text-gray-500 ml-2">{{ product.rating }} ({{ product.reviews?.length || 0 }} Reviews)</span>
               </div>
               
-              <!-- 价格 -->
-              <div class="mb-6">
-                <div class="flex items-baseline">
-                  <span v-if="product.discount_price" class="text-2xl font-bold text-red-600">¥{{ product.discount_price }}</span>
-                  <span 
-                    :class="[product.discount_price ? 'text-lg text-gray-500 line-through ml-2' : 'text-2xl font-bold text-gray-900']"
-                  >
-                    ¥{{ product.price }}
-                  </span>
-                  <span v-if="product.discount_price" class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
-                    {{ Math.round((1 - product.discount_price / product.price) * 100) }}% 折扣
-                  </span>
-                </div>
-                <p v-if="product.stock > 0 && product.stock < 10" class="text-sm text-orange-600 mt-1">
-                  库存紧张，仅剩 {{ product.stock }} 件
+              <!-- Price -->
+              <div class="flex items-end mb-4">
+                <span class="text-2xl font-bold text-gray-900">${{ product.price }}</span>
+                <span v-if="product.original_price && product.original_price > product.price" class="text-lg text-gray-500 line-through ml-2">${{ product.original_price }}</span>
+              </div>
+              
+              <!-- Stock Status -->
+              <div class="mb-4">
+                <p v-if="product.stock > 0" class="text-sm text-green-600">
+                  <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                  In Stock ({{ product.stock }})
+                </p>
+                <p v-else class="text-sm text-red-600">
+                  <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                  Out of Stock
                 </p>
               </div>
               
-              <!-- 规格选择 -->
-              <div v-if="product.variants && product.variants.length" class="mb-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">规格</h3>
+              <!-- Variants Selection -->
+              <div v-if="product.variants && product.variants.length" class="mb-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Variants</h3>
                 <div class="flex flex-wrap gap-2">
                   <button 
                     v-for="variant in product.variants" 
                     :key="variant.id"
                     @click="selectedVariant = variant"
                     class="px-3 py-1 border rounded-md text-sm"
-                    :class="selectedVariant && selectedVariant.id === variant.id ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+                    :class="selectedVariant && selectedVariant.id === variant.id 
+                      ? 'border-primary-500 bg-primary-50 text-primary-700' 
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'"
                   >
                     {{ variant.name }}
                   </button>
                 </div>
               </div>
               
-              <!-- 数量选择 -->
+              <!-- Quantity -->
               <div class="mb-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">数量</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Quantity</h3>
                 <div class="flex items-center">
                   <button 
-                    @click="quantity > 1 ? quantity-- : null"
-                    class="p-2 border border-gray-300 rounded-l-md text-gray-600 hover:bg-gray-50"
+                    @click="quantity > 1 ? quantity-- : quantity"
+                    class="w-10 h-10 border border-gray-300 flex items-center justify-center rounded-l-md"
                     :disabled="quantity <= 1"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -152,13 +157,13 @@
                     v-model="quantity" 
                     type="number" 
                     min="1" 
-                    :max="product.stock || 99"
-                    class="w-16 text-center border-t border-b border-gray-300 py-2 focus:outline-none focus:ring-0 focus:border-gray-300"
-                  >
+                    :max="product.stock"
+                    class="w-16 h-10 border-t border-b border-gray-300 text-center"
+                  />
                   <button 
-                    @click="quantity < (product.stock || 99) ? quantity++ : null"
-                    class="p-2 border border-gray-300 rounded-r-md text-gray-600 hover:bg-gray-50"
-                    :disabled="product.stock && quantity >= product.stock"
+                    @click="quantity < product.stock ? quantity++ : quantity"
+                    class="w-10 h-10 border border-gray-300 flex items-center justify-center rounded-r-md"
+                    :disabled="quantity >= product.stock"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -167,49 +172,49 @@
                 </div>
               </div>
               
-              <!-- 操作按钮 -->
-              <div class="flex flex-wrap gap-4 mb-6">
+              <!-- Action Buttons -->
+              <div class="flex flex-wrap gap-3 mb-6">
                 <button 
                   @click="addToCart"
-                  class="flex-1 btn btn-primary py-3 flex items-center justify-center"
+                  class="btn btn-primary flex-1"
                   :disabled="product.stock === 0"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  加入购物车
+                  Add to Cart
                 </button>
                 <button 
                   @click="toggleWishlist"
-                  class="flex-1 btn btn-outline py-3 flex items-center justify-center"
+                  class="btn btn-outline flex items-center justify-center px-4"
                 >
-                  <svg v-if="isInWishlist" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-secondary-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                  </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    class="h-5 w-5" 
+                    :fill="isInWishlist ? 'currentColor' : 'none'"
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
-                  {{ isInWishlist ? '已加入心愿单' : '加入心愿单' }}
                 </button>
               </div>
               
-              <!-- 商品标签 -->
-              <div class="flex flex-wrap gap-2 mb-6">
-                <span v-if="product.is_new" class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">新品</span>
-                <span v-if="product.is_hot" class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">热销</span>
-                <span v-if="product.is_recommended" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">推荐</span>
-                <span v-if="product.stock === 0" class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">缺货</span>
+              <!-- Tags -->
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span v-if="product.is_recommended" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">Recommended</span>
+                <span v-if="product.stock === 0" class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">Out of Stock</span>
               </div>
               
-              <!-- 商品简介 -->
+              <!-- Product Brief -->
               <div class="border-t border-gray-200 pt-4">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">商品简介</h3>
-                <p class="text-sm text-gray-600">{{ product.brief || '暂无简介' }}</p>
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Product Brief</h3>
+                <p class="text-sm text-gray-600">{{ product.brief || 'No brief available' }}</p>
               </div>
             </div>
           </div>
           
-          <!-- 商品详情标签页 -->
+          <!-- Product Detail Tabs -->
           <div class="border-t border-gray-200">
             <div class="border-b border-gray-200">
               <nav class="-mb-px flex">
@@ -218,34 +223,34 @@
                   class="py-4 px-6 text-sm font-medium"
                   :class="activeTab === 'description' ? 'border-b-2 border-primary-500 text-primary-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                 >
-                  商品详情
+                  Product Details
                 </button>
                 <button 
                   @click="activeTab = 'specs'"
                   class="py-4 px-6 text-sm font-medium"
                   :class="activeTab === 'specs' ? 'border-b-2 border-primary-500 text-primary-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                 >
-                  规格参数
+                  Specifications
                 </button>
                 <button 
                   @click="activeTab = 'reviews'"
                   class="py-4 px-6 text-sm font-medium"
                   :class="activeTab === 'reviews' ? 'border-b-2 border-primary-500 text-primary-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                 >
-                  用户评价
+                  Reviews
                 </button>
               </nav>
             </div>
             
-            <!-- 标签页内容 -->
+            <!-- Tab Contents -->
             <div class="p-6">
-              <!-- 商品详情 -->
+              <!-- Product Details -->
               <div v-if="activeTab === 'description'" class="prose max-w-none">
                 <div v-if="product.description" v-html="product.description"></div>
-                <p v-else class="text-gray-500">暂无详细描述</p>
+                <p v-else class="text-gray-500">No detailed description available</p>
               </div>
               
-              <!-- 规格参数 -->
+              <!-- Specifications -->
               <div v-else-if="activeTab === 'specs'">
                 <div v-if="product.specifications && product.specifications.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div 
@@ -257,10 +262,10 @@
                     <span class="w-2/3 text-sm text-gray-900">{{ spec.value }}</span>
                   </div>
                 </div>
-                <p v-else class="text-gray-500">暂无规格参数</p>
+                <p v-else class="text-gray-500">No specifications available</p>
               </div>
               
-              <!-- 用户评价 -->
+              <!-- Reviews -->
               <div v-else-if="activeTab === 'reviews'">
                 <div v-if="product.reviews && product.reviews.length">
                   <div 
@@ -288,15 +293,15 @@
                     <p class="text-sm text-gray-600">{{ review.content }}</p>
                   </div>
                 </div>
-                <p v-else class="text-gray-500">暂无评价</p>
+                <p v-else class="text-gray-500">No reviews available</p>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- 相关商品 -->
+        <!-- Related Products -->
         <div v-if="relatedProducts.length" class="mt-12">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">相关商品</h2>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             <ProductCard 
               v-for="relatedProduct in relatedProducts" 
@@ -307,18 +312,18 @@
         </div>
       </template>
       
-      <!-- 错误状态 -->
+      <!-- Error State -->
       <div v-else-if="error" class="text-center py-10">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h3 class="mt-4 text-lg font-medium text-gray-900">获取商品失败</h3>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">Failed to load product</h3>
         <p class="mt-1 text-gray-500">{{ error }}</p>
         <button 
           @click="fetchProductData"
           class="mt-4 btn btn-primary"
         >
-          重试
+          Retry
         </button>
       </div>
     </div>
@@ -398,8 +403,8 @@ const fetchProductData = async () => {
         .slice(0, 5)
     }
   } catch (err) {
-    console.error('获取商品数据失败:', err)
-    error.value = err.message || '获取商品数据失败'
+    console.error('Failed to fetch product data:', err)
+    error.value = err.message || 'Failed to fetch product data'
   } finally {
     loading.value = false
   }
@@ -417,7 +422,7 @@ const addToCart = () => {
     
     // 显示提示信息
     // 这里可以使用toast通知组件
-    alert(`已将 ${quantity.value} 件 ${product.value.name} 添加到购物车`)
+    alert(`Added ${quantity.value} ${product.value.name} to cart`)
   }
 }
 
@@ -425,7 +430,7 @@ const addToCart = () => {
 const toggleWishlist = async () => {
   // 检查用户是否已登录
   if (!authStore.isAuthenticated) {
-    alert('请先登录')
+    alert('Please login first')
     // 可以重定向到登录页面
     // navigateTo('/login')
     return
@@ -438,18 +443,18 @@ const toggleWishlist = async () => {
     if (wishlistItem) {
       const result = await wishlistStore.removeFromWishlist(wishlistItem.id)
       if (result.success) {
-        alert('已从心愿单移除')
+        alert('Removed from wishlist')
       } else {
-        alert(result.error || '操作失败')
+        alert(result.error || 'Operation failed')
       }
     }
   } else {
     // 添加到心愿单
     const result = await wishlistStore.addToWishlist(product.value)
     if (result.success) {
-      alert('已添加到心愿单')
+      alert('Added to wishlist')
     } else {
-      alert(result.error || '操作失败')
+      alert(result.error || 'Operation failed')
     }
   }
 }

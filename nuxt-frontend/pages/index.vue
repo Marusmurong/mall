@@ -1,20 +1,20 @@
 <template>
   <div>
-    <!-- 首页轮播图 -->
+    <!-- Homepage Carousel -->
     <section class="relative">
-      <!-- 管理员模式开关 -->
+      <!-- Admin Mode Toggle -->
       <div v-if="isDev" class="absolute top-4 right-4 z-50 p-2 bg-gray-100 bg-opacity-80 rounded-md flex items-center justify-between">
-        <span class="text-sm text-gray-700 mr-2">管理员模式</span>
+        <span class="text-sm text-gray-700 mr-2">Admin Mode</span>
         <button 
           @click="adminModeEnabled = !adminModeEnabled" 
           class="px-3 py-1 text-xs rounded-full" 
           :class="adminModeEnabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'"
         >
-          {{ adminModeEnabled ? '已启用' : '未启用' }}
+          {{ adminModeEnabled ? 'Enabled' : 'Disabled' }}
         </button>
       </div>
 
-      <!-- 编辑幕布幕按钮 -->
+      <!-- Edit Slides Button -->
       <div v-if="adminModeEnabled" class="absolute top-4 left-4 z-50">
         <button 
           @click="openSlideManager"
@@ -23,13 +23,13 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
           </svg>
-          编辑幕布幕
+          Edit Slides
         </button>
       </div>
       
-      <!-- 轮播图容器 -->
+      <!-- Carousel Container -->
       <div class="carousel-container h-[500px] overflow-hidden relative">
-        <!-- 轮播图内容 -->
+        <!-- Carousel Content -->
         <div 
           v-for="(slide, index) in carouselSlides" 
           :key="slide.id"
@@ -58,7 +58,7 @@
         </div>
       </div>
       
-      <!-- 轮播图指示器和控制按钮 -->
+      <!-- Carousel Indicators and Controls -->
       <div class="absolute bottom-5 left-0 right-0 flex justify-center space-x-2">
         <button 
           v-for="(slide, index) in carouselSlides" 
@@ -69,7 +69,7 @@
         ></button>
       </div>
 
-      <!-- 左右切换按钮 -->
+      <!-- Navigation Arrows -->
       <button 
         v-if="carouselSlides.length > 1"
         @click="prevSlide"
@@ -90,10 +90,10 @@
       </button>
     </section>
     
-    <!-- 分类导航 -->
+    <!-- Categories Navigation -->
     <section class="py-12 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-8">热门分类</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-8">Popular Categories</h2>
         
         <div v-if="categoriesLoading" class="flex justify-center py-10">
           <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
@@ -103,7 +103,7 @@
           <NuxtLink 
             v-for="category in categories.slice(0, 6)" 
             :key="category.id" 
-            :to="`/categories/${category.id}`"
+            :to="`http://127.0.0.1:8000/api/v1/categories?category=${category.id}`"
             class="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
             <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-3">
@@ -117,18 +117,18 @@
         </div>
         
         <div v-else class="text-center py-10 text-gray-500">
-          暂无分类数据
+          No categories available
         </div>
       </div>
     </section>
     
-    <!-- 推荐商品 -->
+    <!-- Recommended Products -->
     <section class="py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">推荐商品</h2>
+          <h2 class="text-2xl font-bold text-gray-900">Recommended Products</h2>
           <NuxtLink to="/products?recommended=true" class="text-primary-600 hover:text-primary-500">
-            查看全部 <span aria-hidden="true">→</span>
+            View All <span aria-hidden="true">→</span>
           </NuxtLink>
         </div>
         
@@ -145,33 +145,33 @@
         </div>
         
         <div v-else class="text-center py-10 text-gray-500">
-          暂无推荐商品
+          No recommended products available
         </div>
       </div>
     </section>
     
-    <!-- 促销广告条 -->
+    <!-- Promotional Banner -->
     <section class="bg-secondary-600 py-12 text-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row items-center justify-between">
           <div class="mb-6 md:mb-0">
-            <h2 class="text-2xl font-bold">限时优惠活动</h2>
-            <p class="mt-2">全场商品8折起，还有更多惊喜等你发现！</p>
+            <h2 class="text-2xl font-bold">Limited Time Offer</h2>
+            <p class="mt-2">All products starting at 20% off, with more surprises waiting for you!</p>
           </div>
           <NuxtLink to="/products" class="btn bg-white text-secondary-600 hover:bg-gray-100">
-            立即抢购
+            Shop Now
           </NuxtLink>
         </div>
       </div>
     </section>
     
-    <!-- 新品上市 -->
+    <!-- New Arrivals -->
     <section class="py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">新品上市</h2>
+          <h2 class="text-2xl font-bold text-gray-900">New Arrivals</h2>
           <NuxtLink to="/products?new=true" class="text-primary-600 hover:text-primary-500">
-            查看全部 <span aria-hidden="true">→</span>
+            View All <span aria-hidden="true">→</span>
           </NuxtLink>
         </div>
         
@@ -188,299 +188,276 @@
         </div>
         
         <div v-else class="text-center py-10 text-gray-500">
-          暂无新品
+          No new products available
         </div>
       </div>
     </section>
     
-    <!-- 心愿单功能宣传 -->
+    <!-- Wishlist Feature Promotion -->
     <section class="py-12 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div>
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">创建并分享您的心愿单</h2>
-            <p class="text-lg text-gray-600 mb-6">
-              将您喜爱的商品添加到心愿单，与朋友分享您的购物愿望，让购物体验更加社交化。
-            </p>
-            <div class="flex space-x-4">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Create Your Wishlist</h2>
+            <p class="text-lg text-gray-600 mb-6">Add your favorite products to a wishlist and share it with friends and family. Perfect for birthdays, holidays, or any special occasion!</p>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p class="ml-3 text-gray-600">Create multiple wishlists for different occasions</p>
+              </div>
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p class="ml-3 text-gray-600">Share your wishlist with a simple link</p>
+              </div>
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p class="ml-3 text-gray-600">Track purchased items and receive notifications</p>
+              </div>
+            </div>
+            <div class="mt-8">
               <NuxtLink to="/wishlist" class="btn btn-primary">
-                创建心愿单
-              </NuxtLink>
-              <NuxtLink to="/wishlist/public" class="btn btn-outline">
-                探索公开心愿单
+                Start Your Wishlist
               </NuxtLink>
             </div>
           </div>
-          <div class="relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-lg bg-gray-200 flex items-center justify-center">
-            <div class="text-gray-500 text-center p-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              <p class="text-lg font-medium">心愿单功能预览</p>
-            </div>
+          <div class="flex justify-center">
+            <img src="/images/wishlist-promo.png" alt="Wishlist Feature" class="max-w-full h-auto rounded-lg shadow-lg">
           </div>
         </div>
       </div>
     </section>
     
-    <!-- 热门商品 -->
-    <section class="py-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">热门商品</h2>
-          <NuxtLink to="/products?hot=true" class="text-primary-600 hover:text-primary-500">
-            查看全部 <span aria-hidden="true">→</span>
-          </NuxtLink>
-        </div>
-        
-        <div v-if="hotProductsLoading" class="flex justify-center py-10">
-          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-        </div>
-        
-        <div v-else-if="hotProducts.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <ProductCard 
-            v-for="product in hotProducts" 
-            :key="product.id" 
-            :product="product"
-          />
-        </div>
-        
-        <div v-else-if="hotProductsError" class="text-center py-10 text-red-500">
-          <p>获取热门商品失败:</p>
-          <pre class="mt-2 bg-red-50 p-4 rounded text-left overflow-auto">{{ hotProductsError }}</pre>
-        </div>
-        <div v-else class="text-center py-10 text-gray-500">
-          暂无热门商品
-        </div>
-      </div>
-    </section>
+    <!-- Slide Manager Modal -->
+    <SlideManager 
+      v-if="showSlideManager" 
+      :show="showSlideManager" 
+      :initial-slides="carouselSlides"
+      @close="showSlideManager = false"
+      @save="saveSlides"
+    />
   </div>
-
-  <!-- 幕布幕管理器 -->
-  <SlideManager 
-    :show="showSlideManager" 
-    :initial-slides="carouselSlides"
-    @close="showSlideManager = false"
-    @save="handleSlidesSave"
-  />
 </template>
 
 <script setup>
-// 导入幕布幕管理器组件
+import { onMounted, ref, computed } from 'vue'
 import SlideManager from '~/components/SlideManager.vue'
 
-// 获取API服务
-const api = useApi()
-
-// 分类数据
-const categories = ref([])
+// State
+const isDev = process.env.NODE_ENV === 'development'
+const adminModeEnabled = ref(false)
 const categoriesLoading = ref(true)
-
-// 推荐商品
-const recommendedProducts = ref([])
 const recommendedLoading = ref(true)
-
-// 新品
-const newProducts = ref([])
 const newProductsLoading = ref(true)
-
-// 热门商品
-const hotProducts = ref([])
-const hotProductsLoading = ref(true)
-const hotProductsError = ref('')
-
-// 轮播图相关数据
-const carouselSlides = ref([])
-const currentSlideIndex = ref(0)
-const slidesLoading = ref(true)
-
-// 幕布管理器
+const categories = ref([])
+const recommendedProducts = ref([])
+const newProducts = ref([])
 const showSlideManager = ref(false)
 
-// 管理员模式（开发环境临时功能）
-const adminModeEnabled = ref(false)
-const isDev = process.env.NODE_ENV === 'development'
+// Carousel state
+const currentSlideIndex = ref(0)
+const carouselSlides = ref([])
 
-// 获取分类数据
-const fetchCategories = async () => {
+// Fetch data
+onMounted(async () => {
   try {
-    categoriesLoading.value = true
-    const response = await api.categories.getTree()
-    console.log('分类数据响应:', response)
-    // API响应已经在useApi中处理过，直接使用响应数据
-    categories.value = response || []
-  } catch (error) {
-    console.error('获取分类失败:', error)
-  } finally {
-    categoriesLoading.value = false
-  }
-}
-
-// 获取推荐商品
-const fetchRecommendedProducts = async () => {
-  try {
-    recommendedLoading.value = true
-    const response = await api.products.getRecommended()
-    console.log('推荐商品响应:', response)
-    // API响应已经在useApi中处理过，直接使用响应数据
-    recommendedProducts.value = response || []
-  } catch (error) {
-    console.error('获取推荐商品失败:', error)
-  } finally {
-    recommendedLoading.value = false
-  }
-}
-
-// 获取新品
-const fetchNewProducts = async () => {
-  try {
-    newProductsLoading.value = true
-    const response = await api.products.getNew()
-    console.log('新品响应:', response)
-    // API响应已经在useApi中处理过，直接使用响应数据
-    newProducts.value = response || []
-  } catch (error) {
-    console.error('获取新品失败:', error)
-  } finally {
-    newProductsLoading.value = false
-  }
-}
-
-// 获取热门商品
-const fetchHotProducts = async () => {
-  try {
-    hotProductsLoading.value = true
-    hotProductsError.value = ''
-    console.log('发送热门商品请求...')
-    const response = await api.products.getHot()
-    console.log('热门商品响应:', response)
-    // API响应已经在useApi中处理过，直接使用响应数据
-    hotProducts.value = response || []
-  } catch (error) {
-    console.error('获取热门商品失败:', error)
-    hotProductsError.value = `错误: ${error.message || error}`
-  } finally {
-    hotProductsLoading.value = false
-  }
-}
-
-// 获取轮播图数据
-const fetchSlides = () => {
-  try {
-    slidesLoading.value = true
+    // 尝试从API获取幻灯片数据
+    const { data } = await useFetch('http://127.0.0.1:8000/api/v1/admin/settings/?site=default')
     
-    // 从 localStorage 中获取幕布幕数据
-    const savedSlides = localStorage.getItem('carouselSlides')
-    
-    if (savedSlides) {
-      carouselSlides.value = JSON.parse(savedSlides)
-    } else {
-      // 设置默认幕布幕
-      carouselSlides.value = [{
-        id: '1',
-        title: '优质商品，精选推荐',
-        subtitle: '为您提供高品质的精选商品，满足您的一站式购物需求。',
-        buttonText: '开始购物',
-        buttonLink: '/categories',
-        backgroundColor: 'bg-gradient-to-r from-primary-700 to-primary-900',
-        backgroundImage: ''
-      }]
+    if (data.value && data.value.code === 0 && data.value.data && data.value.data.homepage && data.value.data.homepage.carousel) {
+      // 使用API返回的幻灯片数据
+      const apiSlides = data.value.data.homepage.carousel;
+      // 只显示启用的幻灯片
+      const activeSlides = apiSlides.filter(slide => slide.active);
+      // 按顺序排序
+      activeSlides.sort((a, b) => a.order - b.order);
       
-      // 将默认幕布幕保存到 localStorage
-      localStorage.setItem('carouselSlides', JSON.stringify(carouselSlides.value))
+      if (activeSlides.length > 0) {
+        carouselSlides.value = activeSlides;
+      } else {
+        // 如果没有启用的幻灯片，使用默认数据
+        loadDefaultSlides();
+      }
+    } else {
+      // API调用失败或返回格式不正确，使用默认数据
+      loadDefaultSlides();
     }
+    
+    // 设置轮播间隔
+    if (process.client && carouselSlides.value.length > 1) {
+      const interval = setInterval(() => {
+        nextSlide()
+      }, 5000)
+      
+      // 组件卸载时清除间隔
+      onUnmounted(() => {
+        clearInterval(interval)
+      })
+    }
+    
+    // 获取分类
+    await fetchCategories()
+    
+    // 获取推荐产品
+    await fetchRecommendedProducts()
+    
+    // 获取新产品
+    await fetchNewProducts()
   } catch (error) {
-    console.error('获取幕布幕数据失败:', error)
-    // 设置默认幕布幕
-    carouselSlides.value = [{
-      id: '1',
-      title: '优质商品，精选推荐',
-      subtitle: '为您提供高品质的精选商品，满足您的一站式购物需求。',
-      buttonText: '开始购物',
-      buttonLink: '/categories',
-      backgroundColor: 'bg-gradient-to-r from-primary-700 to-primary-900',
-      backgroundImage: ''
-    }]
-  } finally {
-    slidesLoading.value = false
+    console.error('Error initializing homepage:', error)
+    // 出错时使用默认数据
+    loadDefaultSlides();
   }
-}
+})
 
-// 开启幕布幕管理器
-const openSlideManager = () => {
-  showSlideManager.value = true
-}
-
-// 处理幕布幕保存
-const handleSlidesSave = (slides) => {
-  carouselSlides.value = slides
-  // 同步到localStorage
-  localStorage.setItem('carouselSlides', JSON.stringify(slides))
-}
-
-// 上一张幕布幕
-const prevSlide = () => {
-  if (currentSlideIndex.value > 0) {
-    currentSlideIndex.value--
-  } else {
-    currentSlideIndex.value = carouselSlides.value.length - 1
+// 加载默认幻灯片数据
+const loadDefaultSlides = () => {
+  // 首先尝试从本地存储加载
+  if (process.client && localStorage.getItem('carouselSlides')) {
+    try {
+      const savedSlides = JSON.parse(localStorage.getItem('carouselSlides'))
+      if (Array.isArray(savedSlides) && savedSlides.length > 0) {
+        carouselSlides.value = savedSlides
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to parse saved slides:', error)
+    }
   }
-}
-
-// 下一张幕布幕
-const nextSlide = () => {
-  if (currentSlideIndex.value < carouselSlides.value.length - 1) {
-    currentSlideIndex.value++
-  } else {
-    currentSlideIndex.value = 0
-  }
-}
-
-// 获取幕布幕样式
-const getSlideStyle = (slide) => {
-  const style = {}
   
-  // 如果有背景图片，优先使用背景图片
+  // 如果本地存储没有数据，使用硬编码的默认数据
+  carouselSlides.value = [
+  {
+    id: '1',
+    title: 'Welcome to Our Online Store',
+    subtitle: 'Discover amazing products with great prices',
+    buttonText: 'Shop Now',
+    buttonLink: '/products',
+    backgroundColor: 'bg-gradient-to-r from-blue-700 to-indigo-900',
+    backgroundImage: '/images/hero-1.jpg'
+  },
+  {
+    id: '2',
+    title: 'Summer Collection',
+    subtitle: 'Explore our new arrivals for the season',
+    buttonText: 'View Collection',
+    buttonLink: '/products?new=true',
+    backgroundColor: 'bg-gradient-to-r from-orange-500 to-pink-600',
+    backgroundImage: '/images/hero-2.jpg'
+  }
+  ]
+}
+
+// Carousel navigation
+const nextSlide = () => {
+  currentSlideIndex.value = (currentSlideIndex.value + 1) % carouselSlides.value.length
+}
+
+const prevSlide = () => {
+  currentSlideIndex.value = (currentSlideIndex.value - 1 + carouselSlides.value.length) % carouselSlides.value.length
+}
+
+// Get slide style based on slide data
+const getSlideStyle = (slide) => {
+  let style = `background-color: var(--color-primary-700);`
+  
+  if (slide.backgroundColor) {
+    // If the background color is a Tailwind class, we need to handle it differently
+    if (slide.backgroundColor.startsWith('bg-')) {
+      // We'll keep the class and apply it directly to the element
+    } else {
+      style = `background-color: ${slide.backgroundColor};`
+    }
+  }
+  
   if (slide.backgroundImage) {
-    style.backgroundImage = `url(${slide.backgroundImage})`
-    style.backgroundSize = 'cover'
-    style.backgroundPosition = 'center'
-    // 添加半透明黑色遮罩，使文字更清晰
-    style.backgroundColor = 'rgba(0, 0, 0, 0.4)'
+    style += ` background-image: url(${slide.backgroundImage}); background-size: cover; background-position: center;`
   }
   
   return style
 }
 
-// 自动轮播
-let autoplayInterval
-const startAutoplay = () => {
-  autoplayInterval = setInterval(() => {
-    nextSlide()
-  }, 5000) // 5秒切换一次
+// Open slide manager
+const openSlideManager = () => {
+  showSlideManager.value = true
 }
 
-// 页面加载时获取数据
-onMounted(() => {
-  fetchCategories()
-  fetchRecommendedProducts()
-  fetchNewProducts()
-  fetchHotProducts()
-  fetchSlides()
+// Save slides
+const saveSlides = (slides) => {
+  carouselSlides.value = slides
   
-  // 启动自动轮播
-  startAutoplay()
-})
-
-// 页面卸载时清除定时器
-onBeforeUnmount(() => {
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval)
+  // Save to local storage in development
+  if (process.client) {
+    try {
+      localStorage.setItem('carouselSlides', JSON.stringify(slides))
+    } catch (error) {
+      console.error('Failed to save slides to local storage:', error)
+    }
   }
-})
+}
 
-// 定义页面元数据，指定使用默认布局
-definePageMeta({
-  layout: 'default'
-})
+// Fetch categories
+const fetchCategories = async () => {
+  try {
+    categoriesLoading.value = true
+    const { data } = await useFetch('http://127.0.0.1:8000/api/v1/categories/?site=default')
+    if (data.value && data.value.code === 0 && data.value.data) {
+      categories.value = data.value.data.results || []
+    } else {
+      categories.value = []
+    }
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+    categories.value = []
+  } finally {
+    categoriesLoading.value = false
+  }
+}
+
+// Fetch recommended products
+const fetchRecommendedProducts = async () => {
+  try {
+    recommendedLoading.value = true
+    const { data } = await useFetch('http://127.0.0.1:8000/api/v1/products/?recommended=true&limit=8&site=default')
+    if (data.value && data.value.code === 0 && data.value.data) {
+      recommendedProducts.value = data.value.data.results || []
+    } else {
+      recommendedProducts.value = []
+    }
+  } catch (error) {
+    console.error('Failed to fetch recommended products:', error)
+    recommendedProducts.value = []
+  } finally {
+    recommendedLoading.value = false
+  }
+}
+
+// Fetch new products
+const fetchNewProducts = async () => {
+  try {
+    newProductsLoading.value = true
+    const { data } = await useFetch('http://127.0.0.1:8000/api/v1/products/?new=true&limit=8&site=default')
+    if (data.value && data.value.code === 0 && data.value.data) {
+      newProducts.value = data.value.data.results || []
+    } else {
+      newProducts.value = []
+    }
+  } catch (error) {
+    console.error('Failed to fetch new products:', error)
+    newProducts.value = []
+  } finally {
+    newProductsLoading.value = false
+  }
+}
 </script>

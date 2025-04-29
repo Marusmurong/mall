@@ -206,11 +206,11 @@ const renderedContent = computed(() => {
 // 获取分类标题
 const getCategoryTitle = (category) => {
   const categoryMap = {
-    'about': '关于我们',
-    'shopping': '购物指南',
-    'service': '售后服务'
+    'about': 'About Us',
+    'shopping': 'Shopping Guide',
+    'service': 'After-sales Service'
   }
-  return categoryMap[category] || '信息'
+  return categoryMap[category] || 'Information'
 }
 
 // 获取导航数据
@@ -224,21 +224,21 @@ const fetchNavigationItems = async () => {
     // 根据不同分类返回不同的导航项
     if (category.value === 'about') {
       navigationItems.value = [
-        { slug: 'company', title: '公司简介' },
-        { slug: 'contact', title: '联系我们' },
-        { slug: 'join', title: '加入我们' }
+        { slug: 'company', title: 'Company Introduction' },
+        { slug: 'contact', title: 'Contact Us' },
+        { slug: 'join', title: 'Join Us' }
       ]
     } else if (category.value === 'shopping') {
       navigationItems.value = [
-        { slug: 'process', title: '购物流程' },
-        { slug: 'payment', title: '支付方式' },
-        { slug: 'delivery', title: '配送方式' }
+        { slug: 'process', title: 'Purchase Process' },
+        { slug: 'payment', title: 'Payment Methods' },
+        { slug: 'delivery', title: 'Shipping Methods' }
       ]
     } else if (category.value === 'service') {
       navigationItems.value = [
-        { slug: 'return', title: '退换货政策' },
-        { slug: 'warranty', title: '保修条款' },
-        { slug: 'faq', title: '常见问题' }
+        { slug: 'return', title: 'Return Policy' },
+        { slug: 'warranty', title: 'Warranty Terms' },
+        { slug: 'faq', title: 'FAQ' }
       ]
     }
     
@@ -265,44 +265,44 @@ const fetchPageContent = async () => {
     const dummyContent = {
       'about': {
         'company': {
-          title: '公司简介',
-          content: `# 公司简介\n\n我们是一家专注于提供高品质商品的电子商务平台，致力于为消费者提供最好的购物体验。\n\n## 我们的使命\n\n为消费者提供优质、安全、实惠的商品，让每一次购物都充满愉悦。\n\n## 我们的愿景\n\n成为最受消费者信赖的电子商务平台，引领行业发展，创造更美好的购物未来。`
+          title: 'Company Introduction',
+          content: `# Company Introduction\n\nWe are an e-commerce platform dedicated to providing high-quality products, committed to delivering the best shopping experience for consumers.\n\n## Our Mission\n\nProvide quality, safe, and affordable products to consumers, making every shopping experience enjoyable.\n\n## Our Vision\n\nBecome the most trusted e-commerce platform, leading the industry, and creating a better shopping future.`
         },
         'contact': {
-          title: '联系我们',
-          content: `# 联系我们\n\n## 客服热线\n\n- 电话：400-123-4567\n- 服务时间：周一至周日 9:00-22:00\n\n## 总部地址\n\n北京市朝阳区建国路88号现代城SOHO B座20层\n\n## 电子邮箱\n\nservice@example.com`
+          title: 'Contact Us',
+          content: `# Contact Us\n\n## Customer Service\n\n- Phone: 400-123-4567\n- Service Hours: Monday to Sunday 9:00-22:00\n\n## Headquarters Address\n\nBeijing, China\n\n## Email\n\nservice@example.com`
         },
         'join': {
-          title: '加入我们',
-          content: `# 加入我们\n\n我们正在寻找优秀的人才加入我们的团队，共同成长，共创未来。\n\n## 开放职位\n\n- 产品经理\n- 前端开发工程师\n- 后端开发工程师\n- UI/UX设计师\n- 运营专员\n\n## 应聘方式\n\n请将您的简历发送至：hr@example.com，邮件主题请注明：应聘职位+姓名`
+          title: 'Join Us',
+          content: `# Join Us\n\nWe are looking for outstanding talents to join our team,共同成长，共创未来。\n\n## Open Positions\n\n- Product Manager\n- Frontend Developer\n- Backend Developer\n- UI/UX Designer\n- Operation Staff\n\n## Application Method\n\nPlease send your resume to：hr@example.com，mail subject please注明：应聘职位+姓名`
         }
       },
       'shopping': {
         'process': {
-          title: '购物流程',
-          content: `# 购物流程\n\n## 1. 浏览商品\n\n在首页或分类页面浏览商品，或使用搜索功能查找您需要的商品。\n\n## 2. 将商品加入购物车\n\n找到心仪的商品后，点击"加入购物车"按钮将商品添加到购物车。\n\n## 3. 结算\n\n在购物车页面，确认商品信息后点击"结算"按钮进入结算页面。\n\n## 4. 填写订单信息\n\n填写收货地址、选择支付方式和配送方式。\n\n## 5. 提交订单\n\n确认订单信息无误后，点击"提交订单"按钮完成下单。\n\n## 6. 支付\n\n根据选择的支付方式完成支付。\n\n## 7. 等待收货\n\n订单支付成功后，我们会尽快为您发货，您可以在"我的订单"中查看订单状态。`
+          title: 'Purchase Process',
+          content: `# Purchase Process\n\n## 1. Browse Products\n\nIn the homepage or category page, browse products, or use the search function to find the products you need.\n\n## 2. Add to Cart\n\nAfter finding the product you like, click the "Add to Cart" button to add the product to the shopping cart.\n\n## 3. Checkout\n\nGo to the shopping cart page, confirm the product information, and click the "Checkout" button to enter the checkout page.\n\n## 4. Fill in Order Information\n\nFill in the shipping address, payment method, and shipping method.\n\n## 5. Submit Order\n\nConfirm that the order information is correct and click the "Submit Order" button to complete the order.\n\n## 6. Payment\n\nPay according to the selected payment method.\n\n## 7. Wait for Delivery\n\nAfter the payment is successful, we will ship the goods as soon as possible. You can view the order status in "My Orders".`
         },
         'payment': {
-          title: '支付方式',
-          content: `# 支付方式\n\n我们提供多种支付方式，您可以根据自己的需求选择合适的支付方式。\n\n## 在线支付\n\n- 支付宝\n- 微信支付\n- 银联在线支付\n- 信用卡支付\n\n## 其他支付方式\n\n- 货到付款（部分地区支持）\n- 银行转账\n\n## 发票信息\n\n如需开具发票，请在提交订单时选择开具发票，并填写相关发票信息。`
+          title: 'Payment Methods',
+          content: `# Payment Methods\n\nWe provide multiple payment methods, you can choose the payment method that suits you.\n\n## Online Payment\n\n- Alipay\n- WeChat Pay\n- UnionPay Online Payment\n- Credit Card Payment\n\n## Other Payment Methods\n\n- Cash on Delivery (available in some areas)\n- Bank Transfer\n\n## Invoice Information\n\nIf you need an invoice, please select to issue an invoice when submitting the order, and fill in the relevant invoice information.`
         },
         'delivery': {
-          title: '配送方式',
-          content: `# 配送方式\n\n## 标准配送\n\n- 配送范围：全国大部分地区\n- 配送时间：一般在下单后1-3个工作日内发货，3-5个工作日送达\n- 配送费用：订单满99元免运费，否则收取10元运费\n\n## 加急配送\n\n- 配送范围：部分一线城市\n- 配送时间：下单后24小时内送达\n- 配送费用：每单收取20元运费\n\n## 自提\n\n- 自提点：全国各大城市的自提点\n- 自提时间：下单后1-2个工作日可自提\n- 自提费用：免费`
+          title: 'Delivery Methods',
+          content: `# Delivery Methods\n\n## Standard Delivery\n\n- Delivery Range: Most of China\n- Delivery Time:一般在下单后1-3个工作日内发货，3-5个工作日送达\n- Delivery Fee: Free shipping for orders over 99 yuan, otherwise 10 yuan\n\n## Rush Delivery\n\n- Delivery Range:部分一线城市\n- Delivery Time:下单后24小时内送达\n- Delivery Fee:每单收取20元运费\n\n## Self Pick-up\n\n- Pick-up Points: National major cities\n- Pick-up Time: After 1-2 working days\n- Pick-up Fee: Free`
         }
       },
       'service': {
         'return': {
-          title: '退换货政策',
-          content: `# 退换货政策\n\n## 退换货条件\n\n1. 商品收到后7天内，如商品有质量问题，可申请退换货\n2. 商品收到后7天内，如对商品不满意，可申请退货（部分特殊商品除外）\n3. 商品收到后8-15天内，如商品有质量问题，可申请换货或维修\n\n## 不支持退换货的情况\n\n1. 超过退换货期限\n2. 商品已使用、损坏或缺少配件\n3. 定制类商品\n4. 个人护理类商品已拆封\n5. 食品类商品已拆封\n\n## 退换货流程\n\n1. 登录账户，进入"我的订单"，找到对应订单点击"申请退换货"\n2. 填写退换货原因，上传相关凭证\n3. 等待审核通过\n4. 按照指引寄回商品\n5. 商品验收通过后，按原支付方式退款`
+          title: 'Return Policy',
+          content: `# Return Policy\n\n## Return Conditions\n\n1. Goods must be returned within 7 days of receipt\n2. Goods must be returned within 7 days of receipt (some special goods may not be returned)\n3. Goods must be returned within 8-15 days of receipt\n\n## Goods must be returned within 8-15 days of receipt\n\n1. Goods must be returned within 8-15 days of receipt\n2. Goods must be returned within 8-15 days of receipt\n3. Goods must be returned within 8-15 days of receipt\n4. Goods must be returned within 8-15 days of receipt\n5. Goods must be returned within 8-15 days of receipt\n\n## Return Process\n\n1. Login to account, go to "My Orders", find the corresponding order and click "Apply for Return"\n2. Fill in the return reason, upload relevant proof\n3. Wait for approval\n4. Follow the instructions to return the goods\n5. After goods inspection, refund will be processed`
         },
         'warranty': {
-          title: '保修条款',
-          content: `# 保修条款\n\n## 保修期限\n\n- 电子产品：自收到商品之日起12个月\n- 家用电器：自收到商品之日起24个月\n- 服装、鞋帽、箱包：自收到商品之日起3个月\n\n## 保修范围\n\n在正常使用情况下出现的质量问题，我们将提供免费维修或更换服务。\n\n## 不在保修范围内的情况\n\n1. 超过保修期\n2. 人为损坏\n3. 未按说明书操作导致的损坏\n4. 自行拆卸或修理导致的损坏\n5. 不可抗力（如自然灾害）导致的损坏\n\n## 保修流程\n\n1. 联系客服，说明商品问题\n2. 按客服指引，提供相关凭证\n3. 寄送商品至指定维修点\n4. 维修完成后，我们会将商品寄回给您`
+          title: 'Warranty Terms',
+          content: `# Warranty Terms\n\n## Warranty Period\n\n- Electronics: 12 months from receipt\n- Home Appliances: 24 months from receipt\n- Clothing, Hats, Bags: 3 months from receipt\n\n## Warranty Scope\n\nIn normal use, we will provide free maintenance or replacement services.\n\n## Warranty Exclusions\n\n1. Warranty Expiration\n2. Human Damage\n3. Damage Due to Improper Use\n4. Self-Dismantling or Repair\n5. Natural Disasters\n\n## Warranty Process\n\n1. Contact Customer Service, describe the goods issue\n2. Provide relevant proof according to customer service instructions\n3. Send goods to specified maintenance point\n4. After maintenance completion, we will return the goods`
         },
         'faq': {
-          title: '常见问题',
-          content: `# 常见问题\n\n## 订单相关\n\n### Q: 如何查询订单状态？\nA: 登录账户后，在"我的订单"中可以查看所有订单的状态。\n\n### Q: 下单后可以修改订单信息吗？\nA: 订单提交后，如果订单状态为"待付款"，可以取消订单重新下单；如果订单已付款但未发货，请联系客服协助修改。\n\n## 支付相关\n\n### Q: 支付成功但订单显示未支付？\nA: 支付成功后，订单状态更新可能有延迟，请稍等片刻刷新页面，如长时间未更新，请联系客服。\n\n### Q: 如何申请退款？\nA: 在"我的订单"中找到对应订单，点击"申请退款"，按提示操作即可。\n\n## 配送相关\n\n### Q: 为什么我的订单显示"已发货"但查不到物流信息？\nA: 订单发货后，物流信息更新可能有延迟，一般1-2个工作日内可查询到物流信息。\n\n### Q: 收到商品与描述不符怎么办？\nA: 请联系客服并提供相关凭证，我们会尽快为您解决。`
+          title: 'FAQ',
+          content: `# FAQ\n\n## Order Related\n\n### Q: How to query order status?\nA: After logging in, you can view all order statuses in "My Orders".\n\n### Q: Can I modify order information after placing the order?\nA: After the order status is "Pending Payment", you can cancel the order and re-order; if the order has been paid but not shipped, please contact customer service for assistance.\n\n## Payment Related\n\n### Q: Payment successful but order shows unpaid?\nA: After payment, the order status update may take a delay, please wait a moment and refresh the page, if it is still not updated after a long time, please contact customer service.\n\n### Q: How to apply for refund?\nA: In "My Orders", find the corresponding order and click "Apply for Refund", follow the instructions.\n\n## Delivery Related\n\n### Q: Why can't I query the logistics information after the order is marked as "Shipped"?\nA: The logistics information update may take a delay, generally 1-2 working days can be queried.\n\n### Q: The goods received does not match the description?\nA: Please contact customer service and provide relevant proof, we will solve it as soon as possible.`
         }
       }
     }
@@ -317,15 +317,15 @@ const fetchPageContent = async () => {
       }
     } else {
       pageContent.value = {
-        title: '页面不存在',
-        content: '抱歉，您访问的页面不存在。'
+        title: 'Page Not Found',
+        content: 'Sorry, the page you are looking for does not exist.'
       }
     }
   } catch (error) {
     console.error('获取页面内容失败:', error)
     pageContent.value = {
-      title: '加载失败',
-      content: '页面内容加载失败，请稍后再试。'
+      title: 'Page Not Found',
+      content: 'Sorry, the page you are looking for does not exist.'
     }
   } finally {
     isLoading.value = false

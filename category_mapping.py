@@ -66,15 +66,33 @@ BATCH_MAPPING = {
     "beauty_": ["Fashion", "Accessories"],
     "home_": ["Home Life"],
     "intimate_": ["Fashion", "Women's Clothing"],
+    # 添加批次85的映射
+    "85": ["Fashion", "Accessories", "Jewelry"],
 }
 
 # 关键词映射 - 根据商品标题中的关键词匹配分类
 KEYWORD_MAPPING = {
     # 关键词: ["顶级分类", "二级分类", "三级分类(可选)"]
+    # 母女手链相关关键词
+    "mom and daughter": ["Fashion", "Accessories", "Jewelry"],
+    "mother daughter": ["Fashion", "Accessories", "Jewelry"],
+    "mom daughter": ["Fashion", "Accessories", "Jewelry"],
+    "infinity heart": ["Fashion", "Accessories", "Jewelry"],
+    "bracelet": ["Fashion", "Accessories", "Jewelry"],
+    "bracelets": ["Fashion", "Accessories", "Jewelry"],
+    "mama": ["Fashion", "Accessories", "Jewelry"],
+    
+    # 智能手表相关关键词
+    "smart watch": ["Electronics", "Mobile Accessories"],
+    "smartwatch": ["Electronics", "Mobile Accessories"],
+    "watch": ["Electronics", "Mobile Accessories"],
+    "fitness tracker": ["Electronics", "Mobile Accessories"],
+    "fitpolo": ["Electronics", "Mobile Accessories"],
+    "alexa": ["Electronics", "Mobile Accessories"],
+    
+    # 其他常见商品关键词
     "mug": ["Home Life", "Mugs & Cups", "Coffee Mugs"],
     "cup": ["Home Life", "Mugs & Cups"],
-    "watch": ["Electronics", "Mobile Accessories"],
-    "bracelet": ["Fashion", "Accessories", "Jewelry"],
     "necklace": ["Fashion", "Accessories", "Jewelry"],
     "pendant": ["Fashion", "Accessories", "Jewelry"],
     "kindle": ["Electronics", "Computers", "Accessories"],
@@ -105,15 +123,28 @@ def get_category_by_batch(batch_filename):
     """
     根据批次文件名获取系统分类
     """
+    # 先尝试精确匹配
     for prefix, category in BATCH_MAPPING.items():
         if batch_filename.startswith(prefix):
             return category
+
+    # 尝试提取批次号
+    import re
+    match = re.search(r'batch_(\d+)', batch_filename)
+    if match:
+        batch_num = match.group(1)
+        if batch_num in BATCH_MAPPING:
+            return BATCH_MAPPING[batch_num]
+
     return ["Home Life"]
 
 def get_category_by_keywords(product_title):
     """
     根据商品标题中的关键词获取系统分类
     """
+    if not product_title:
+        return ["Home Life"]
+        
     title_lower = product_title.lower()
     
     # 按优先级检查关键词
@@ -127,7 +158,7 @@ def get_category_by_keywords(product_title):
 def determine_category(product_title, category_name=None, batch_filename=None):
     """
     根据多种因素综合判断商品应该属于哪个分类
-    优先级: 显式分类名称 > 批次文件名 > 标题关键词 > 默认分类
+    优先级: 显式分类名称 > 标题关键词 > 批次文件名 > 默认分类
     
     Args:
         product_title: 商品标题
@@ -137,12 +168,21 @@ def determine_category(product_title, category_name=None, batch_filename=None):
     Returns:
         list: [顶级分类, 二级分类, 三级分类(可选)]
     """
+    # 优先使用显式分类名称
     if category_name and category_name in CATEGORY_MAPPING:
         return CATEGORY_MAPPING[category_name]
     
+    # 其次使用标题关键词
+    if product_title:
+        keyword_category = get_category_by_keywords(product_title)
+        if keyword_category and keyword_category[0] != "Home Life":  # 如果不是默认分类
+            return keyword_category
+    
+    # 然后尝试批次文件名
     if batch_filename:
         batch_category = get_category_by_batch(batch_filename)
         if batch_category:
             return batch_category
     
-    return get_category_by_keywords(product_title) 
+    # 最后使用默认分类
+    return ["Home Life"] 

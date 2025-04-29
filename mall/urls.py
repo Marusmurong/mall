@@ -15,14 +15,38 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 
+# drf-yasg
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+# Swagger文档配置
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Mall API",
+      default_version='v1',
+      description="多站点电商系统API文档",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="admin@example.com"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # API文档
+    path('api/swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('api/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    
     path('api/', include('site_templates.urls')),  # 站点配置 API
-    path('api/v1/sites/', include('sites.urls')),  # 多站点管理 API
     path('api/v1/', include('api.v1.urls')),  # API v1 路由
     # 其他应用的URL
     path('users/', include('users.urls')),

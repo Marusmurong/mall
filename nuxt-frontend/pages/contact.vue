@@ -1,11 +1,11 @@
 <template>
   <div class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-8">联系我们</h1>
+    <h1 class="text-3xl font-bold mb-8">Contact Us</h1>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div>
         <div class="bg-white p-6 rounded-lg shadow">
-          <h2 class="text-xl font-semibold mb-4">联系方式</h2>
+          <h2 class="text-xl font-semibold mb-4">Contact Information</h2>
           
           <div class="space-y-4">
             <div class="flex items-center">
@@ -27,39 +27,39 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span>北京市朝阳区建国路88号</span>
+              <span>88 Jianguo Road, Chaoyang District, Beijing</span>
             </div>
           </div>
         </div>
         
         <div class="bg-white p-6 rounded-lg shadow mt-6">
-          <h2 class="text-xl font-semibold mb-4">营业时间</h2>
-          <p class="mb-2">周一至周五: 9:00 - 18:00</p>
-          <p>周六至周日: 10:00 - 16:00</p>
+          <h2 class="text-xl font-semibold mb-4">Business Hours</h2>
+          <p class="mb-2">Monday to Friday: 9:00 - 18:00</p>
+          <p>Saturday and Sunday: 10:00 - 16:00</p>
         </div>
       </div>
       
       <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-4">给我们留言</h2>
+        <h2 class="text-xl font-semibold mb-4">Leave a Message</h2>
         <form>
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="name">姓名</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="请输入您的姓名">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name</label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="Please enter your name">
           </div>
           
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">邮箱</label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="请输入您的邮箱">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email</label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="Please enter your email">
           </div>
           
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="message">留言内容</label>
-            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="message" rows="5" placeholder="请输入您的留言内容"></textarea>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="message">Message</label>
+            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="message" rows="5" placeholder="Please enter your message"></textarea>
           </div>
           
           <div class="flex items-center justify-end">
             <button class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
-              提交留言
+              Submit
             </button>
           </div>
         </form>
@@ -69,5 +69,5 @@
 </template>
 
 <script setup>
-// 联系我们页面
+// Contact Us page
 </script>

@@ -1,0 +1,12 @@
+{
+  "ignore_dirs": [
+    ".git",
+    "node_modules",
+    ".nuxt",
+    ".output",
+    "dist",
+    "public/goods/images"
+  ],
+  "fsevents_latency": 0.01,
+  "settle": 500
+}

@@ -20,7 +20,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 
 # 导入分类映射
-from category_mapping import determine_category, CATEGORY_MAPPING
+from category_mapping import determine_category, CATEGORY_MAPPING, get_category_by_keywords, get_category_by_batch
 
 def get_batch_files(directory=None, batch_number=None):
     """
@@ -67,7 +67,7 @@ def get_category_from_file(batch_file):
         return match.group(1)
     return None
 
-def import_batch(batch_file, preview=False, category_name=None, limit=None):
+def import_batch(batch_file, preview=False, category_name=None, limit=None, debug=False):
     """
     导入单个批次文件中的商品
     
@@ -76,6 +76,7 @@ def import_batch(batch_file, preview=False, category_name=None, limit=None):
         preview (bool): 是否只预览不实际导入
         category_name (str): 指定的分类名称
         limit (int): 限制导入的商品数量
+        debug (bool): 是否显示调试信息
     
     Returns:
         tuple: (导入成功数量, 错误数量)
@@ -96,31 +97,54 @@ def import_batch(batch_file, preview=False, category_name=None, limit=None):
     
     print(f"找到 {len(products)} 个商品")
     
-    if preview:
+    if preview or debug:
         print("\n=== 预览模式 ===")
         for i, product in enumerate(products[:10], 1):  # 只预览前10个
             title = product['title'][:80] + '...' if len(product['title']) > 80 else product['title']
             price = product.get('price', 'N/A')
             image_count = len(product.get('images', []))
             
-            # 确定分类
-            batch_category = get_category_from_file(batch_file)
-            product_category = determine_category(
-                product['title'], 
-                category_name=category_name, 
-                batch_filename=batch_file.name
-            )
-            
-            category_path = " > ".join(product_category)
-            
-            print(f"{i}. {title}")
-            print(f"   价格: {price}")
-            print(f"   图片数量: {image_count}")
-            print(f"   分类: {category_path}")
-            print(f"   来源: {product.get('source_url', '')[:80]}...")
-            print()
-            
-        return 0, 0
+            # 调试分类决策
+            if debug:
+                print(f"=== 商品 #{i} 分类决策过程 ===")
+                print(f"商品标题: {title}")
+                
+                # 测试关键词分类
+                keyword_category = get_category_by_keywords(product['title'])
+                print(f"关键词分类结果: {' > '.join(keyword_category)}")
+                
+                # 测试批次文件分类
+                batch_category = get_category_by_batch(batch_file.name)
+                print(f"批次文件分类结果: {' > '.join(batch_category)}")
+                
+                # 最终分类决策
+                product_category = determine_category(
+                    product['title'], 
+                    category_name=category_name, 
+                    batch_filename=batch_file.name
+                )
+                print(f"最终分类决策: {' > '.join(product_category)}")
+                print()
+            else:
+                # 确定分类
+                batch_category = get_category_from_file(batch_file)
+                product_category = determine_category(
+                    product['title'], 
+                    category_name=category_name, 
+                    batch_filename=batch_file.name
+                )
+                
+                category_path = " > ".join(product_category)
+                
+                print(f"{i}. {title}")
+                print(f"   价格: {price}")
+                print(f"   图片数量: {image_count}")
+                print(f"   分类: {category_path}")
+                print(f"   来源: {product.get('source_url', '')[:80]}...")
+                print()
+        
+        if preview:
+            return 0, 0
     
     # 真实导入
     imported_count = 0
@@ -130,12 +154,15 @@ def import_batch(batch_file, preview=False, category_name=None, limit=None):
         try:
             with transaction.atomic():
                 # 确定分类
-                batch_category = get_category_from_file(batch_file)
-                category_path = determine_category(
+                product_category = determine_category(
                     product['title'], 
                     category_name=category_name, 
                     batch_filename=batch_file.name
                 )
+                
+                if debug:
+                    print(f"\n商品: {product['title'][:50]}...")
+                    print(f"分类决策: {' > '.join(product_category)}")
                 
                 # 获取或创建分类
                 top_category = None
@@ -143,34 +170,34 @@ def import_batch(batch_file, preview=False, category_name=None, limit=None):
                 third_category = None
                 
                 # 获取顶级分类
-                if len(category_path) > 0:
+                if len(product_category) > 0:
                     top_category, _ = GoodsCategory.objects.get_or_create(
-                        name=category_path[0],
+                        name=product_category[0],
                         defaults={
                             'level': 1,
-                            'description': f'{category_path[0]} category'
+                            'description': f'{product_category[0]} category'
                         }
                     )
                 
                 # 获取二级分类
-                if len(category_path) > 1 and top_category:
+                if len(product_category) > 1 and top_category:
                     second_category, _ = GoodsCategory.objects.get_or_create(
-                        name=category_path[1],
+                        name=product_category[1],
                         defaults={
                             'level': 2,
                             'parent': top_category,
-                            'description': f'{category_path[1]} subcategory'
+                            'description': f'{product_category[1]} subcategory'
                         }
                     )
                 
                 # 获取三级分类
-                if len(category_path) > 2 and second_category:
+                if len(product_category) > 2 and second_category:
                     third_category, _ = GoodsCategory.objects.get_or_create(
-                        name=category_path[2],
+                        name=product_category[2],
                         defaults={
                             'level': 3,
                             'parent': second_category,
-                            'description': f'{category_path[2]} subcategory'
+                            'description': f'{product_category[2]} subcategory'
                         }
                     )
                 
@@ -321,6 +348,7 @@ def main():
     parser.add_argument('--list-categories', action='store_true', help='列出所有可用的分类映射')
     parser.add_argument('--limit', type=int, help='限制每个批次导入的商品数量')
     parser.add_argument('--directory', type=str, help='指定数据文件目录')
+    parser.add_argument('--debug', action='store_true', help='显示调试信息')
     
     args = parser.parse_args()
     
@@ -346,7 +374,8 @@ def main():
             batch_file, 
             preview=args.preview, 
             category_name=args.category,
-            limit=args.limit
+            limit=args.limit,
+            debug=args.debug
         )
         
         if not args.preview:

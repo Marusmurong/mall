@@ -61,7 +61,7 @@ const isLoading = ref(false)
 const authStore = useAuthStore()
 const router = useRouter()
 
-// 使用 URL 参数预填充登录表单（仅用于测试）
+// Prefill login form with URL parameters (for testing only)
 const route = useRoute()
 if (route.query && route.query.username) {
   username.value = route.query.username.toString()
@@ -71,7 +71,7 @@ if (route.query && route.query.password) {
 }
 
 const handleLogin = async () => {
-  // 清除之前的错误消息
+  // Clear previous error messages
   error.value = ''
   
   if (!username.value || !password.value) {
@@ -91,7 +91,7 @@ const handleLogin = async () => {
       console.log('Login result:', result)
       
       if (result && result.success) {
-        // 登录成功，跳转到首页
+        // Login successful, redirect to home page
         console.log('Login successful, navigating to home page')
         navigateTo('/')
       } else {
@@ -110,7 +110,7 @@ const handleLogin = async () => {
   }
 }
 
-// 定义页面元数据，指定使用默认布局
+// Define page metadata, specify default layout
 definePageMeta({
   layout: 'default'
 })

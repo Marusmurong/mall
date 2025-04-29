@@ -89,18 +89,18 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const handleRegister = async () => {
-  // 清除之前的错误消息
+  // Clear previous error messages
   error.value = ''
   
-  // 验证表单
+  // Validate form
   if (!username.value || !email.value || !password.value || !confirmPassword.value || !inviteCode.value) {
-    error.value = '请填写所有必填字段'
+    error.value = 'Please fill in all required fields'
     return
   }
   
-  // 验证密码匹配
+  // Validate password match
   if (password.value !== confirmPassword.value) {
-    error.value = '两次输入的密码不一致'
+    error.value = 'Passwords do not match'
     return
   }
 
@@ -108,7 +108,7 @@ const handleRegister = async () => {
     isLoading.value = true
     error.value = ''
     
-    console.log('尝试注册:', { username: username.value, email: email.value, inviteCode: inviteCode.value })
+    console.log('Attempting registration:', { username: username.value, email: email.value, inviteCode: inviteCode.value })
     
     const result = await authStore.register(
       username.value, 
@@ -118,22 +118,22 @@ const handleRegister = async () => {
     )
     
     if (result && result.success) {
-      // 注册成功，跳转到登录页
-      console.log('注册成功，跳转到登录页')
+      // Registration successful, redirect to login page
+      console.log('Registration successful, redirecting to login page')
       navigateTo('/login?registered=true&username=' + encodeURIComponent(username.value))
     } else {
-      console.error('注册失败:', result?.error)
-      error.value = result?.error?.message || '注册失败，请检查您的信息'
+      console.error('Registration failed:', result?.error)
+      error.value = result?.error?.message || 'Registration failed, please check your information'
     }
   } catch (err) {
-    console.error('注册过程中出错:', err)
-    error.value = '注册过程中出错，请稍后再试'
+    console.error('Error during registration:', err)
+    error.value = 'An error occurred during registration, please try again later'
   } finally {
     isLoading.value = false
   }
 }
 
-// 定义页面元数据，指定使用默认布局
+// Define page metadata, specify default layout
 definePageMeta({
   layout: 'default'
 })

@@ -4,20 +4,33 @@
       <!-- 页面标题 -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">我的心愿单</h1>
-          <p class="mt-2 text-gray-600">创建心愿单并与朋友分享，帮助实现你的愿望</p>
+          <h1 class="text-3xl font-bold text-gray-900">My Wishlist</h1>
+          <p class="mt-2 text-gray-600">Create wishlists and share with friends, helping you实现你的愿望</p>
         </div>
         
-        <button 
-          v-if="isAuthenticated"
-          @click="showCreateModal = true"
-          class="btn btn-primary flex items-center"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          创建心愿单
-        </button>
+        <div v-if="isAuthenticated" class="flex space-x-2">
+          <button 
+            v-if="isAuthenticated"
+            @click="showTelegramModal = true"
+            class="btn btn-outline flex items-center"
+            title="绑定Telegram接收通知"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18.717-.962 4.963-1.361 6.585-.165.669-.537 1.291-1.167 1.639-.597.331-1.133.146-1.755-.224-.982-.584-1.5-.927-2.467-1.5-.969-.573-1.745-.271-2.127.128-.379.399-1.188 1.394-1.188 1.394s-.328.33-.722.034c-.393-.296-.949-1.621-.949-1.621s-1.302-2.228.089-3.066c.452-.273 2.343-1.761 4.435-3.143.965-.639 1.906-1.263 2.457-1.624.842-.555 1.972-.887 2.755-.608z"/>
+            </svg>
+            {{ telegramConnected ? '已绑定Telegram' : '绑定Telegram' }}
+          </button>
+          
+          <button 
+            @click="showCreateModal = true"
+            class="btn btn-primary flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Create Wishlist
+          </button>
+        </div>
       </div>
       
       <!-- 未登录状态 -->
@@ -140,7 +153,7 @@
                 >
                 <div v-else class="w-full h-full flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
                 
@@ -379,6 +392,12 @@
           </div>
         </div>
       </div>
+      
+      <!-- Telegram绑定组件 -->
+      <TelegramBinding 
+        v-model:showModal="showTelegramModal"
+        @statusChanged="onTelegramStatusChanged"
+      />
     </div>
   </div>
 </template>
@@ -399,6 +418,15 @@ const formSubmitting = ref(false)
 const wishlistStats = ref({})
 const allStats = ref(null)
 const userWishlists = ref([])
+
+// Telegram绑定状态
+const showTelegramModal = ref(false)
+const telegramConnected = ref(false)
+
+// 处理Telegram状态变更
+const onTelegramStatusChanged = (status) => {
+  telegramConnected.value = status
+}
 
 // 计算属性
 const isAuthenticated = computed(() => authStore.isAuthenticated)

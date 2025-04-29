@@ -1,11 +1,19 @@
 import { createStore } from 'vuex'
-import api from '../api/alokai'
+import api from '../api/api'
 
 export default createStore({
   state: {
     site: {
-      config: null,
-      loading: true
+      config: {
+        name: 'Default Mall',
+        theme: 'default',
+        features: {
+          wishlist: true,
+          cart: true,
+          user_profile: true
+        }
+      },
+      loading: false
     },
     user: {
       isAuthenticated: false,
@@ -39,20 +47,12 @@ export default createStore({
     }
   },
   actions: {
-    async fetchSiteConfig({ commit }) {
-      try {
-        const config = await api.getSiteConfig()
-        commit('setSiteConfig', config)
-      } catch (error) {
-        console.error('获取站点配置失败:', error)
-      }
-    },
     async fetchUser({ commit }) {
       try {
         const user = await api.getUser()
         commit('setUser', user)
       } catch (error) {
-        console.error('获取用户信息失败:', error)
+        console.error('Failed to get user info:', error)
       }
     },
     async addToCart({ commit }, product) {
@@ -60,7 +60,7 @@ export default createStore({
         const result = await api.addToCart(product)
         commit('updateCart', result)
       } catch (error) {
-        console.error('添加到购物车失败:', error)
+        console.error('Failed to add to cart:', error)
       }
     },
     async addToWishlist({ commit }, product) {
@@ -68,7 +68,7 @@ export default createStore({
         const result = await api.addToWishlist(product)
         commit('updateWishlist', result)
       } catch (error) {
-        console.error('添加到心愿单失败:', error)
+        console.error('Failed to add to wishlist:', error)
       }
     }
   },

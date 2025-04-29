@@ -29,9 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '81af-2001-e68-82c4-1600-9043-411-b72d-3f62.ngrok-free.app',
-    '7a77-60-48-150-169.ngrok-free.app',  # 新增的ngrok域名
-    '*.ngrok-free.app',  # 允许所有ngrok域名，因为每次重启ngrok会生成新域名
+    '0.0.0.0',
 ]
 
 # CORS配置
@@ -108,6 +106,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_yasg',
     'corsheaders',  # 添加CORS支持
+    'django_filters',  # 添加django-filter支持
 ]
 
 MIDDLEWARE = [
@@ -151,12 +150,25 @@ WSGI_APPLICATION = 'mall.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# PostgreSQL配置
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'cartit_mall',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
+# SQLite配置
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation
@@ -164,16 +176,10 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'OPTIONS': {
+            'min_length': 6,
+        }
     },
 ]
 
@@ -232,6 +238,11 @@ SIMPLEUI_CONFIG = {
                     'name': '商品',
                     'url': 'goods/goods/',
                     'icon': 'fa fa-shopping-cart'
+                },
+                {
+                    'name': '商品分类',
+                    'url': 'goods/goodscategory/',
+                    'icon': 'fa fa-tags'
                 }
             ]
         },
@@ -284,6 +295,27 @@ SIMPLEUI_CONFIG = {
                 {
                     'name': '订单日志',
                     'url': 'order/orderlog/',
+                    'icon': 'fa fa-history'
+                }
+            ]
+        },
+        {
+            'name': '支付管理',
+            'icon': 'fas fa-credit-card',
+            'models': [
+                {
+                    'name': '支付记录',
+                    'url': 'payment/payment/',
+                    'icon': 'fa fa-list-alt'
+                },
+                {
+                    'name': '支付方式',
+                    'url': 'payment/paymentmethod/',
+                    'icon': 'fa fa-money-bill'
+                },
+                {
+                    'name': '支付回调日志',
+                    'url': 'payment/paymentwebhooklog/',
                     'icon': 'fa fa-history'
                 }
             ]
@@ -406,16 +438,10 @@ API_RESPONSE_FORMAT = {
     'SUCCESS_MESSAGE': 'success',
 }
 
-# Alokai API管理平台配置
-ALOKAI_API_KEY = os.environ.get('ALOKAI_API_KEY', '')
-ALOKAI_SECRET = os.environ.get('ALOKAI_SECRET', '')
-ALOKAI_GATEWAY_URL = os.environ.get('ALOKAI_GATEWAY_URL', 'https://api.alokai.example.com')
-ALOKAI_SERVICE_NAME = 'mall-multi-site-api'
-
-# Alokai平台配置
-ALOKAI_CONFIG = {
+# 本地API配置 (之前的Alokai平台配置)
+LOCAL_API_CONFIG = {
     'API_URL': 'http://localhost:8000/api/v1',
-    'PLATFORM_URL': 'https://platform.alokai.com',
-    'TOKEN': 'your-platform-token',
-    'CDN_URL': 'https://cdn.alokai.com'
+    'PLATFORM_URL': 'http://localhost:8000',
+    'TOKEN': 'local-api-token',
+    'CDN_URL': '/static'
 }

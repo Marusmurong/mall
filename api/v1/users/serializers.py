@@ -19,8 +19,8 @@ class ShippingAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShippingAddress
         fields = [
-            'id', 'user', 'name', 'phone', 'province', 'city', 
-            'district', 'address', 'zip_code', 'is_default'
+            'id', 'user', 'recipient_name', 'phone', 'province', 'city', 
+            'district', 'address', 'postal_code', 'is_default'
         ]
         read_only_fields = ['id', 'user']
         

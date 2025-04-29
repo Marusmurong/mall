@@ -24,6 +24,13 @@ class UserProfile(models.Model):
     ban_count = models.PositiveIntegerField(default=0, verbose_name='封号次数')
     last_ban_time = models.DateTimeField(null=True, blank=True, verbose_name='最近封号时间')
     
+    # Telegram相关字段
+    telegram_connected = models.BooleanField(default=False, verbose_name='是否绑定Telegram')
+    telegram_username = models.CharField(max_length=100, blank=True, verbose_name='Telegram用户名')
+    telegram_chat_id = models.CharField(max_length=100, blank=True, verbose_name='Telegram聊天ID')
+    telegram_token = models.CharField(max_length=100, blank=True, verbose_name='Telegram绑定令牌')
+    telegram_token_created_at = models.DateTimeField(null=True, blank=True, verbose_name='令牌创建时间')
+    
     class Meta:
         verbose_name = '用户资料'
         verbose_name_plural = verbose_name

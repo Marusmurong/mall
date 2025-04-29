@@ -1,10 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserProfileView, UserRegisterView, ShippingAddressViewSet
+from .views import UserProfileView, UserRegisterView, ShippingAddressViewSet, TelegramStatusView, TelegramTokenView, TelegramDisconnectView, TelegramBindView
 
 # 创建路由器并注册视图集
 router = DefaultRouter()
-router.register('addresses', ShippingAddressViewSet, basename='address')
+router.register(r'shipping-addresses', ShippingAddressViewSet, basename='shipping-address')
 
 # API URL配置
 urlpatterns = [
@@ -16,4 +16,10 @@ urlpatterns = [
     
     # 收货地址API
     path('', include(router.urls)),
+    
+    # Telegram 兼容API
+    path('telegram/status/', TelegramStatusView.as_view(), name='telegram-status'),
+    path('telegram/token/', TelegramTokenView.as_view(), name='telegram-token'),
+    path('telegram/disconnect/', TelegramDisconnectView.as_view(), name='telegram-disconnect'),
+    path('telegram/bind/', TelegramBindView.as_view(), name='telegram-bind'),
 ]
