@@ -10,8 +10,8 @@
           <div class="sm:flex sm:items-start">
             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
               <!-- 替换信用卡图标为网站LOGO -->
-              <img v-if="siteLogo" :src="siteLogo" alt="Mall Logo" class="h-6 w-auto" />
-              <span v-else class="text-lg font-bold text-primary-600">Mall</span>
+              <img v-if="siteLogo" :src="siteLogo" alt="CartiTop Logo" class="h-6 w-auto" />
+              <span v-else class="text-lg font-bold text-primary-600">CartiTop</span>
             </div>
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
               <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
@@ -70,13 +70,11 @@
                     :key="method.id"
                     @click="selectPaymentMethod(method)"
                     class="border rounded-lg p-3 cursor-pointer transition-colors"
-                    :class="{'border-blue-500 bg-blue-50': formData.paymentMethod === method.code, 'border-gray-200 hover:border-gray-300': formData.paymentMethod !== method.code}"
+                    :class="{'border-blue-500 bg-blue-50': formData.paymentMethod === method, 'border-gray-200 hover:border-gray-300': formData.paymentMethod !== method}"
                   >
                     <div class="flex items-center">
                       <div v-if="method.icon" class="h-8 w-8 bg-gray-100 rounded flex items-center justify-center mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
+                        <img :src="method.icon" :alt="method.name" class="h-6 w-auto object-contain" />
                       </div>
                       <div v-else class="h-8 w-8 bg-gray-100 rounded flex items-center justify-center mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,7 +91,7 @@
               </div>
 
               <!-- Credit card fields -->
-              <div v-if="formData.paymentMethod === 'credit_card'" class="space-y-4 border-t pt-4">
+              <div v-if="formData.paymentMethod && formData.paymentMethod.code === 'credit_card'" class="space-y-4 border-t pt-4">
                 <div>
                   <label for="cardNumber" class="block text-sm font-medium text-gray-700">Card Number</label>
                   <div class="mt-1">
@@ -157,30 +155,18 @@
               </div>
 
               <!-- PayPal payment -->
-              <div v-if="formData.paymentMethod === 'paypal'" class="border-t pt-4">
+              <div v-if="formData.paymentMethod && formData.paymentMethod.code === 'paypal'" class="border-t pt-4">
                 <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
                   <div class="text-center mb-4">
-                    <div class="h-12 w-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22C6.486 22 2 17.514 2 12S6.486 2 12 2s10 4.486 10 10-4.486 10-10 10zm-1-13.5v7l6-3.5-6-3.5z" />
-                      </svg>
-                    </div>
                     <p class="text-sm text-gray-600">
                       You will be redirected to PayPal to complete your payment securely
                     </p>
-                  </div>
-                  
-                  <div class="w-full px-4">
-                    <div class="bg-blue-50 p-3 rounded-lg text-xs text-blue-800">
-                      <p class="font-medium mb-1">Note:</p>
-                      <p>For demonstration purposes, clicking "Confirm Payment" will simulate PayPal payment completion</p>
-                    </div>
                   </div>
                 </div>
               </div>
 
               <!-- USDT payment -->
-              <div v-if="formData.paymentMethod === 'usdt'" class="border-t pt-4">
+              <div v-if="formData.paymentMethod && formData.paymentMethod.code === 'usdt'" class="border-t pt-4">
                 <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
                   <div class="text-center">
                     <div class="w-48 h-48 mx-auto bg-white border p-2 rounded flex items-center justify-center">
@@ -214,24 +200,17 @@
               </div>
 
               <!-- Coinbase Commerce payment -->
-              <div v-if="formData.paymentMethod === 'coinbase_commerce'" class="border-t pt-4">
+              <div v-if="formData.paymentMethod && formData.paymentMethod.code === 'coinbase_commerce'" class="border-t pt-4">
                 <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
                   <div class="text-center mb-4">
-                    <div class="h-12 w-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22C6.486 22 2 17.514 2 12S6.486 2 12 2s10 4.486 10 10-4.486 10-10 10zm-1-13.5v7l6-3.5-6-3.5z" />
-                      </svg>
-                    </div>
+
                     <p class="text-sm text-gray-600">
                       Pay with various cryptocurrencies via Coinbase Commerce
                     </p>
                   </div>
                   
                   <div class="w-full px-4">
-                    <div class="bg-blue-50 p-3 rounded-lg text-xs text-blue-800">
-                      <p class="font-medium mb-1">Note:</p>
-                      <p>For demonstration purposes, clicking "Confirm Payment" will simulate Coinbase payment completion</p>
-                    </div>
+                  
                   </div>
                 </div>
               </div>
@@ -299,6 +278,10 @@ const props = defineProps({
   totalAmount: {
     type: Number,
     default: 0
+  },
+  wishlistId: {
+    type: String,
+    default: ''
   }
 })
 
@@ -319,7 +302,8 @@ const formData = ref({
   expiryDate: '',
   cvv: '',
   cardholderName: '',
-  transactionHash: ''
+  transactionHash: '',
+  selectedItem: null
 })
 const isSubmitting = ref(false)
 const errorMessage = ref('')
@@ -332,11 +316,16 @@ const fetchPaymentMethods = async () => {
   try {
     loadingPaymentMethods.value = true
     const response = await api.payments.getMethods()
+    console.log('Payment methods response:', response) // 添加日志，查看响应内容
+    
+    // 不过滤支付方式，直接显示后台返回的所有支付方式
     paymentMethods.value = response.results || []
+    
+    console.log('Available payment methods:', paymentMethods.value) // 添加日志，查看可用的支付方式
     
     // 如果有支付方式，默认选择第一个
     if (paymentMethods.value.length > 0) {
-      formData.value.paymentMethod = paymentMethods.value[0].code
+      formData.value.paymentMethod = paymentMethods.value[0]
     }
   } catch (error) {
     console.error('Error fetching payment methods:', error)
@@ -348,7 +337,7 @@ const fetchPaymentMethods = async () => {
 
 // Select payment method
 const selectPaymentMethod = (method) => {
-  formData.value.paymentMethod = method.code
+  formData.value.paymentMethod = method
 }
 
 // Watch for modal opening to reset form and fetch payment methods
@@ -361,7 +350,8 @@ watch(() => props.show, (isOpen) => {
       expiryDate: '',
       cvv: '',
       cardholderName: '',
-      transactionHash: ''
+      transactionHash: '',
+      selectedItem: null
     }
     errorMessage.value = ''
     isSubmitting.value = false
@@ -392,67 +382,89 @@ const close = () => {
 
 const submitPurchase = async () => {
   try {
-    errorMessage.value = ''
-    isSubmitting.value = true
-    
-    // Basic form validation
+    // 1. 校验支付方式
     if (!formData.value.paymentMethod) {
-      errorMessage.value = 'Please select a payment method'
-      isSubmitting.value = false
-      return
+      errorMessage.value = '请选择支付方式';
+      isSubmitting.value = false;
+      return;
     }
-    
-    // Credit card validation
-    if (formData.value.paymentMethod === 'credit_card') {
-      if (!formData.value.cardNumber.match(/^[0-9]{13,19}$/)) {
-        errorMessage.value = 'Please enter a valid card number'
-        isSubmitting.value = false
-        return
-      }
-      
-      if (!formData.value.expiryDate.match(/^(0[1-9]|1[0-2])\/[0-9]{2}$/)) {
-        errorMessage.value = 'Please enter a valid expiry date (MM/YY)'
-        isSubmitting.value = false
-        return
-      }
-      
-      if (!formData.value.cvv.match(/^[0-9]{3,4}$/)) {
-        errorMessage.value = 'Please enter a valid CVV'
-        isSubmitting.value = false
-        return
-      }
-      
-      if (!formData.value.cardholderName.trim()) {
-        errorMessage.value = 'Please enter the cardholder name'
-        isSubmitting.value = false
-        return
-      }
+    // 校验心愿单ID
+    if (!props.wishlistId) {
+      errorMessage.value = '心愿单ID无效';
+      isSubmitting.value = false;
+      return;
     }
-    
-    // Get the selected payment method details
-    const selectedMethod = paymentMethods.value.find(m => m.code === formData.value.paymentMethod)
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Process purchase
-    const purchaseData = {
-      items: props.items,
-      // Use Anonymous instead of requiring a name
-      buyerName: 'Anonymous',
-      paymentMethod: formData.value.paymentMethod,
-      paymentMethodDetails: selectedMethod,
-      transactionId: 'TXN' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
-      timestamp: new Date().toISOString(),
-      transactionHash: formData.value.transactionHash
+    // 自动获取未购买商品的第一个ID（UUID字符串），直接传递给后端
+    let wishlistItemId = null;
+    const unpurchasedItems = props.items && props.items.length ? props.items.filter(item => !item.purchased) : [];
+    if (unpurchasedItems.length > 0) {
+      wishlistItemId = unpurchasedItems[0].id; // 直接用UUID字符串
     }
-    
-    emit('purchase', purchaseData)
+    if (!wishlistItemId) {
+      errorMessage.value = '心愿单没有可支付的商品，无法发起支付。';
+      isSubmitting.value = false;
+      return;
+    }
+    // 2. 构造支付参数
+    const paymentData = {
+      wishlist_item_id: wishlistItemId, // 直接传UUID字符串
+      wishlist_id: props.wishlistId,
+      payment_method_id: formData.value.paymentMethod.id,
+      amount: props.totalAmount ? props.totalAmount.toString() : '0',
+      is_full_wishlist: true
+    };
+    console.log('支付参数:', paymentData);
+    // 3. 发起支付请求
+    let paymentRecord;
+    try {
+      paymentRecord = await api.payments.createPayment(paymentData);
+    } catch (err) {
+      if (err && err.message) {
+        if (typeof err.message === 'object') {
+          errorMessage.value = Object.values(err.message).join('; ');
+        } else {
+          errorMessage.value = err.message;
+        }
+      } else {
+        errorMessage.value = '支付请求失败，请重试。';
+      }
+      isSubmitting.value = false;
+      return;
+    }
+    if (!paymentRecord || !paymentRecord.id) {
+      // 新增兼容：如果 data 里没有 id，但 code=0，说明后端只返回了部分字段，允许通过
+      if (paymentRecord && (paymentRecord.amount || paymentRecord.currency)) {
+        // 新增：自动跳转三方支付链接
+        if (paymentRecord.payment_link) {
+          window.open(paymentRecord.payment_link, '_blank');
+          errorMessage.value = '';
+          isSubmitting.value = false;
+          return;
+        }
+        errorMessage.value = '';
+        isSubmitting.value = false;
+        // TODO: 支付成功后的后续逻辑
+        return;
+      }
+      errorMessage.value = '支付订单创建失败，请重试。';
+      isSubmitting.value = false;
+      return;
+    }
+    // 新增：自动跳转三方支付链接
+    if (paymentRecord.payment_link) {
+      window.open(paymentRecord.payment_link, '_blank');
+      errorMessage.value = '';
+      isSubmitting.value = false;
+      return;
+    }
+
+    errorMessage.value = '';
+    isSubmitting.value = false;
+    // TODO: 支付成功后的后续逻辑
   } catch (error) {
-    console.error('Payment error:', error)
-    errorMessage.value = 'An error occurred during payment processing. Please try again.'
-  } finally {
-    isSubmitting.value = false
+    console.error('Payment error:', error);
+    errorMessage.value = '支付过程中发生错误，请重试。';
+    isSubmitting.value = false;
   }
 }
 

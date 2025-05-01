@@ -3,9 +3,9 @@
     <h1 class="text-3xl font-bold mb-8">Join Us</h1>
     
     <div class="bg-white p-6 rounded-lg shadow mb-8">
-      <h2 class="text-2xl font-semibold mb-4">About Mall E-commerce Platform</h2>
+      <h2 class="text-2xl font-semibold mb-4">About CartiTop E-commerce Platform</h2>
       <p class="text-gray-700 mb-4">
-        Mall E-commerce Platform is a leading multi-site e-commerce system dedicated to providing users with a premium shopping experience. Our mission is to connect merchants and consumers, creating value through innovative technology and excellent service.
+        CartiTop E-commerce Platform is a leading multi-site e-commerce system dedicated to providing users with a premium shopping experience. Our mission is to connect merchants and consumers, creating value through innovative technology and excellent service.
       </p>
       <p class="text-gray-700">
         We are looking for passionate, talented individuals to join our team and help build the next generation of e-commerce platforms.

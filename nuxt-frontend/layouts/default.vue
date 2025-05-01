@@ -9,8 +9,8 @@
             <div class="flex-shrink-0 flex items-center relative">
               <!-- Website LOGO -->
               <NuxtLink to="/" class="flex items-center">
-                <img v-if="siteLogo" :src="siteLogo" alt="Mall Logo" class="h-8 w-auto" />
-                <span v-else class="text-2xl font-bold text-primary-600">Mall</span>
+                <img v-if="siteLogo" :src="siteLogo" alt="CartiTop Logo" class="h-8 w-auto" />
+                <span v-else class="text-2xl font-bold text-primary-600">CartiTop</span>
               </NuxtLink>
               
               <!-- Admin mode switch (only shown in development) -->
@@ -147,64 +147,8 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white">
-      <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <!-- Company information -->
-          <div>
-            <h3 class="text-lg font-semibold mb-4">{{ $t('footer.about_us') }}</h3>
-            <ul class="space-y-2">
-              <li><NuxtLink to="/info/about/company" class="text-gray-300 hover:text-white">{{ $t('footer.company_profile') }}</NuxtLink></li>
-              <li><NuxtLink to="/info/about/contact" class="text-gray-300 hover:text-white">{{ $t('footer.contact_us') }}</NuxtLink></li>
-              <li><NuxtLink to="/info/about/join" class="text-gray-300 hover:text-white">{{ $t('footer.join_us') }}</NuxtLink></li>
-            </ul>
-          </div>
-          
-          <!-- Shopping guide -->
-          <div>
-            <h3 class="text-lg font-semibold mb-4">{{ $t('footer.shopping_guide') }}</h3>
-            <ul class="space-y-2">
-              <li><NuxtLink to="/info/shopping/process" class="text-gray-300 hover:text-white">{{ $t('footer.shopping_process') }}</NuxtLink></li>
-              <li><NuxtLink to="/info/shopping/payment" class="text-gray-300 hover:text-white">{{ $t('footer.payment_methods') }}</NuxtLink></li>
-              <li><NuxtLink to="/info/shopping/delivery" class="text-gray-300 hover:text-white">{{ $t('footer.delivery_methods') }}</NuxtLink></li>
-            </ul>
-          </div>
-          
-          <!-- After-sales service -->
-          <div>
-            <h3 class="text-lg font-semibold mb-4">{{ $t('footer.after_sales') }}</h3>
-            <ul class="space-y-2">
-              <li><NuxtLink to="/info/service/return" class="text-gray-300 hover:text-white">{{ $t('footer.return_policy') }}</NuxtLink></li>
-              <li><NuxtLink to="/info/service/warranty" class="text-gray-300 hover:text-white">{{ $t('footer.warranty_terms') }}</NuxtLink></li>
-              <li><NuxtLink to="/info/service/faq" class="text-gray-300 hover:text-white">{{ $t('footer.faq') }}</NuxtLink></li>
-            </ul>
-          </div>
-          
-          <!-- Contact information -->
-          <div>
-            <h3 class="text-lg font-semibold mb-4">{{ $t('footer.contact_info') }}</h3>
-            <ul class="space-y-2">
-              <li class="flex items-center text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                400-123-4567
-              </li>
-              <li class="flex items-center text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                support@mall.com
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-          <p>&copy; {{ new Date().getFullYear() }} {{ $t('footer.copyright') }}</p>
-        </div>
-      </div>
-    </footer>
+    <AppFooter />
+    
     <!-- Login/Registration modal -->
     <AuthModal 
       :show="showAuthModal" 
@@ -220,6 +164,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import AuthModal from '~/components/AuthModal.vue'
+import AppFooter from '~/components/AppFooter.vue'
 
 // Use auth store
 const authStore = useAuthStore()

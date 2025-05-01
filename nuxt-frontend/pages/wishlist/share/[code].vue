@@ -230,6 +230,7 @@
         :show="showPurchaseModal" 
         :items="getUnpurchasedItems()"
         :total-amount="getUnpurchasedAmount()"
+        :wishlist-id="wishlist?.id || ''"
         @close="closePurchaseModal" 
         @purchase="completePurchase"
       />
@@ -243,14 +244,14 @@
       <!-- Footer -->
       <div class="mt-6 text-center">
         <p class="text-xs text-gray-500">
-          {{ new Date().getFullYear() }} Mall. All rights reserved.
+          {{ new Date().getFullYear() }} CartiTop. All rights reserved.
         </p>
         <div class="mt-2">
           <a 
             href="/" 
             class="text-xs text-primary-600 hover:text-primary-700"
           >
-            Visit Mall Website
+            Visit CartiTop Website
           </a>
         </div>
       </div>
