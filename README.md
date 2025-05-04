@@ -168,6 +168,39 @@ python-dotenv==1.0.0  # 环境变量管理
 }
 ```
 
+### 依赖管理
+
+项目采用多项目结构，包括Django后端和多个前端应用。所有依赖都在版本控制中明确记录。
+
+#### 依赖文件
+- **`requirements.txt`**: 所有Python/Django后端依赖
+- **`package.json`**: 根目录Node.js依赖
+- **`nuxt-frontend/package.json`**: Nuxt.js前端依赖
+- **`vue-app/package.json`**: Vue.js应用依赖
+
+#### 详细依赖文档
+完整的依赖信息、插件和SDK说明，请参考项目根目录的 `DEPENDENCIES.md` 文档。该文档详细记录了：
+- 所有依赖的版本和用途
+- 插件配置说明
+- 依赖更新与维护指南
+- 安全审查流程
+
+#### 依赖一致性
+为确保项目稳定性，在不同项目组件间维持一致的依赖版本非常重要。以下策略可帮助维护依赖一致性：
+
+1. 使用精确版本锁定：
+   - 后端使用 `pip freeze > requirements.txt`
+   - 前端使用 `package-lock.json` 或 `npm ci`
+
+2. 添加新依赖时：
+   - 评估必要性和替代方案
+   - 在添加后更新 `DEPENDENCIES.md`
+   - 确保与现有技术栈兼容
+
+3. 定期安全审查：
+   - 使用 `pip-audit` 检查Python依赖
+   - 使用 `npm audit` 检查JavaScript依赖
+
 ## 快速开始
 
 ### 后端设置
