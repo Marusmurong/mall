@@ -1,14 +1,17 @@
-from rest_framework import viewsets, generics, permissions, status
+from rest_framework import viewsets, generics, permissions, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.db import transaction
+import logging
 from .serializers import UserSerializer, UserRegisterSerializer, ShippingAddressSerializer
 from users.models import ShippingAddress
 from api.exceptions import BusinessException
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     """
@@ -44,18 +47,35 @@ class UserRegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        
-        # 生成JWT令牌
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'user': UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            
+            with transaction.atomic():
+                user = serializer.save()
+                
+                # 生成JWT令牌
+                refresh = RefreshToken.for_user(user)
+                
+                return Response({
+                    'user': UserSerializer(user).data,
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, status=status.HTTP_201_CREATED)
+        except serializers.ValidationError as e:
+            logger.warning(f"注册验证错误: {str(e)}")
+            return Response({
+                "code": 1,
+                "message": e.detail,
+                "data": {}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"注册过程中出现错误: {str(e)}")
+            return Response({
+                "code": 1,
+                "message": str(e),
+                "data": {}
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ShippingAddressViewSet(viewsets.ModelViewSet):

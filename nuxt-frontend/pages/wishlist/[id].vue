@@ -83,12 +83,12 @@
             <div class="stat-card">
               <div class="stat-title">已付款</div>
               <div class="stat-value">{{ getPaymentCompletedCount() }}</div>
-              <div class="stat-desc">金额: ¥{{ formatPrice(getPaymentCompletedAmount()) }}</div>
+              <div class="stat-desc">金额: ${{ formatPrice(getPaymentCompletedAmount()) }}</div>
             </div>
             <div class="stat-card">
               <div class="stat-title">未付款</div>
               <div class="stat-value">{{ getUnpaidCount() }}</div>
-              <div class="stat-desc">金额: ¥{{ formatPrice(getUnpaidAmount()) }}</div>
+              <div class="stat-desc">金额: ${{ formatPrice(getUnpaidAmount()) }}</div>
             </div>
           </div>
           
@@ -164,10 +164,10 @@
                   </p>
                   
                   <!-- 价格信息 -->
-                  <div class="mt-2 flex items-baseline">
-                    <span class="text-xl font-bold text-primary-600">¥{{ formatPrice(item.price) }}</span>
-                    <span v-if="item.original_price" class="ml-2 text-sm text-gray-500 line-through">
-                      ¥{{ formatPrice(item.original_price) }}
+                  <div class="mt-2 flex items-baseline gap-2">
+                    <span class="text-xl font-bold text-primary-600">${{ formatPrice(item.price) }}</span>
+                    <span v-if="item.original_price && item.original_price > item.price" class="text-sm text-gray-500 line-through">
+                      ${{ formatPrice(item.original_price) }}
                     </span>
                   </div>
                   

@@ -1,6 +1,7 @@
 import logging
 import uuid
 import json
+import requests
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from django.conf import settings
@@ -12,7 +13,8 @@ from .models import (
     PaymentMethod, 
     USDTPaymentDetail, 
     PayPalPaymentDetail,
-    CreditCardPaymentDetail
+    CreditCardPaymentDetail,
+    CoinbaseCommercePaymentDetail
 )
 
 logger = logging.getLogger(__name__)
@@ -230,11 +232,21 @@ class PayPalPaymentProcessor(PaymentProcessorBase):
             cancel_url = kwargs.get('cancel_url', '')
             
             # 通常这里应该调用PayPal API并获取重定向URL
-            # 为了演示，我们创建一个模拟的支付URL
+            # 在实际应用中，此URL应为PayPal的实际结账页面URL
+            # 这里模拟一个外部PayPal收银台URL
+            external_paypal_url = ""
+            
+            # 如果是测试环境，使用测试URL
+            if self.mode == 'sandbox':
+                external_paypal_url = f"https://www.sandbox.paypal.com/checkoutnow?token={paypal_order_id}"
+            else:
+                external_paypal_url = f"https://www.paypal.com/checkoutnow?token={paypal_order_id}"
+                
+            # 设置回调URL
             mock_paypal_url = f"/payment/paypal/checkout/{payment.id}/?order_id={paypal_order_id}"
             
             payment.payment_data = {
-                'checkout_url': mock_paypal_url,
+                'checkout_url': external_paypal_url,  # 使用外部PayPal收银台URL
                 'return_url': return_url,
                 'cancel_url': cancel_url
             }
@@ -552,38 +564,342 @@ class CreditCardPaymentProcessor(PaymentProcessorBase):
             }
 
 
-# 支付处理器工厂函数
-def get_payment_processor(payment_method_code):
-    """
-    根据支付方式代码获取对应的支付处理器实例
+class CoinbaseCommercePaymentProcessor(PaymentProcessorBase):
+    """Coinbase Commerce支付处理器"""
     
-    Args:
-        payment_method_code: 支付方式代码
+    def __init__(self, payment_method):
+        super().__init__(payment_method)
+        # 从配置中获取支付参数
+        self.api_key = payment_method.get_config('api_key', '')
+        self.webhook_secret = payment_method.get_config('webhook_secret', '')
+        self.checkout_style = payment_method.get_config('checkout_style', 'hosted')
+        self.base_url = 'https://api.commerce.coinbase.com'
         
-    Returns:
-        支付处理器实例或None（如果找不到对应的支付方式）
-    """
-    logger = logging.getLogger(__name__)
+    def create_payment(self, wishlist_item, amount, currency='USD', payer=None, **kwargs):
+        """创建Coinbase Commerce支付记录"""
+        # 验证API密钥
+        if not self.api_key:
+            return None
+        
+        # 创建基础支付记录
+        payment = self._create_payment_base(
+            wishlist_item=wishlist_item,
+            amount=amount,
+            currency=currency,
+            payer=payer,
+            **kwargs
+        )
+        
+        try:
+            # 获取Coinbase商户名称和订单参考ID
+            merchant_name = kwargs.get('merchant_name', 'Mall Store')
+            reference_id = f"REF-{uuid.uuid4().hex[:8]}"
+            
+            # 构建商品描述
+            product_name = wishlist_item.product.name if wishlist_item and hasattr(wishlist_item, 'product') else '心愿单商品'
+            description = f"购买心愿单商品: {product_name}"
+            
+            # 构建重定向URL
+            success_url = kwargs.get('success_url', '')
+            cancel_url = kwargs.get('cancel_url', '')
+            
+            # 创建Coinbase Charge
+            charge_data = {
+                'name': product_name,
+                'description': description,
+                'pricing_type': 'fixed_price',
+                'local_price': {
+                    'amount': str(amount),
+                    'currency': currency
+                },
+                'metadata': {
+                    'customer_id': str(payer.id) if payer else 'guest',
+                    'payment_id': str(payment.id),
+                    'wishlist_item_id': str(wishlist_item.id) if wishlist_item else ''
+                },
+                'redirect_url': success_url,
+                'cancel_url': cancel_url
+            }
+            
+            # 模拟Coinbase API调用，实际应该调用真实API
+            # 为演示目的，这里使用示例数据创建支付详情
+            if settings.DEBUG or self.payment_method.test_mode:
+                # 测试模式: 创建模拟数据
+                charge_id = f"TEST-CHARGE-{uuid.uuid4().hex[:8]}"
+                charge_code = f"TEST-CODE-{uuid.uuid4().hex[:6].upper()}"
+                hosted_url = f"https://commerce.coinbase.com/checkout/demo-{uuid.uuid4().hex[:8]}"
+            else:
+                # 实际调用Coinbase API
+                try:
+                    headers = {
+                        'X-CC-Api-Key': self.api_key,
+                        'X-CC-Version': '2018-03-22',
+                        'Content-Type': 'application/json'
+                    }
+                    response = requests.post(
+                        f"{self.base_url}/charges",
+                        headers=headers,
+                        json=charge_data
+                    )
+                    
+                    if response.status_code == 201:
+                        data = response.json()['data']
+                        charge_id = data['id']
+                        charge_code = data['code']
+                        hosted_url = data['hosted_url']
+                    else:
+                        logger.error(f"Coinbase API错误: {response.status_code} {response.text}")
+                        payment.status = 'failed'
+                        payment.status_message = f"Coinbase API错误: {response.status_code}"
+                        payment.save(update_fields=['status', 'status_message'])
+                        return payment
+                except Exception as e:
+                    logger.error(f"调用Coinbase API时出错: {str(e)}")
+                    payment.status = 'failed'
+                    payment.status_message = f"调用Coinbase API时出错: {str(e)}"
+                    payment.save(update_fields=['status', 'status_message'])
+                    return payment
+            
+            # 创建Coinbase支付详情
+            coinbase_details = CoinbaseCommercePaymentDetail.objects.create(
+                payment=payment,
+                charge_id=charge_id,
+                charge_code=charge_code,
+                hosted_url=hosted_url,
+                status='NEW'  # 初始状态
+            )
+            
+            # 更新支付数据
+            payment.payment_data = {
+                'checkout_url': hosted_url
+            }
+            payment.save(update_fields=['payment_data'])
+            
+            return payment
+            
+        except Exception as e:
+            logger.error(f"创建Coinbase Commerce支付时出错: {str(e)}")
+            payment.status = 'failed'
+            payment.status_message = f"创建支付时出错: {str(e)}"
+            payment.save(update_fields=['status', 'status_message'])
+            return payment
     
-    from .models import PaymentMethod
+    def process_payment(self, payment, **kwargs):
+        """处理Coinbase Commerce支付
+        由于Coinbase Commerce是重定向到托管页面，此方法通常不会直接调用
+        """
+        return {
+            'success': True,
+            'message': '请前往Coinbase页面完成支付',
+            'redirect_url': payment.payment_data.get('checkout_url', '')
+        }
     
+    def check_payment_status(self, payment):
+        """检查Coinbase Commerce支付状态"""
+        try:
+            coinbase_details = payment.coinbase_details
+            
+            # 如果状态已经是完成，直接返回
+            if payment.status == 'completed':
+                return {
+                    'success': True,
+                    'status': 'completed',
+                    'message': '支付已完成'
+                }
+            
+            # 如果是测试模式，模拟检查结果
+            if settings.DEBUG or self.payment_method.test_mode:
+                # 固定返回待处理状态，实际应通过webhook更新
+                return {
+                    'success': True,
+                    'status': 'pending',
+                    'message': '支付处理中(测试模式)'
+                }
+            
+            # 调用Coinbase API检查支付状态
+            try:
+                if not coinbase_details.charge_id:
+                    return {
+                        'success': False,
+                        'status': 'error',
+                        'message': '缺少Charge ID'
+                    }
+                
+                headers = {
+                    'X-CC-Api-Key': self.api_key,
+                    'X-CC-Version': '2018-03-22'
+                }
+                response = requests.get(
+                    f"{self.base_url}/charges/{coinbase_details.charge_id}",
+                    headers=headers
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()['data']
+                    coinbase_status = data['timeline'][-1]['status']
+                    
+                    # 更新支付详情状态
+                    coinbase_details.status = coinbase_status
+                    
+                    # 如果使用了加密货币，记录使用的货币
+                    if 'payments' in data and data['payments']:
+                        coinbase_details.crypto_used = data['payments'][0]['value']['crypto']
+                    
+                    coinbase_details.save()
+                    
+                    # 如果支付已确认或完成，标记为已完成
+                    if coinbase_status in ['COMPLETED', 'CONFIRMED']:
+                        payment.mark_as_completed(transaction_id=coinbase_details.charge_id)
+                        return {
+                            'success': True,
+                            'status': 'completed',
+                            'message': '支付已完成'
+                        }
+                    
+                    # 映射Coinbase状态到我们的状态
+                    status_mapping = {
+                        'NEW': 'pending',
+                        'PENDING': 'pending',
+                        'RESOLVED': 'completed',
+                        'EXPIRED': 'failed',
+                        'CANCELED': 'cancelled',
+                        'UNRESOLVED': 'processing'
+                    }
+                    
+                    internal_status = status_mapping.get(coinbase_status, 'processing')
+                    
+                    # 更新支付记录状态
+                    payment.status = internal_status
+                    payment.save(update_fields=['status'])
+                    
+                    return {
+                        'success': True,
+                        'status': internal_status,
+                        'message': f'支付状态: {coinbase_status}'
+                    }
+                else:
+                    logger.error(f"Coinbase API状态查询错误: {response.status_code} {response.text}")
+                    return {
+                        'success': False,
+                        'status': 'error',
+                        'message': f"API错误: {response.status_code}"
+                    }
+            except Exception as e:
+                logger.error(f"检查Coinbase支付状态时出错: {str(e)}")
+                return {
+                    'success': False,
+                    'status': 'error',
+                    'message': f"检查状态时出错: {str(e)}"
+                }
+            
+        except Exception as e:
+            logger.error(f"获取Coinbase支付详情时出错: {str(e)}")
+            return {
+                'success': False,
+                'status': 'error',
+                'message': f"获取支付详情时出错: {str(e)}"
+            }
+    
+    def process_webhook(self, request):
+        """处理Coinbase Commerce webhook回调"""
+        try:
+            # 验证webhook签名
+            signature = request.headers.get('X-CC-Webhook-Signature', '')
+            
+            if not signature and not settings.DEBUG:
+                return {
+                    'success': False,
+                    'message': '缺少webhook签名'
+                }
+            
+            # 在实际环境中应验证签名
+            # 此处简化处理，假设签名有效
+            
+            # 解析webhook数据
+            payload = json.loads(request.body)
+            event_type = payload.get('type', '')
+            
+            if event_type not in ['charge:confirmed', 'charge:resolved', 'charge:failed', 'charge:created']:
+                # 忽略其他类型的事件
+                return {
+                    'success': True,
+                    'message': f'忽略事件类型: {event_type}'
+                }
+            
+            # 获取charge数据
+            charge_data = payload.get('data', {}).get('id', '')
+            if not charge_data:
+                return {
+                    'success': False,
+                    'message': '缺少charge数据'
+                }
+            
+            charge_id = charge_data.get('id', '')
+            
+            # 查找对应的支付详情
+            try:
+                coinbase_detail = CoinbaseCommercePaymentDetail.objects.get(charge_id=charge_id)
+                payment = coinbase_detail.payment
+            except CoinbaseCommercePaymentDetail.DoesNotExist:
+                return {
+                    'success': False,
+                    'message': f'未找到匹配的支付记录: {charge_id}'
+                }
+            
+            # 根据事件类型更新状态
+            coinbase_status = payload.get('data', {}).get('timeline', [{}])[-1].get('status', '')
+            
+            # 更新支付详情状态
+            coinbase_detail.status = coinbase_status
+            coinbase_detail.save(update_fields=['status'])
+            
+            # 如果使用了加密货币，记录使用的货币
+            payments = payload.get('data', {}).get('payments', [])
+            if payments:
+                crypto = payments[0].get('value', {}).get('crypto', '')
+                if crypto:
+                    coinbase_detail.crypto_used = crypto
+                    coinbase_detail.save(update_fields=['crypto_used'])
+            
+            # 如果支付已确认或完成，标记为已完成
+            if coinbase_status in ['COMPLETED', 'CONFIRMED']:
+                payment.mark_as_completed(transaction_id=charge_id)
+            elif coinbase_status == 'CANCELED':
+                payment.status = 'cancelled'
+                payment.save(update_fields=['status'])
+            elif coinbase_status == 'EXPIRED':
+                payment.status = 'failed'
+                payment.status_message = '支付已过期'
+                payment.save(update_fields=['status', 'status_message'])
+            
+            return {
+                'success': True,
+                'message': f'已处理webhook事件: {event_type}'
+            }
+            
+        except Exception as e:
+            logger.error(f"处理Coinbase webhook时出错: {str(e)}")
+            return {
+                'success': False,
+                'message': f"处理webhook时出错: {str(e)}"
+            }
+
+
+def get_payment_processor(payment_method_code):
+    """根据支付方式代码获取对应的处理器"""
     try:
         payment_method = PaymentMethod.objects.get(code=payment_method_code, is_active=True)
     except PaymentMethod.DoesNotExist:
-        logger.error(f"找不到支付方式: {payment_method_code}")
         return None
     
-    # 根据支付方式类型返回对应的处理器
-    try:
-        if payment_method.payment_type == 'usdt':
-            return USDTPaymentProcessor(payment_method)
-        elif payment_method.payment_type == 'paypal':
-            return PayPalPaymentProcessor(payment_method)
-        elif payment_method.payment_type == 'credit_card':
-            return CreditCardPaymentProcessor(payment_method)
-        else:
-            logger.error(f"不支持的支付类型: {payment_method.payment_type}")
-            return None
-    except Exception as e:
-        logger.error(f"创建支付处理器时出错: {str(e)}")
+    # 根据支付类型返回对应的处理器
+    if payment_method.payment_type == 'usdt':
+        return USDTPaymentProcessor(payment_method)
+    elif payment_method.payment_type == 'paypal':
+        return PayPalPaymentProcessor(payment_method)
+    elif payment_method.payment_type == 'credit_card':
+        return CreditCardPaymentProcessor(payment_method)
+    elif payment_method.payment_type == 'coinbase_commerce':
+        return CoinbaseCommercePaymentProcessor(payment_method)
+    else:
         return None 

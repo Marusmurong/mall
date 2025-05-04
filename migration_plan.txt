@@ -1,0 +1,122 @@
+# 心愿单应用迁移计划
+
+## 背景
+当前系统中存在两个心愿单应用：
+- wishlist (旧版)
+- wishlist_new (新版)
+
+API层已经在使用wishlist_new，但仍有一些老应用在使用旧版wishlist。
+
+## 迁移步骤
+
+1. 更新依赖于旧版wishlist的应用，使其改用wishlist_new
+   - users/views.py
+   - telegram_bot/signals.py
+   - telegram_bot/tasks.py
+
+2. 确保数据迁移
+   - 确保wishlist_new中包含了所有wishlist的数据
+   - 可以编写一个迁移脚本将数据从wishlist复制到wishlist_new
+
+3. 更新URL配置
+   - 确认所有指向wishlist的URL现在都指向wishlist_new的视图
+
+4. 删除旧版wishlist
+   - 在settings.py中移除wishlist
+   - 删除wishlist文件夹
+   - 运行migrate命令删除相关表
+
+## 详细操作
+
+### 1. 更新依赖
+替换以下文件中的导入:
+
+- users/views.py:
+  ```python
+  from wishlist.models import Wishlist
+  ```
+  改为:
+  ```python
+  from wishlist_new.models import Wishlist
+  ```
+
+- telegram_bot/signals.py:
+  ```python
+  from wishlist.models import Wishlist, WishlistItem
+  ```
+  改为:
+  ```python
+  from wishlist_new.models import Wishlist, WishlistItem
+  ```
+
+- telegram_bot/tasks.py:
+  ```python
+  from wishlist.models import Wishlist
+  from wishlist.models import WishlistItem
+  ```
+  改为:
+  ```python
+  from wishlist_new.models import Wishlist
+  from wishlist_new.models import WishlistItem
+  ```
+
+### 2. 数据迁移脚本
+创建脚本 migrate_wishlist_data.py:
+```python
+from django.core.management.base import BaseCommand
+from wishlist.models import Wishlist as OldWishlist, WishlistItem as OldWishlistItem
+from wishlist_new.models import Wishlist as NewWishlist, WishlistItem as NewWishlistItem
+
+class Command(BaseCommand):
+    help = '将数据从旧版wishlist迁移到wishlist_new'
+
+    def handle(self, *args, **options):
+        # 迁移心愿单
+        old_wishlists = OldWishlist.objects.all()
+        self.stdout.write(f'开始迁移{old_wishlists.count()}个心愿单')
+        
+        for old_wishlist in old_wishlists:
+            # 检查是否已存在
+            if not NewWishlist.objects.filter(user=old_wishlist.user).exists():
+                new_wishlist = NewWishlist(
+                    name=old_wishlist.name,
+                    user=old_wishlist.user,
+                    description=old_wishlist.notes,
+                    is_public=old_wishlist.is_public,
+                    share_code=old_wishlist.share_code,
+                    created_at=old_wishlist.created_at,
+                    updated_at=old_wishlist.updated_at,
+                )
+                new_wishlist.save()
+                self.stdout.write(f'迁移心愿单: {old_wishlist.name}')
+                
+                # 迁移心愿单商品
+                for old_item in OldWishlistItem.objects.filter(wishlist=old_wishlist):
+                    new_item = NewWishlistItem(
+                        wishlist=new_wishlist,
+                        product=old_item.product,
+                        title=product.name if hasattr(old_item, 'product') and old_item.product else '未知商品',
+                        description=old_item.notes,
+                        price=old_item.product.shop_price if hasattr(old_item, 'product') and old_item.product else 0,
+                        priority='medium',
+                        added_at=old_item.added_at
+                    )
+                    new_item.save()
+                    self.stdout.write(f'迁移商品: {new_item.title}')
+            else:
+                self.stdout.write(f'用户{old_wishlist.user.username}已有心愿单，跳过')
+                
+        self.stdout.write(self.style.SUCCESS('迁移完成'))
+```
+
+### 3. 删除旧版wishlist
+在完成上述步骤后，执行以下操作:
+
+1. 在settings.py中从INSTALLED_APPS删除'wishlist'
+2. 运行 `python manage.py migrate wishlist zero` 删除数据表
+3. 可以选择物理删除wishlist文件夹
+
+### 注意事项
+- 在删除旧版wishlist之前，确保所有测试通过
+- 记录URL变更，确保前端能够正常访问新端点
+- 需要更新相关文档，通知前端开发团队 

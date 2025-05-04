@@ -141,12 +141,27 @@ export const useWishlistStore = defineStore('wishlist', {
         
         // 正确处理分页格式的响应
         let wishlists: Wishlist[] = []
-        if (response && response.data && response.data.results) {
-          // API返回的是分页格式的数据
+        
+        if (response && response.data && Array.isArray(response.data.results)) {
+          // API返回的是分页格式的数据 {code: 0, message: "success", data: {results: [...]}}
           wishlists = response.data.results as Wishlist[]
+          console.log('从分页格式中提取心愿单列表:', wishlists)
+        } else if (response && Array.isArray(response.results)) {
+          // API直接返回分页格式 {results: [...]}
+          wishlists = response.results as Wishlist[]
+          console.log('从results字段提取心愿单列表:', wishlists)
         } else if (Array.isArray(response)) {
-          // 兼容直接返回数组的情况
+          // API直接返回数组格式
           wishlists = response as Wishlist[]
+          console.log('API直接返回数组格式:', wishlists)
+        } else if (response && typeof response === 'object') {
+          // 尝试查找可能的心愿单数据
+          console.log('尝试从其他响应格式中找到心愿单数据')
+          if (response.data && Array.isArray(response.data)) {
+            wishlists = response.data as Wishlist[]
+          } else if (response.wishlists && Array.isArray(response.wishlists)) {
+            wishlists = response.wishlists as Wishlist[]
+          }
         }
         
         console.log('解析后的心愿单列表:', wishlists)
@@ -205,8 +220,22 @@ export const useWishlistStore = defineStore('wishlist', {
       this.error = null
       
       try {
-        const wishlist = await api.wishlist.getByShareCode(shareCode)
-        this.sharedWishlist = wishlist
+        console.log('开始从API获取分享心愿单，分享码:', shareCode)
+        const response = await api.wishlist.getByShareCode(shareCode)
+        console.log('API响应:', response)
+        
+        // 处理API响应格式
+        if (response && response.code === 0 && response.data) {
+          // 标准API封装格式 {code: 0, message: "success", data: {...}}
+          console.log('使用标准API响应格式中的data字段:', response.data)
+          this.sharedWishlist = response.data
+        } else {
+          // 直接使用响应
+          console.log('使用直接API响应:', response)
+          this.sharedWishlist = response
+        }
+        
+        console.log('分享心愿单数据设置完成:', this.sharedWishlist)
       } catch (error: any) {
         console.error('获取分享心愿单失败:', error)
         this.error = error.message || '获取分享心愿单失败'
@@ -215,64 +244,39 @@ export const useWishlistStore = defineStore('wishlist', {
       }
     },
     
-    // 添加商品到指定心愿单
+    // 添加商品到心愿单
     async addToWishlist(product: any, wishlistId: string | null = null, customData = {}) {
       const api = useApi()
       const authStore = useAuthStore()
       
+      // 验证商品数据
+      if (!product || !product.id) {
+        console.error('添加到心愿单失败: 无效的商品数据')
+        this.error = '无效的商品数据'
+        return { success: false, error: '无效的商品数据' }
+      }
+      
+      // 确保用户已登录
       if (!authStore.isAuthenticated) {
+        console.error('添加到心愿单失败: 用户未登录')
         this.error = '请先登录'
         return { success: false, error: '请先登录' }
+      }
+      
+      // 必须提供心愿单ID
+      if (!wishlistId) {
+        console.error('添加到心愿单失败: 未指定心愿单')
+        this.error = '请选择要添加到的心愿单'
+        return { success: false, error: '请选择要添加到的心愿单' }
       }
       
       this.loading = true
       this.error = null
       
       try {
-        // 如果没有提供心愿单ID，使用当前选中的心愿单
-        let finalWishlistId = wishlistId || this.currentWishlistId
-        
-        // 如果没有心愿单ID，先获取或创建一个
-        if (!finalWishlistId) {
-          // 先检查用户是否已有心愿单
-          if (this.userWishlists.length === 0) {
-            // 如果没有心愿单，先获取用户的心愿单
-            await this.fetchUserWishlists()
-          }
-          
-          // 再次检查用户是否有心愿单
-          if (this.userWishlists.length > 0) {
-            // 如果有，使用第一个心愿单
-            finalWishlistId = this.userWishlists[0].id
-            this.currentWishlistId = finalWishlistId
-            console.log('使用现有心愿单:', finalWishlistId)
-          } else {
-            // 如果没有，创建新心愿单
-            console.log('没有心愿单，创建新心愿单')
-            const result = await this.createWishlist({
-              name: `我的心愿单`,
-              description: '',
-              is_public: true
-            })
-            
-            if (!result.success || !result.wishlist) {
-              throw new Error('创建心愿单失败')
-            }
-            
-            finalWishlistId = result.wishlist.id
-            this.currentWishlistId = finalWishlistId
-            console.log('创建新心愿单成功:', finalWishlistId)
-          }
-        }
-        
-        // 再次检查是否有有效的心愿单ID
-        if (!finalWishlistId) {
-          throw new Error('无法确定要添加到哪个心愿单')
-        }
-        
-        // 准备添加到心愿单的数据
+        // 准备添加商品的数据
         const itemData = {
-          wishlist: finalWishlistId, // 指定心愿单ID
+          wishlist: wishlistId,
           product_id: product.id,
           description: product.description || '',
           priority: 'medium',
@@ -287,7 +291,7 @@ export const useWishlistStore = defineStore('wishlist', {
         // 重新获取心愿单以更新数据
         await this.fetchUserWishlists()
         
-        return { success: true, wishlistId: finalWishlistId }
+        return { success: true, wishlistId: wishlistId }
       } catch (error: any) {
         console.error('添加到心愿单失败:', error)
         this.error = error.message || '添加到心愿单失败'
@@ -326,7 +330,7 @@ export const useWishlistStore = defineStore('wishlist', {
       }
     },
     
-    // 获取或创建心愿单
+    // 创建心愿单
     async createWishlist(data: { name: string, description: string, is_public: boolean }) {
       const api = useApi()
       const authStore = useAuthStore()
@@ -340,34 +344,6 @@ export const useWishlistStore = defineStore('wishlist', {
       this.error = null
       
       try {
-        // 先尝试获取用户当前的心愿单
-        try {
-          console.log('尝试获取用户当前心愿单')
-          const currentWishlist = await api.wishlist.getCurrent()
-          console.log('获取当前心愿单响应:', currentWishlist)
-          
-          if (currentWishlist && currentWishlist.id) {
-            // 更新本地数据
-            const existingIndex = this.userWishlists.findIndex(w => w.id === currentWishlist.id)
-            if (existingIndex >= 0) {
-              // 如果已存在，替换
-              this.userWishlists[existingIndex] = currentWishlist
-            } else {
-              // 如果不存在，添加
-              this.userWishlists.push(currentWishlist)
-            }
-            this.currentWishlistId = currentWishlist.id
-            
-            // 强制触发响应式更新
-            this.userWishlists = [...this.userWishlists]
-            
-            return { success: true, wishlist: currentWishlist }
-          }
-        } catch (err) {
-          console.log('获取当前心愿单失败，尝试创建新心愿单:', err)
-        }
-        
-        // 如果没有现有心愿单，尝试创建新的
         // 确保所有必要字段都存在并有默认值
         const wishlistData = {
           name: data.name || `我的心愿单`,
@@ -376,22 +352,14 @@ export const useWishlistStore = defineStore('wishlist', {
         }
         
         console.log('开始创建心愿单, 数据格式:', wishlistData)
-        console.log('认证状态:', authStore.isAuthenticated, '令牌:', authStore.token)
         
         const newWishlist = await api.wishlist.create(wishlistData)
         console.log('创建心愿单响应:', newWishlist)
         
         // 更新本地数据
         if (newWishlist && newWishlist.id) {
-          // 先检查是否已存在
-          const existingIndex = this.userWishlists.findIndex(w => w.id === newWishlist.id)
-          if (existingIndex >= 0) {
-            // 如果已存在，替换
-            this.userWishlists[existingIndex] = newWishlist
-          } else {
-            // 如果不存在，添加
-            this.userWishlists.push(newWishlist)
-          }
+          // 添加到心愿单列表
+          this.userWishlists.push(newWishlist)
           this.currentWishlistId = newWishlist.id
           
           // 强制触发响应式更新
@@ -400,8 +368,8 @@ export const useWishlistStore = defineStore('wishlist', {
         
         return { success: true, wishlist: newWishlist }
       } catch (error: any) {
-        console.error('获取或创建心愿单失败:', error)
-        this.error = error.message || '获取或创建心愿单失败'
+        console.error('创建心愿单失败:', error)
+        this.error = error.message || '创建心愿单失败'
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -498,24 +466,21 @@ export const useWishlistStore = defineStore('wishlist', {
       }
     },
     
-    // 为心愿单商品创建支付
+    // 对WishlistItem创建支付
     async createPaymentForItem(itemId: string) {
       const api = useApi()
       
-      this.loading = true
-      this.error = null
-      
       try {
         // 调用支付API创建支付
-        const payment = await api.payments.createForWishlistItem(itemId)
+        const payment = await api.payments.createPayment({
+          wishlist_item: itemId,
+          payment_method: 'standard'
+        })
         
         return { success: true, payment }
       } catch (error: any) {
         console.error('创建支付失败:', error)
-        this.error = error.message || '创建支付失败'
-        return { success: false, error: this.error }
-      } finally {
-        this.loading = false
+        return { success: false, error: error.message || '创建支付失败' }
       }
     },
     

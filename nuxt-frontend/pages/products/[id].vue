@@ -1,18 +1,18 @@
 <template>
   <div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- 加载状态 -->
+      <!-- Loading State -->
       <div v-if="loading" class="flex justify-center py-10">
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
       </div>
       
       <template v-else-if="product">
-        <!-- 面包屑导航 -->
+        <!-- Breadcrumb Navigation -->
         <nav class="flex mb-8" aria-label="Breadcrumb">
           <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
               <NuxtLink to="/" class="text-gray-500 hover:text-gray-700">
-                首页
+                Home
               </NuxtLink>
             </li>
             <li>
@@ -21,7 +21,7 @@
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                 </svg>
                 <NuxtLink to="/categories" class="ml-1 text-gray-500 hover:text-gray-700 md:ml-2">
-                  分类
+                  Categories
                 </NuxtLink>
               </div>
             </li>
@@ -46,12 +46,12 @@
           </ol>
         </nav>
         
-        <!-- 商品详情 -->
+        <!-- Product Details -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-            <!-- 商品图片 -->
+            <!-- Product Images -->
             <div>
-              <!-- 主图 -->
+              <!-- Main Image -->
               <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
                 <img 
                   :src="currentImage" 
@@ -60,7 +60,7 @@
                 >
               </div>
               
-              <!-- 缩略图 -->
+              <!-- Thumbnails -->
               <div v-if="productImages.length > 1" class="grid grid-cols-5 gap-2">
                 <button 
                   v-for="(image, index) in productImages" 
@@ -104,14 +104,14 @@
               <!-- 价格 -->
               <div class="mb-6">
                 <div class="flex items-baseline">
-                  <span v-if="product.discount_price" class="text-2xl font-bold text-red-600">¥{{ product.discount_price }}</span>
+                  <span v-if="product.discount_price" class="text-2xl font-bold text-red-600">${{ product.discount_price }}</span>
                   <span 
                     :class="[product.discount_price ? 'text-lg text-gray-500 line-through ml-2' : 'text-2xl font-bold text-gray-900']"
                   >
-                    ¥{{ product.price }}
+                    ${{ product.price }}
                   </span>
                   <span v-if="product.discount_price" class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
-                    {{ Math.round((1 - product.discount_price / product.price) * 100) }}% 折扣
+                    {{ Math.round((1 - product.discount_price / product.price) * 100) }}% discount
                   </span>
                 </div>
                 <p v-if="product.stock > 0 && product.stock < 10" class="text-sm text-orange-600 mt-1">
@@ -119,9 +119,9 @@
                 </p>
               </div>
               
-              <!-- 规格选择 -->
+              <!-- Specifications选择 -->
               <div v-if="product.variants && product.variants.length" class="mb-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">规格</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Specifications</h3>
                 <div class="flex flex-wrap gap-2">
                   <button 
                     v-for="variant in product.variants" 
@@ -135,9 +135,9 @@
                 </div>
               </div>
               
-              <!-- 数量选择 -->
+              <!-- Quantity选择 -->
               <div class="mb-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">数量</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Quantity</h3>
                 <div class="flex items-center">
                   <button 
                     @click="quantity > 1 ? quantity-- : null"
@@ -177,7 +177,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  加入购物车
+                  Add to Cart
                 </button>
                 <button 
                   @click="toggleWishlist"
@@ -189,27 +189,27 @@
                   <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
-                  {{ isInWishlist ? '已加入心愿单' : '加入心愿单' }}
+                  {{ isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}
                 </button>
               </div>
               
-              <!-- 商品标签 -->
+              <!-- Product Tags -->
               <div class="flex flex-wrap gap-2 mb-6">
-                <span v-if="product.is_new" class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">新品</span>
-                <span v-if="product.is_hot" class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">热销</span>
-                <span v-if="product.is_recommended" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">推荐</span>
-                <span v-if="product.stock === 0" class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">缺货</span>
+                <span v-if="product.is_new" class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">New</span>
+                <span v-if="product.is_hot" class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">Hot</span>
+                <span v-if="product.is_recommended" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">Recommended</span>
+                <span v-if="product.stock === 0" class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">Out of Stock</span>
               </div>
               
-              <!-- 商品简介 -->
+              <!-- Product Brief -->
               <div class="border-t border-gray-200 pt-4">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">商品简介</h3>
-                <p class="text-sm text-gray-600">{{ product.brief || '暂无简介' }}</p>
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Product Brief</h3>
+                <p class="text-sm text-gray-600">{{ product.brief || 'No description available' }}</p>
               </div>
             </div>
           </div>
           
-          <!-- 商品详情标签页 -->
+          <!-- Product Details标签页 -->
           <div class="border-t border-gray-200">
             <div class="border-b border-gray-200">
               <nav class="-mb-px flex">
@@ -218,34 +218,34 @@
                   class="py-4 px-6 text-sm font-medium"
                   :class="activeTab === 'description' ? 'border-b-2 border-primary-500 text-primary-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                 >
-                  商品详情
+                  Product Details
                 </button>
                 <button 
                   @click="activeTab = 'specs'"
                   class="py-4 px-6 text-sm font-medium"
                   :class="activeTab === 'specs' ? 'border-b-2 border-primary-500 text-primary-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                 >
-                  规格参数
+                  Specifications
                 </button>
                 <button 
                   @click="activeTab = 'reviews'"
                   class="py-4 px-6 text-sm font-medium"
                   :class="activeTab === 'reviews' ? 'border-b-2 border-primary-500 text-primary-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                 >
-                  用户评价
+                  Reviews
                 </button>
               </nav>
             </div>
             
             <!-- 标签页内容 -->
             <div class="p-6">
-              <!-- 商品详情 -->
+              <!-- Product Details -->
               <div v-if="activeTab === 'description'" class="prose max-w-none">
                 <div v-if="product.description" v-html="product.description"></div>
-                <p v-else class="text-gray-500">暂无详细描述</p>
+                <p v-else class="text-gray-500">No detailed description available</p>
               </div>
               
-              <!-- 规格参数 -->
+              <!-- Specifications -->
               <div v-else-if="activeTab === 'specs'">
                 <div v-if="product.specifications && product.specifications.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div 
@@ -257,10 +257,10 @@
                     <span class="w-2/3 text-sm text-gray-900">{{ spec.value }}</span>
                   </div>
                 </div>
-                <p v-else class="text-gray-500">暂无规格参数</p>
+                <p v-else class="text-gray-500">暂无Specifications</p>
               </div>
               
-              <!-- 用户评价 -->
+              <!-- Reviews -->
               <div v-else-if="activeTab === 'reviews'">
                 <div v-if="product.reviews && product.reviews.length">
                   <div 
@@ -288,15 +288,15 @@
                     <p class="text-sm text-gray-600">{{ review.content }}</p>
                   </div>
                 </div>
-                <p v-else class="text-gray-500">暂无评价</p>
+                <p v-else class="text-gray-500">No reviews yet</p>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- 相关商品 -->
+        <!-- Related Products -->
         <div v-if="relatedProducts.length" class="mt-12">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">相关商品</h2>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             <ProductCard 
               v-for="relatedProduct in relatedProducts" 
@@ -312,13 +312,13 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h3 class="mt-4 text-lg font-medium text-gray-900">获取商品失败</h3>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">Failed to load product</h3>
         <p class="mt-1 text-gray-500">{{ error }}</p>
         <button 
           @click="fetchProductData"
           class="mt-4 btn btn-primary"
         >
-          重试
+          Retry
         </button>
       </div>
     </div>
@@ -333,6 +333,9 @@ const productId = route.params.id
 // 获取API服务
 const api = useApi()
 
+// 获取图片URL工具
+const { formatImageUrl } = useImageUrl()
+
 // 获取状态管理
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
@@ -344,7 +347,7 @@ const relatedProducts = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-// 商品详情UI状态
+// Product DetailsUI状态
 const quantity = ref(1)
 const activeTab = ref('description')
 const selectedVariant = ref(null)
@@ -354,19 +357,31 @@ const currentImageIndex = ref(0)
 const productImages = computed(() => {
   if (!product.value) return []
   
+  let images = []
+  
+  // 处理商品图片集合
   if (product.value.images && product.value.images.length) {
-    return product.value.images.map(img => img.image)
+    images = product.value.images.map(img => {
+      // 检查图片对象格式
+      const imgUrl = typeof img === 'string' ? img : img.image
+      return imgUrl
+    })
+  }
+  // 如果没有图片集合但有主图，使用主图
+  else if (product.value.image) {
+    images = [product.value.image]
+  }
+  // 如果没有任何图片，使用占位图
+  else {
+    images = ['/images/product-placeholder.jpg']
   }
   
-  if (product.value.image) {
-    return [product.value.image]
-  }
-  
-  return ['/images/product-placeholder.jpg']
+  return images
 })
 
 const currentImage = computed(() => {
-  return productImages.value[currentImageIndex.value] || '/images/product-placeholder.jpg'
+  const image = productImages.value[currentImageIndex.value] || '/images/product-placeholder.jpg'
+  return formatImageUrl(image)
 })
 
 // 是否在心愿单中
@@ -374,32 +389,64 @@ const isInWishlist = computed(() => {
   return wishlistStore.isInAnyWishlist(productId)
 })
 
-// 获取商品详情
+// 获取Product Details
 const fetchProductData = async () => {
   try {
     loading.value = true
     error.value = null
     
-    // 获取商品详情
+    // 获取Product Details
     const productData = await api.products.getById(productId)
-    product.value = productData
+    console.log('API返回的原始商品数据:', productData)
+    
+    // 检查是否有标准的API响应格式
+    if (productData && productData.code === 0 && productData.data) {
+      console.log('检测到标准API响应格式，提取data字段')
+      product.value = productData.data
+    } else {
+      // 直接使用返回数据
+      product.value = productData
+    }
+    
+    console.log('处理后的商品数据:', product.value)
     
     // 设置默认变体
     if (product.value.variants && product.value.variants.length) {
       selectedVariant.value = product.value.variants[0]
     }
     
-    // 获取相关商品
-    // 这里简化处理，实际可能需要调用专门的API
-    if (product.value.category) {
-      const categoryProducts = await api.categories.getProducts(product.value.category.id)
-      relatedProducts.value = categoryProducts
-        .filter(p => p.id !== productId)
-        .slice(0, 5)
+    // 获取Related Products
+    // 只有当商品有有效的CategoriesID时才获取Related Products
+    if (product.value.category && product.value.category.id && product.value.category.id !== 'undefined') {
+      try {
+        const categoryProducts = await api.categories.getProducts(product.value.category.id)
+        
+        // 检查API返回格式
+        if (categoryProducts && categoryProducts.code === 0 && categoryProducts.data) {
+          // 从标准响应中提取results
+          if (categoryProducts.data.results) {
+            relatedProducts.value = categoryProducts.data.results
+              .filter(p => p.id !== productId)
+              .slice(0, 5)
+          }
+        } else {
+          // 直接使用返回数据
+          relatedProducts.value = categoryProducts
+            .filter(p => p.id !== productId)
+            .slice(0, 5)
+        }
+      } catch (err) {
+        console.error('获取Related Products失败:', err)
+        // 设置为空数组而不是失败整个请求
+        relatedProducts.value = []
+      }
+    } else {
+      console.log('商品没有有效的CategoriesID，跳过获取Related Products')
+      relatedProducts.value = []
     }
   } catch (err) {
-    console.error('获取商品数据失败:', err)
-    error.value = err.message || '获取商品数据失败'
+    console.error('Failed to get product data:', err)
+    error.value = err.message || 'Failed to get product data'
   } finally {
     loading.value = false
   }
@@ -417,7 +464,7 @@ const addToCart = () => {
     
     // 显示提示信息
     // 这里可以使用toast通知组件
-    alert(`已将 ${quantity.value} 件 ${product.value.name} 添加到购物车`)
+    alert(`Added ${quantity.value} ${product.value.name} to cart`)
   }
 }
 
@@ -425,7 +472,7 @@ const addToCart = () => {
 const toggleWishlist = async () => {
   // 检查用户是否已登录
   if (!authStore.isAuthenticated) {
-    alert('请先登录')
+    alert('Please login first')
     // 可以重定向到登录页面
     // navigateTo('/login')
     return
@@ -438,18 +485,18 @@ const toggleWishlist = async () => {
     if (wishlistItem) {
       const result = await wishlistStore.removeFromWishlist(wishlistItem.id)
       if (result.success) {
-        alert('已从心愿单移除')
+        alert('Removed from wishlist')
       } else {
-        alert(result.error || '操作失败')
+        alert(result.error || 'Operation failed')
       }
     }
   } else {
     // 添加到心愿单
     const result = await wishlistStore.addToWishlist(product.value)
     if (result.success) {
-      alert('已添加到心愿单')
+      alert('Added to wishlist')
     } else {
-      alert(result.error || '操作失败')
+      alert(result.error || 'Operation failed')
     }
   }
 }

@@ -6,35 +6,15 @@ def site_config(request):
     current_site = get_current_site()
     site_name = SITE_NAMES.get(current_site, 'Default Mall')
     
-    # 从Alokai平台获取站点配置
-    try:
-        import requests
-        response = requests.get(
-            f'https://platform.alokai.com/api/v1/sites/{current_site}/config',
-            headers={'Authorization': f'Bearer {DEFAULT_API_TOKEN}'},
-            timeout=5
-        )
-        if response.status_code == 200:
-            site_config = response.json()
-        else:
-            site_config = {
-                'theme': 'default',
-                'features': {
-                    'wishlist': True,
-                    'cart': True,
-                    'user_profile': True
-                }
-            }
-    except Exception as e:
-        print(f"获取站点配置失败: {e}")
-        site_config = {
-            'theme': 'default',
-            'features': {
-                'wishlist': True,
-                'cart': True,
-                'user_profile': True
-            }
+    # 使用本地固定配置，不再访问外部API
+    site_config = {
+        'theme': 'default',
+        'features': {
+            'wishlist': True,
+            'cart': True,
+            'user_profile': True
         }
+    }
     
     return {
         'site_config': site_config,

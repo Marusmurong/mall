@@ -7,6 +7,17 @@
     <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
       <h2 class="text-xl font-bold mb-4">添加到心愿单</h2>
       
+      <!-- 商品已存在于心愿单中的提示 -->
+      <div v-if="existingWishlists.length > 0" class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+        <p class="text-sm text-yellow-700">该商品已存在于以下心愿单：</p>
+        <ul class="mt-2 ml-4 list-disc text-sm text-yellow-600">
+          <li v-for="wishlist in existingWishlists" :key="wishlist.id">
+            {{ wishlist.name }}
+          </li>
+        </ul>
+        <p class="mt-2 text-sm text-yellow-700">你可以将其添加到其他心愿单或创建新的心愿单。</p>
+      </div>
+      
       <!-- 选择现有心愿单 -->
       <div v-if="!isCreatingNew && wishlists.length > 0" class="mb-4">
         <h3 class="font-medium mb-2">选择心愿单</h3>
@@ -15,6 +26,7 @@
             v-for="wishlist in wishlists" 
             :key="wishlist.id"
             class="p-4 border rounded-lg cursor-pointer hover:bg-primary-50 transition-colors mb-2 flex justify-between items-center group relative"
+            :class="{'bg-primary-50': isProductInWishlist(wishlist.id)}"
             @click="selectWishlist(wishlist.id)"
           >
             <div class="flex-1">
@@ -27,7 +39,7 @@
               </svg>
             </div>
             <!-- 如果商品已在该心愿单中，显示标记 -->
-            <div v-if="wishlist.items?.some(item => item.product?.id === props.product.id)" 
+            <div v-if="isProductInWishlist(wishlist.id)" 
                  class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
               已添加
             </div>
@@ -161,6 +173,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useWishlistStore } from '../stores/wishlist'
+import { useApi } from '../composables/useApi'
 
 const props = defineProps({
   show: {
@@ -185,9 +198,22 @@ const newWishlistIsPublic = ref(true)
 // 获取用户的心愿单列表
 const wishlists = computed(() => {
   const lists = wishlistStore.getUserWishlists
-  console.log('当前心愿单列表:', lists, '数量:', lists.length)
-  return lists
+  console.log('计算属性中的心愿单列表:', lists, '数量:', lists?.length || 0)
+  return lists || []
 })
+
+// 商品已存在于哪些心愿单
+const existingWishlists = computed(() => {
+  if (!props.product || !props.product.id) return []
+  return wishlistStore.getWishlistsContainingProduct(props.product.id)
+})
+
+// 检查商品是否已在指定心愿单中
+const isProductInWishlist = (wishlistId) => {
+  if (!props.product || !props.product.id || !wishlistId) return false
+  const wishlist = wishlists.value.find(w => w.id === wishlistId)
+  return wishlist?.items?.some(item => item.product?.id === props.product.id) || false
+}
 
 // 初始化时获取用户的心愿单
 onMounted(async () => {
@@ -205,8 +231,12 @@ watch(() => props.show, async (newVal) => {
       const result = await wishlistStore.fetchUserWishlists()
       console.log('获取心愿单列表:', result)
       
+      // 获取当前用户的心愿单列表
+      const lists = wishlistStore.getUserWishlists
+      console.log('心愿单列表数量:', lists.length)
+      
       // 检查是否有心愿单
-      if (wishlistStore.getUserWishlists.length === 0) {
+      if (!lists || lists.length === 0) {
         // 如果没有心愿单，自动切换到创建新心愿单模式
         isCreatingNew.value = true
         newWishlistName.value = '我的心愿单'
@@ -214,7 +244,7 @@ watch(() => props.show, async (newVal) => {
       } else {
         // 如果有心愿单，默认选择列表模式
         isCreatingNew.value = false
-        console.log('用户已有心愿单，显示列表模式')
+        console.log('用户已有心愿单，显示列表模式, 心愿单数量:', lists.length)
       }
     } catch (error) {
       console.error('获取心愿单列表失败:', error)
@@ -235,27 +265,50 @@ watch(() => props.show, async (newVal) => {
 // 选择现有心愿单
 const selectWishlist = async (wishlistId) => {
   loading.value = true
+  
+  console.log('选择心愿单:', wishlistId)
+  
+  // 验证心愿单ID是否有效
+  if (!wishlistId) {
+    console.error('无效的心愿单ID')
+    emit('added', { success: false, message: '无效的心愿单ID' })
+    loading.value = false
+    close()
+    return
+  }
+  
   try {
     // 检查商品是否已在该心愿单中
-    const wishlist = wishlistStore.getUserWishlists.find(w => w.id === wishlistId)
-    const isProductInWishlist = wishlist?.items?.some(item => item.product?.id === props.product.id)
+    const isProductInThisWishlist = isProductInWishlist(wishlistId)
     
-    if (isProductInWishlist) {
+    if (isProductInThisWishlist) {
+      console.log('商品已在该心愿单中')
       emit('added', { success: true, message: '商品已在该心愿单中' })
+      close()
+      return
+    }
+    
+    console.log('开始添加商品到心愿单:', wishlistId, props.product)
+    // 确保商品信息完整
+    if (!props.product || !props.product.id) {
+      console.error('无效的商品信息')
+      throw new Error('无效的商品信息')
+    }
+    
+    // 添加商品到选择的心愿单
+    console.log('调用addToWishlist，心愿单ID:', wishlistId)
+    const result = await wishlistStore.addToWishlist(props.product, wishlistId)
+    
+    if (result.success) {
+      // 重新获取心愿单列表，确保状态更新
+      await wishlistStore.fetchUserWishlists()
+      emit('added', { success: true, message: '已添加到心愿单' })
     } else {
-      // 添加商品到选择的心愿单
-      const result = await wishlistStore.addToWishlist(props.product, wishlistId)
-      
-      if (result.success) {
-        // 重新获取心愿单列表，确保状态更新
-        await wishlistStore.fetchUserWishlists()
-        emit('added', { success: true, message: '已添加到心愿单' })
-      } else {
-        emit('added', { success: false, message: result.error || '添加失败' })
-      }
+      console.error('添加到心愿单失败:', result.error)
+      emit('added', { success: false, message: result.error || '添加失败' })
     }
   } catch (error) {
-    console.error('添加到心愿单失败:', error)
+    console.error('添加到心愿单过程中出错:', error)
     emit('added', { success: false, message: error.message || '添加失败' })
   } finally {
     loading.value = false

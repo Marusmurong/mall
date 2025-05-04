@@ -28,7 +28,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     提供支付的创建和查询功能
     """
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
         """获取当前用户的支付记录"""
@@ -41,6 +41,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 Q(payer=user) | Q(wishlist_item__wishlist__user=user)
             ).select_related('payment_method')
             
+        # 对于匿名用户，如果是创建支付的操作，允许操作
+        if self.action == 'create':
+            return Payment.objects.none()
+            
+        # 如果是查询操作，返回空结果集
         return Payment.objects.none()
     
     def get_serializer_class(self):
@@ -53,7 +58,55 @@ class PaymentViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """创建支付记录"""
-        serializer.save()
+        payment = serializer.save()
+        
+        # 获取序列化结果中的数据标记已经处理完成
+        serializer.instance = payment
+    
+    def create(self, request, *args, **kwargs):
+        """重写create方法，确保返回payment_link"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        
+        # 获取支付链接
+        payment = serializer.instance
+        payment_serializer = PaymentSerializer(payment)
+        response_data = payment_serializer.data
+        
+        # 确保payment_link字段存在于响应中
+        payment_link = None
+        
+        # 检查支付方式和相关支付详情
+        if payment.payment_method.payment_type == 'paypal':
+            try:
+                if hasattr(payment, 'paypal_details') and payment.paypal_details and payment.paypal_details.payment_link:
+                    payment_link = payment.paypal_details.payment_link
+            except Exception as e:
+                print(f"获取PayPal支付链接错误: {str(e)}")
+        
+        elif payment.payment_method.payment_type == 'coinbase_commerce' or payment.payment_method.code == 'coinbase_commerce':
+            try:
+                if hasattr(payment, 'coinbase_details') and payment.coinbase_details and payment.coinbase_details.hosted_url:
+                    payment_link = payment.coinbase_details.hosted_url
+                    print(f"获取到Coinbase支付链接: {payment_link}")
+            except Exception as e:
+                print(f"获取Coinbase支付链接错误: {str(e)}")
+        
+        # 从payment_data中获取
+        if not payment_link and payment.payment_data:
+            payment_link = payment.payment_data.get('checkout_url') or payment.payment_data.get('payment_link')
+            print(f"从payment_data获取支付链接: {payment_link}")
+        
+        # 添加payment_link到响应中
+        if payment_link:
+            response_data['payment_link'] = payment_link
+            print(f"返回支付链接到前端: {payment_link}")
+        else:
+            print("警告: 未找到支付链接，前端可能无法跳转")
+        
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
     
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):

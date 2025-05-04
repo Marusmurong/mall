@@ -1,0 +1,146 @@
+import { defineStore } from 'pinia'
+import { useNuxtApp } from 'nuxt/app'
+import axios from 'axios'
+
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null,
+    token: null,
+    refreshToken: null,
+    isAuthenticated: false
+  }),
+  
+  getters: {
+    getUser: (state) => state.user,
+    getToken: (state) => state.token,
+    getRefreshToken: (state) => state.refreshToken,
+    isLoggedIn: (state) => state.isAuthenticated
+  },
+  
+  actions: {
+    // 登录动作
+    async login(username, password) {
+      try {
+        // 直接使用axios发送请求
+        const { data } = await axios.post('/api/v1/auth/token/', { 
+          username, 
+          password 
+        })
+        
+        if (data.access) {
+          this.user = data.user
+          this.token = data.access
+          this.refreshToken = data.refresh
+          this.isAuthenticated = true
+          
+          // 存储到localStorage
+          localStorage.setItem('user', JSON.stringify(data.user))
+          localStorage.setItem('token', data.access)
+          localStorage.setItem('refreshToken', data.refresh)
+          
+          return { success: true }
+        }
+        
+        return { success: false, error: { message: '登录失败' } }
+      } catch (error) {
+        console.error('登录出错:', error)
+        return { 
+          success: false, 
+          error: { 
+            message: error.response?.data?.message || '登录失败，请检查您的凭据' 
+          } 
+        }
+      }
+    },
+    
+    // 注册动作
+    async register(username, email, password, inviteCode) {
+      try {
+        // 直接使用axios发送请求
+        const { data } = await axios.post('/api/v1/user/register/', {
+          username,
+          email,
+          password,
+          password2: password, // 确认密码与密码一致
+          invite_code: inviteCode
+        })
+        
+        if (data) {
+          // 注册成功
+          return { success: true, data }
+        }
+        
+        return { success: false, error: { message: '注册失败' } }
+      } catch (error) {
+        console.error('注册出错:', error)
+        
+        // 格式化错误信息
+        let errorMessage = '注册失败，请稍后再试'
+        if (error.response && error.response.data) {
+          const responseData = error.response.data
+          if (responseData.message && typeof responseData.message === 'object') {
+            // 构建错误消息
+            const errorMessages = []
+            for (const field in responseData.message) {
+              errorMessages.push(`${field}: ${responseData.message[field]}`)
+            }
+            errorMessage = errorMessages.join(', ')
+          } else if (responseData.message) {
+            errorMessage = responseData.message
+          }
+        }
+        
+        return { success: false, error: { message: errorMessage } }
+      }
+    },
+    
+    // 恢复会话 - 从localStorage加载用户数据
+    initAuth() {
+      if (process.client) {
+        const storedUser = localStorage.getItem('user')
+        const storedToken = localStorage.getItem('token')
+        const storedRefreshToken = localStorage.getItem('refreshToken')
+        
+        if (storedUser && storedToken) {
+          try {
+            this.user = JSON.parse(storedUser)
+            this.token = storedToken
+            this.refreshToken = storedRefreshToken
+            this.isAuthenticated = true
+          } catch (e) {
+            console.error('解析存储的用户数据时出错', e)
+            this.clearAuth()
+          }
+        }
+      }
+    },
+    
+    // 登出
+    logout() {
+      this.clearAuth()
+    },
+    
+    // 清除认证数据
+    clearAuth() {
+      this.user = null
+      this.token = null
+      this.refreshToken = null
+      this.isAuthenticated = false
+      
+      if (process.client) {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+        localStorage.removeItem('refreshToken')
+      }
+    },
+    
+    // 更新用户信息
+    updateUser(userData) {
+      this.user = { ...this.user, ...userData }
+      
+      if (process.client) {
+        localStorage.setItem('user', JSON.stringify(this.user))
+      }
+    }
+  }
+}) 

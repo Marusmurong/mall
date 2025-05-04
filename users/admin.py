@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.html import format_html, escape
 from django.utils import timezone
+from django.db.models import Count
 from .models import UserProfile, InvitationRecord, ShippingAddress
 
 class UserProfileInline(admin.StackedInline):
@@ -16,7 +17,7 @@ class UserProfileInline(admin.StackedInline):
 class UserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
     list_display = ('username', 'email', 'date_joined', 'is_staff', 'get_invite_code', 
-                   'get_referrer', 'get_invitee_count', 'get_ban_status', 'ban_actions')
+                   'get_referrer', 'get_invitee_count', 'get_invitee_accepted_count', 'get_ban_status', 'ban_actions')
     list_filter = ('profile__is_banned', 'is_staff', 'is_superuser', 'is_active')
     search_fields = ('username', 'email', 'profile__invite_code', 'profile__referrer__user__username')
     
@@ -33,6 +34,10 @@ class UserAdmin(BaseUserAdmin):
     def get_invitee_count(self, obj):
         return obj.profile.invitees.count()
     get_invitee_count.short_description = '邀请用户数'
+    
+    def get_invitee_accepted_count(self, obj):
+        return InvitationRecord.objects.filter(inviter=obj.profile, status='accepted').count()
+    get_invitee_accepted_count.short_description = '成功注册用户数'
     
     def get_ban_status(self, obj):
         if not obj.profile.is_banned:
@@ -53,13 +58,13 @@ class UserAdmin(BaseUserAdmin):
             return "管理员账号"
         
         if obj.profile.is_banned:
-            url = reverse('unban_user', args=[obj.id])
+            url = reverse('users:unban_user', args=[obj.id])
             return format_html(
                 '<a href="{}" class="button" style="background-color: green; color: white; padding: 3px 8px; border-radius: 3px; text-decoration: none;">解除封禁</a>',
                 url
             )
         else:
-            url = reverse('ban_user', args=[obj.id])
+            url = reverse('users:ban_user', args=[obj.id])
             return format_html(
                 '<a href="{}" class="button" style="background-color: #ff4d4d; color: white; padding: 3px 8px; border-radius: 3px; text-decoration: none;">封禁用户</a>',
                 url
@@ -72,7 +77,7 @@ admin.site.register(User, UserAdmin)
 
 @admin.register(InvitationRecord)
 class InvitationRecordAdmin(admin.ModelAdmin):
-    list_display = ('inviter', 'invitee', 'status', 'created_at')
+    list_display = ('inviter', 'invitee', 'invite_code', 'status', 'created_at')
     list_filter = ('status', 'created_at')
     search_fields = ('inviter__user__username', 'invitee__user__username', 'invite_code')
     readonly_fields = ('inviter', 'invitee', 'invite_code', 'created_at')

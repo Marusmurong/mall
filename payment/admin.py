@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from .models import (
     PaymentMethod, Payment, USDTPaymentDetail, 
     PayPalPaymentDetail, CreditCardPaymentDetail,
-    PaymentWebhookLog
+    PaymentWebhookLog, CoinbaseCommercePaymentDetail
 )
 from .forms import PaymentMethodConfigForm
 
@@ -29,6 +29,10 @@ class PaymentMethodAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
             'fields': ('cc_provider', 'cc_api_key', 'cc_api_secret'),
         }),
+        ('Coinbase Commerce配置', {
+            'classes': ('collapse',),
+            'fields': ('coinbase_api_key', 'coinbase_webhook_secret', 'coinbase_checkout_style'),
+        }),
     )
     
     def get_config_status(self, obj):
@@ -41,6 +45,8 @@ class PaymentMethodAdmin(admin.ModelAdmin):
         elif obj.payment_type == 'paypal' and obj.get_config('client_id') and obj.get_config('client_secret'):
             return format_html('<span style="color: green;">已配置</span>')
         elif obj.payment_type == 'credit_card' and obj.get_config('api_key') and obj.get_config('api_secret'):
+            return format_html('<span style="color: green;">已配置</span>')
+        elif obj.payment_type == 'coinbase_commerce' and obj.get_config('api_key'):
             return format_html('<span style="color: green;">已配置</span>')
         else:
             return format_html('<span style="color: orange;">配置不完整</span>')
@@ -60,6 +66,8 @@ class PaymentMethodAdmin(admin.ModelAdmin):
                 new_fieldsets.append(fieldsets[2])  # PayPal配置
             elif obj.payment_type == 'credit_card':
                 new_fieldsets.append(fieldsets[3])  # 信用卡配置
+            elif obj.payment_type == 'coinbase_commerce':
+                new_fieldsets.append(fieldsets[4])  # Coinbase Commerce配置
                 
             return new_fieldsets
         return fieldsets
@@ -79,6 +87,12 @@ class PayPalPaymentDetailInline(admin.StackedInline):
 
 class CreditCardPaymentDetailInline(admin.StackedInline):
     model = CreditCardPaymentDetail
+    can_delete = False
+    extra = 0
+
+
+class CoinbaseCommercePaymentDetailInline(admin.StackedInline):
+    model = CoinbaseCommercePaymentDetail
     can_delete = False
     extra = 0
 
@@ -103,6 +117,8 @@ class PaymentAdmin(admin.ModelAdmin):
             inlines.append(PayPalPaymentDetailInline)
         elif obj.payment_method.payment_type == 'credit_card':
             inlines.append(CreditCardPaymentDetailInline)
+        elif obj.payment_method.payment_type == 'coinbase_commerce':
+            inlines.append(CoinbaseCommercePaymentDetailInline)
         
         return inlines
     

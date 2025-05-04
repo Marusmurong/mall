@@ -57,12 +57,12 @@
           <div class="stat-card">
             <div class="stat-title">已购买商品</div>
             <div class="stat-value">{{ allStats.purchased?.count || 0 }}</div>
-            <div class="stat-desc">金额: ¥{{ formatPrice(allStats.purchased?.amount || 0) }}</div>
+            <div class="stat-desc">金额: ${{ formatPrice(allStats.purchased?.amount || 0) }}</div>
           </div>
           <div class="stat-card">
             <div class="stat-title">未购买商品</div>
             <div class="stat-value">{{ allStats.unpurchased?.count || 0 }}</div>
-            <div class="stat-desc">金额: ¥{{ formatPrice(allStats.unpurchased?.amount || 0) }}</div>
+            <div class="stat-desc">金额: ${{ formatPrice(allStats.unpurchased?.amount || 0) }}</div>
           </div>
         </div>
       </div>
@@ -120,8 +120,8 @@
                 <div class="stat-mini-value text-blue-600">{{ getPaymentCompletedCount(wishlist) }}</div>
               </div>
               <div class="stat-mini">
-                <div class="stat-mini-title">总金额</div>
-                <div class="stat-mini-value">¥{{ formatPrice(getTotalAmount(wishlist)) }}</div>
+                <div class="stat-mini-label">总金额</div>
+                <div class="stat-mini-value">${{ formatPrice(getTotalAmount(wishlist)) }}</div>
               </div>
             </div>
             
@@ -436,10 +436,10 @@ const fetchWishlists = async () => {
     try {
       // 使用相对路径而不是硬编码的URL
       const runtimeConfig = useRuntimeConfig()
-      const baseUrl = runtimeConfig.public.apiBase
+      const baseUrl = runtimeConfig.public.apiBaseUrl
       console.log('使用API基础URL:', baseUrl)
       
-      wishlistResponse = await fetch(`${baseUrl}/v1/wishlist/lists/?site=default`, {
+      wishlistResponse = await fetch(`${baseUrl}/wishlist/lists/?site=default`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${authStore.token}`,
@@ -465,8 +465,8 @@ const fetchWishlists = async () => {
     
     // 获取统计数据
     const runtimeConfig = useRuntimeConfig()
-    const baseUrl = runtimeConfig.public.apiBase
-    const statsResponse = await fetch(`${baseUrl}/v1/wishlist/stats/?site=default`, {
+    const baseUrl = runtimeConfig.public.apiBaseUrl
+    const statsResponse = await fetch(`${baseUrl}/wishlist/stats/?site=default`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -576,10 +576,13 @@ const saveWishlist = async () => {
     
     console.log('准备创建心愿单，数据:', wishlistData)
     
+    const runtimeConfig = useRuntimeConfig()
+    const baseUrl = runtimeConfig.public.apiBaseUrl
+    
     let response;
     if (editingWishlist.value) {
       // 更新心愿单
-      response = await fetch(`http://localhost:8000/api/v1/wishlist/lists/${editingWishlist.value.id}/?site=default`, {
+      response = await fetch(`${baseUrl}/wishlist/lists/${editingWishlist.value.id}/?site=default`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${authStore.token}`,
@@ -589,7 +592,7 @@ const saveWishlist = async () => {
       })
     } else {
       // 创建心愿单
-      response = await fetch(`http://localhost:8000/api/v1/wishlist/lists/?site=default`, {
+      response = await fetch(`${baseUrl}/wishlist/lists/?site=default`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authStore.token}`,

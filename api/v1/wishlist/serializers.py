@@ -44,14 +44,16 @@ class WishlistSerializer(serializers.ModelSerializer):
 class WishlistItemCreateSerializer(serializers.ModelSerializer):
     """
     创建心愿单物品的序列化器
-    允许用户仅提供product_id来添加商品到心愿单
+    允许用户提供product_id和wishlist来添加商品到心愿单
+    如果没有提供wishlist，将使用用户的第一个心愿单或创建新的
     """
     product_id = serializers.UUIDField(required=True, write_only=True)
+    wishlist = serializers.UUIDField(required=False, write_only=True)
     
     class Meta:
         model = WishlistItem
         fields = [
-            'product_id', 'priority', 'description'
+            'product_id', 'wishlist', 'priority', 'description'
         ]
         
     def create(self, validated_data):
@@ -67,14 +69,38 @@ class WishlistItemCreateSerializer(serializers.ModelSerializer):
         
         # 获取当前用户的心愿单
         user = self.context['request'].user
-        wishlist, created = Wishlist.objects.get_or_create(
-            user=user,
-            defaults={'name': f'{user.username}的心愿单'}
-        )
         
-        # 检查商品是否已在心愿单中
-        if WishlistItem.objects.filter(wishlist=wishlist, product=product).exists():
-            raise BusinessException("该商品已在心愿单中")
+        # 检查请求数据中是否指定了心愿单ID
+        wishlist_id = self.context['request'].data.get('wishlist')
+        
+        # 如果有指定心愿单ID，则使用该心愿单
+        if wishlist_id:
+            try:
+                wishlist = Wishlist.objects.get(id=wishlist_id, user=user)
+                print(f"使用指定的心愿单 ID: {wishlist_id}")
+            except Wishlist.DoesNotExist:
+                print(f"指定的心愿单 ID {wishlist_id} 不存在，将尝试使用第一个心愿单")
+                wishlist_id = None
+        
+        # 如果没有指定心愿单ID或指定的心愿单不存在
+        if not wishlist_id:
+            # 获取用户的所有心愿单
+            wishlists = Wishlist.objects.filter(user=user)
+            
+            # 如果用户有心愿单，使用第一个
+            if wishlists.exists():
+                wishlist = wishlists.first()
+                print(f"使用用户的第一个心愿单 ID: {wishlist.id}")
+            else:
+                # 如果用户没有心愿单，创建一个新的
+                wishlist = Wishlist.objects.create(
+                    user=user,
+                    name=f'{user.username}的心愿单'
+                )
+                print(f"为用户 {user.username} 创建了新的心愿单 ID: {wishlist.id}")
+        
+        # 允许在同一个心愿单中添加相同的商品
+        # 之前的检查已移除，不再限制添加重复商品
         
         # 创建心愿单物品
         wishlist_item = WishlistItem(

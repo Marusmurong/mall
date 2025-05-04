@@ -1,112 +1,148 @@
 <template>
-  <div class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-8">支付方式</h1>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Payment Methods</h1>
     
-    <div class="bg-white p-6 rounded-lg shadow mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+      <!-- Credit Card Payment -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 mr-4 flex items-center justify-center bg-primary-100 rounded-full">
+            <span class="text-primary-600 font-bold">CC</span>
+          </div>
+          <h2 class="text-xl font-semibold">Credit Card Payment</h2>
+        </div>
+        <p class="text-gray-700 mb-4">
+          We accept Visa, Mastercard, American Express, and Discover cards.
+          Your card information is securely encrypted with the latest SSL technology.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-3 py-1 bg-blue-600 text-white rounded font-bold">VISA</span>
+          <span class="px-3 py-1 bg-red-600 text-white rounded font-bold">MC</span>
+          <span class="px-3 py-1 bg-blue-800 text-white rounded font-bold">AMEX</span>
+          <span class="px-3 py-1 bg-orange-600 text-white rounded font-bold">DISC</span>
+        </div>
+      </div>
+      
+      <!-- PayPal -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 mr-4 flex items-center justify-center bg-blue-100 rounded-full">
+            <span class="text-blue-600 font-bold">PP</span>
+          </div>
+          <h2 class="text-xl font-semibold">PayPal</h2>
+        </div>
+        <p class="text-gray-700 mb-4">
+          Pay with your PayPal account for fast and secure checkout.
+          No need to enter your financial information every time you shop.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-3 py-1 bg-blue-500 text-white rounded font-bold">PayPal</span>
+        </div>
+      </div>
+      
+      <!-- USDT Payment -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 mr-4 flex items-center justify-center bg-green-100 rounded-full">
+            <span class="text-green-600 font-bold">USDT</span>
+          </div>
+          <h2 class="text-xl font-semibold">USDT (TRC20)</h2>
+        </div>
+        <p class="text-gray-700 mb-4">
+          Pay with USDT stablecoin using the TRC20 network.
+          Fast transaction confirmation and low network fees.
+        </p>
+        <p class="text-sm text-gray-500">
+          Note: Please ensure you're sending USDT on the TRC20 network only. 
+          Other networks are not supported and may result in loss of funds.
+        </p>
+      </div>
+      
+      <!-- Coinbase Commerce -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 mr-4 flex items-center justify-center bg-blue-100 rounded-full">
+            <span class="text-blue-600 font-bold">CB</span>
+          </div>
+          <h2 class="text-xl font-semibold">Coinbase Commerce</h2>
+        </div>
+        <p class="text-gray-700 mb-4">
+          Pay with multiple cryptocurrencies through Coinbase Commerce.
+          Supported coins include BTC, ETH, USDC, DAI, and more.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-3 py-1 bg-orange-500 text-white rounded font-bold">BTC</span>
+          <span class="px-3 py-1 bg-blue-400 text-white rounded font-bold">ETH</span>
+          <span class="px-3 py-1 bg-blue-600 text-white rounded font-bold">USDC</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Payment FAQs -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-12">
+      <h2 class="text-2xl font-semibold mb-6">Payment FAQs</h2>
+      
+      <div class="space-y-6">
+        <div>
+          <h3 class="text-lg font-medium mb-2">What should I do if my payment doesn't go through?</h3>
+          <p class="text-gray-700">
+            If your payment is declined, please check the following:
+          </p>
+          <ul class="list-disc ml-6 mt-2">
+            <li>Verify that your payment information is entered correctly</li>
+            <li>Ensure you have sufficient funds in your account</li>
+            <li>Try a different payment method</li>
+            <li>Contact your bank or payment provider to check for restrictions</li>
+          </ul>
+          <p class="text-gray-700 mt-2">
+            If you still experience issues, please contact our customer support.
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-2">How do I know my order is confirmed?</h3>
+          <p class="text-gray-700">
+            After successful payment, you will receive an order confirmation email. You can also check your order status 
+            in the "My Orders" section of your account.
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-2">How can I apply for an invoice?</h3>
+          <p class="text-gray-700">
+            You can request an invoice during checkout by selecting the "Request Invoice" option. 
+            Alternatively, you can request an invoice for a completed order by contacting our customer service 
+            with your order number.
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-2">How long does it take to verify my cryptocurrency payment?</h3>
+          <p class="text-gray-700">
+            Cryptocurrency payments typically require network confirmations. USDT (TRC20) payments are usually confirmed 
+            within 5-10 minutes. Payments via Coinbase Commerce may take longer depending on the cryptocurrency used.
+            Your order will be processed once the payment is fully confirmed on the blockchain.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Security Information -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-2xl font-semibold mb-6">Secure Payment Guarantee</h2>
       <p class="text-gray-700 mb-4">
-        Mall电商平台支持多种支付方式，为您提供安全、便捷的支付体验。您可以根据自己的偏好选择以下任一支付方式：
+        We take security seriously. All payment information is encrypted using industry-standard SSL technology.
+        We never store your complete credit card information on our servers.
       </p>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-white p-6 rounded-lg shadow">
-        <div class="flex items-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-          </svg>
-          <h2 class="text-xl font-semibold">信用卡/借记卡支付</h2>
-        </div>
-        <p class="text-gray-700 mb-3">
-          我们支持Visa、MasterCard、American Express、UnionPay等主流信用卡和借记卡支付。
-        </p>
-        <ul class="list-disc list-inside text-gray-700 space-y-1">
-          <li>安全的SSL加密技术保护您的支付信息</li>
-          <li>支持信用卡分期付款</li>
-          <li>实时交易确认</li>
-        </ul>
-      </div>
-      
-      <div class="bg-white p-6 rounded-lg shadow">
-        <div class="flex items-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h2 class="text-xl font-semibold">支付宝</h2>
-        </div>
-        <p class="text-gray-700 mb-3">
-          使用支付宝快速完成支付，方便又安全。
-        </p>
-        <ul class="list-disc list-inside text-gray-700 space-y-1">
-          <li>无需输入银行卡信息</li>
-          <li>支持花呗分期</li>
-          <li>交易有保障</li>
-        </ul>
-      </div>
-      
-      <div class="bg-white p-6 rounded-lg shadow">
-        <div class="flex items-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          <h2 class="text-xl font-semibold">微信支付</h2>
-        </div>
-        <p class="text-gray-700 mb-3">
-          使用微信支付，扫码即可完成支付。
-        </p>
-        <ul class="list-disc list-inside text-gray-700 space-y-1">
-          <li>支持微信余额支付</li>
-          <li>支持微信绑定的银行卡支付</li>
-          <li>交易记录可在微信查看</li>
-        </ul>
-      </div>
-      
-      <div class="bg-white p-6 rounded-lg shadow">
-        <div class="flex items-center mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <h2 class="text-xl font-semibold">货到付款</h2>
-        </div>
-        <p class="text-gray-700 mb-3">
-          收到商品后再付款，更加安心。
-        </p>
-        <ul class="list-disc list-inside text-gray-700 space-y-1">
-          <li>支持现金支付</li>
-          <li>支持POS机刷卡</li>
-          <li>收货验货后再付款</li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="bg-white p-6 rounded-lg shadow mt-8">
-      <h2 class="text-xl font-semibold mb-4">支付常见问题</h2>
-      
-      <div class="space-y-4">
-        <div>
-          <h3 class="font-medium mb-2">支付过程中遇到问题怎么办？</h3>
-          <p class="text-gray-700">
-            如果您在支付过程中遇到任何问题，请联系我们的客服热线400-123-4567，或发送邮件至support@mall.com，我们会尽快为您解决。
-          </p>
-        </div>
-        
-        <div>
-          <h3 class="font-medium mb-2">支付成功后没有收到订单确认怎么办？</h3>
-          <p class="text-gray-700">
-            支付成功后，系统会自动发送订单确认邮件。如果您没有收到，请检查垃圾邮件文件夹，或登录您的账户查看订单状态。
-          </p>
-        </div>
-        
-        <div>
-          <h3 class="font-medium mb-2">如何申请发票？</h3>
-          <p class="text-gray-700">
-            您可以在下单时选择是否需要发票，并填写发票信息。如果您在下单后需要申请发票，可以在"我的订单"中找到相应订单，点击"申请发票"按钮进行操作。
-          </p>
-        </div>
+      <div class="flex flex-wrap gap-4 items-center justify-center">
+        <div class="px-4 py-2 bg-green-100 text-green-700 rounded font-bold">SSL Secure</div>
+        <div class="px-4 py-2 bg-blue-100 text-blue-700 rounded font-bold">PCI Compliant</div>
+        <div class="px-4 py-2 bg-gray-100 text-gray-700 rounded font-bold">Secure Payment</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-// 支付方式页面
+// Payment methods page
 </script>

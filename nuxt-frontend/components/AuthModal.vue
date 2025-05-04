@@ -171,6 +171,8 @@
 <script setup>
 import { ref, defineEmits, defineProps } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useNuxtApp } from '#app'
+import { useApi } from '~/composables/useApi'
 
 const props = defineProps({
   show: {
@@ -258,30 +260,98 @@ const handleRegister = async () => {
       inviteCode: registerForm.value.inviteCode 
     })
     
-    const result = await authStore.register(
-      registerForm.value.username, 
-      registerForm.value.email, 
-      registerForm.value.password,
-      registerForm.value.inviteCode
-    )
+    // 正确使用useApi
+    const api = useApi()
     
-    if (result && result.success) {
+    const response = await api.user.register({
+      username: registerForm.value.username,
+      email: registerForm.value.email,
+      password: registerForm.value.password,
+      password2: registerForm.value.confirmPassword,
+      invite_code: registerForm.value.inviteCode
+    });
+    
+    if (response && response.user) {
       // 注册成功
-      console.log('注册成功')
+      console.log('注册成功', response)
+      
+      // 自动登录用户
+      if (response.access) {
+        authStore.token = response.access
+        authStore.refreshToken = response.refresh
+        authStore.user = response.user
+        authStore.isAuthenticated = true
+        
+        // 保存到本地存储
+        localStorage.setItem('token', response.access)
+        localStorage.setItem('refreshToken', response.refresh)
+        localStorage.setItem('user', JSON.stringify(response.user))
+        
+        // 显示成功消息
+        alert('注册成功！您已自动登录。')
+      } else {
+        // 如果没有收到token，显示注册成功但需要登录的消息
+        alert('注册成功！请使用您的新账号登录。')
+        // 切换到登录Tab
+        activeTab.value = 'login'
+        // 预填用户名
+        loginForm.value.username = registerForm.value.username
+        return
+      }
+      
       emit('register-success')
-      // 可以自动切换到登录标签
-      activeTab.value = 'login'
-      // 或者直接关闭模态框
-      // emit('close')
-    } else {
-      console.error('注册失败:', result?.error)
-      registerError.value = result?.error?.message || '注册失败，请稍后再试'
+      emit('close')
     }
   } catch (error) {
     console.error('注册过程中出错:', error)
-    registerError.value = '注册过程中出错，请稍后再试'
+    
+    // 提取错误信息
+    if (error.message) {
+      try {
+        // 尝试解析错误消息中的JSON字符串
+        if (error.message.includes('{')) {
+          const errorJsonStr = error.message.substring(error.message.indexOf('{'));
+          const errorObj = JSON.parse(errorJsonStr);
+          
+          if (errorObj.message) {
+            if (typeof errorObj.message === 'object') {
+              // 处理字段错误
+              const errors = [];
+              for (const field in errorObj.message) {
+                errors.push(`${field}: ${errorObj.message[field]}`);
+              }
+              registerError.value = errors.join(', ');
+            } else {
+              registerError.value = errorObj.message;
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('解析错误信息失败:', e);
+      }
+      
+      // 如果上面的解析失败，直接显示错误消息
+      registerError.value = error.message;
+    } else if (error.response && error.response.data) {
+      const errorData = error.response.data;
+      if (errorData.message && typeof errorData.message === 'object') {
+        // 处理字段错误
+        const errors = [];
+        for (const field in errorData.message) {
+          errors.push(`${field}: ${errorData.message[field]}`);
+        }
+        registerError.value = errors.join(', ');
+      } else if (errorData.message) {
+        registerError.value = errorData.message;
+      } else {
+        registerError.value = '注册失败，请稍后再试';
+      }
+    } else {
+      registerError.value = '注册过程中出错，请稍后再试';
+    }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>

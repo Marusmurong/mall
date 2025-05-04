@@ -13,6 +13,7 @@ PAYMENT_TYPE_CHOICES = [
     ('usdt', 'USDT'),
     ('paypal', 'PayPal'),
     ('credit_card', '信用卡'),
+    ('coinbase_commerce', 'Coinbase Commerce'),
 ]
 
 # 支付状态选项
@@ -182,3 +183,20 @@ class PaymentWebhookLog(models.Model):
         
     def __str__(self):
         return f"{self.event_type} - {self.created_at}"
+
+
+class CoinbaseCommercePaymentDetail(models.Model):
+    """Coinbase Commerce支付详情"""
+    payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name='coinbase_details', help_text="关联的支付记录")
+    charge_id = models.CharField(max_length=255, blank=True, null=True, help_text="Coinbase Charge ID")
+    charge_code = models.CharField(max_length=255, blank=True, null=True, help_text="Coinbase Charge Code")
+    hosted_url = models.URLField(blank=True, null=True, help_text="支付托管URL")
+    status = models.CharField(max_length=50, default='NEW', help_text="支付状态")
+    crypto_used = models.CharField(max_length=20, blank=True, null=True, help_text="使用的加密货币")
+    
+    class Meta:
+        verbose_name = "Coinbase商务支付详情"
+        verbose_name_plural = "Coinbase商务支付详情"
+        
+    def __str__(self):
+        return f"Coinbase - {self.payment.id}"

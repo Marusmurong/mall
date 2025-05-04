@@ -2,11 +2,27 @@
   <div class="card group">
     <!-- 商品图片 -->
     <div class="relative overflow-hidden aspect-square">
+      <!-- 图片加载中状态 -->
+      <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+      
+      <!-- 图片错误状态 -->
+      <div v-if="imageError" class="absolute inset-0 flex flex-col items-center justify-center p-4 text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <p class="text-center text-sm">无法加载图片</p>
+      </div>
+      
       <NuxtLink :to="`/products/${product.id}`">
         <img 
-          :src="productImage" 
+          v-show="!imageError" 
+          :src="productImageSrc" 
           :alt="product.name" 
           class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          @load="handleImageLoaded"
+          @error="handleImageError"
         >
       </NuxtLink>
       
@@ -55,6 +71,7 @@
       </div>
       
       <!-- 标签 -->
+      <!-- 注释掉标签部分
       <div class="absolute top-2 left-2 flex flex-col space-y-1">
         <span v-if="product.is_new" class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">新品</span>
         <span v-if="product.is_hot" class="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">热销</span>
@@ -62,12 +79,13 @@
           {{ discountPercentage }}% 折扣
         </span>
       </div>
+      -->
     </div>
     
     <!-- 商品信息 -->
     <div class="p-4">
       <!-- 分类 -->
-      <div class="text-xs text-gray-500 mb-1">{{ product.category?.name || '未分类' }}</div>
+      <div v-if="product.category?.name" class="text-xs text-gray-500 mb-1">{{ product.category.name }}</div>
       
       <!-- 商品名称 -->
       <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
@@ -76,9 +94,9 @@
       
       <!-- 价格 -->
       <div class="flex items-center space-x-2">
-        <span v-if="discountPrice" class="text-sm font-medium text-gray-900">¥{{ discountPrice }}</span>
+        <span v-if="discountPrice" class="text-sm font-medium text-gray-900">${{ discountPrice }}</span>
         <span :class="[discountPrice ? 'text-xs text-gray-500 line-through' : 'text-sm font-medium text-gray-900']">
-          ¥{{ product.price }}
+          ${{ product.price }}
         </span>
       </div>
       
@@ -104,14 +122,37 @@
   
   <!-- 心愿单选择弹窗 -->
   <WishlistSelectModal 
+    v-if="showWishlistModal" 
     :show="showWishlistModal" 
-    :product="props.product" 
-    @close="showWishlistModal = false"
-    @added="handleWishlistAdded"
+    :product="currentProduct"
+    @close="showWishlistModal = false" 
+    @added="confirmAddToWishlist" 
   />
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCartStore } from '../stores/cart'
+import { useWishlistStore } from '../stores/wishlist'
+import { useAuthStore } from '../stores/auth'
+import { useApi } from '../composables/useApi'
+import { useImageUrl } from '../composables/useImageUrl'
+import useToast from '../composables/useToast'
+import WishlistSelectModal from './WishlistSelectModal.vue'
+
+// 获取图片URL工具
+const { formatImageUrl } = useImageUrl()
+
+// 模态框状态
+const showAuthModal = ref(false)
+const showWishlistModal = ref(false)
+const currentProduct = ref(null)
+
+// 获取Toast通知
+const { showToast } = useToast()
+
+// Props定义
 const props = defineProps({
   product: {
     type: Object,
@@ -119,13 +160,21 @@ const props = defineProps({
   }
 })
 
-// 导入心愿单选择弹窗组件
-import WishlistSelectModal from './WishlistSelectModal.vue'
-
 // 获取状态管理
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
+
+// 图片加载状态
+const imageLoading = ref(true)
+const imageError = ref(false)
+
+// 鼠标悬停状态
+const isHovered = ref(false)
+
+// 获取API服务和路由
+const api = useApi()
+const router = useRouter()
 
 // 商品图片
 const productImage = computed(() => {
@@ -177,96 +226,110 @@ const discountPercentage = computed(() => {
   return 0
 })
 
+// 商品图片源地址，使用统一的URL处理方法
+const productImageSrc = computed(() => {
+  return formatImageUrl(productImage.value)
+})
+
+// 图片加载处理
+const handleImageLoaded = () => {
+  imageLoading.value = false;
+  imageError.value = false;
+}
+
+// 图片错误处理
+const handleImageError = () => {
+  console.error('图片加载失败:', productImageSrc.value);
+  imageLoading.value = false;
+  imageError.value = true;
+}
+
 // 添加到购物车
 const addToCart = () => {
   cartStore.addToCart(props.product)
   
   // 显示提示信息
-  // 这里可以使用toast通知组件
-  alert('已添加到购物车')
+  showToast('已添加到购物车')
 }
 
-// 显示/隐藏心愿单选择弹窗
-const showWishlistModal = ref(false)
-// 正在检查心愿单状态
-const isCheckingWishlists = ref(false)
-
-// 处理心愿单添加结果
-const handleWishlistAdded = (result) => {
-  if (result.success) {
-    alert(result.message || '已添加到心愿单')
-  } else {
-    alert(result.message || '操作失败')
-  }
-}
-
-// 添加/移除心愿单
+// 切换心愿单
 const toggleWishlist = async () => {
-  // 检查用户是否已登录
+  // 检查用户是否登录
   if (!authStore.isAuthenticated) {
-    const confirmed = confirm('请先登录才能添加到心愿单。\n是否前往登录页面？')
-    if (confirmed) {
-      navigateTo(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
-    }
+    alert('请先登录')
     return
   }
   
-  if (isInWishlist.value) {
-    // 从心愿单中移除
-    // 需要获取心愿单中的商品ID
-    const wishlistItem = wishlistStore.getWishlistItems.find(item => item.product?.id === props.product.id)
-    if (wishlistItem) {
-      const result = await wishlistStore.removeFromWishlist(wishlistItem.id)
+  // 无论是否已在心愿单中，都打开选择心愿单弹窗，让用户选择添加到哪个心愿单
+  currentProduct.value = props.product
+  showWishlistModal.value = true
+}
+
+// 确认添加到心愿单
+const confirmAddToWishlist = async (result) => {
+  if (!currentProduct.value) return
+  
+  try {
+    // result可能是心愿单ID（字符串）或包含success属性的对象
+    if (typeof result === 'object' && result !== null) {
+      // 如果是结果对象
       if (result.success) {
-        alert('已从心愿单移除')
+        // 如果已经添加成功，直接显示消息
+        showToast(result.message || '商品添加到心愿单成功')
       } else {
-        alert(result.error || '操作失败')
+        // 如果添加失败，显示错误消息
+        showToast(result.message || '添加失败', 'error')
       }
-    }
-  } else {
-    // 检查是否有心愿单，如果没有则先创建一个默认心愿单
-    isCheckingWishlists.value = true
-    
-    try {
-      // 先获取用户的心愿单列表
-      await wishlistStore.fetchUserWishlists()
+    } else if (typeof result === 'string') {
+      // 如果是心愿单ID（向后兼容），执行添加操作
+      const addResult = await wishlistStore.addToWishlist(currentProduct.value, result)
       
-      // 如果用户没有心愿单，直接创建并添加商品
-      if (wishlistStore.getUserWishlists.length === 0) {
-        const confirmed = confirm('您还没有心愿单，是否创建一个新的心愿单？')
-        
-        if (confirmed) {
-          const createResult = await wishlistStore.createWishlist({
-            name: '我的心愿单',
-            description: '',
-            is_public: true
-          })
-          
-          if (createResult.success && createResult.wishlist) {
-            // 创建成功后直接添加商品
-            const addResult = await wishlistStore.addToWishlist(props.product, createResult.wishlist.id)
-            
-            if (addResult.success) {
-              alert('已添加到新创建的心愿单')
-            } else {
-              alert(addResult.error || '添加失败')
-            }
-          } else {
-            alert(createResult.error || '创建心愿单失败')
-          }
-        }
+      if (addResult.success) {
+        showToast('商品添加到心愿单成功')
       } else {
-        // 如果用户有心愿单，显示选择弹窗
-        showWishlistModal.value = true
+        showToast(`添加失败: ${addResult.error}`, 'error')
       }
-    } catch (error) {
-      console.error('检查心愿单失败:', error)
-      alert('操作失败，请重试')
-    } finally {
-      isCheckingWishlists.value = false
+    } else {
+      console.error('无效的添加结果:', result)
+      showToast('添加失败: 参数错误', 'error')
     }
+  } catch (error) {
+    console.error('添加到心愿单过程中出错:', error)
+    showToast(`添加失败: ${error.message || '未知错误'}`, 'error')
+  } finally {
+    // 关闭弹窗并清除当前商品
+    showWishlistModal.value = false
+    currentProduct.value = null
   }
 }
+
+// 打开快速查看
+const openQuickView = () => {
+  router.push(`/products/${props.product.id}`);
+};
+
+// 鼠标移入事件
+const handleMouseEnter = () => {
+  isHovered.value = true;
+};
+
+// 鼠标移出事件
+const handleMouseLeave = () => {
+  isHovered.value = false;
+};
+
+// 组件挂载时检查心愿单状态
+onMounted(() => {
+  // 添加鼠标事件监听
+  const card = document.querySelector('.card');
+  if (card) {
+    card.addEventListener('mouseenter', handleMouseEnter);
+    card.addEventListener('mouseleave', handleMouseLeave);
+  }
+  
+  // 检查商品是否在心愿单中
+  // 待实现
+});
 </script>
 
 

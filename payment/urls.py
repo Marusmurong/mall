@@ -12,6 +12,7 @@ urlpatterns = [
     path('usdt/<int:payment_id>/', views.usdt_payment_detail, name='usdt_payment_detail'),
     path('paypal/<int:payment_id>/', views.paypal_checkout, name='paypal_checkout'),
     path('credit-card/<int:payment_id>/', views.credit_card_checkout, name='credit_card_checkout'),
+    path('coinbase/<int:payment_id>/', views.coinbase_commerce_checkout, name='coinbase_commerce_checkout'),
     
     # 支付状态
     path('status/<int:payment_id>/', views.payment_status, name='payment_status'),
@@ -23,4 +24,6 @@ urlpatterns = [
     
     # Webhook接口
     path('webhook/<str:payment_type>/', views.webhook_handler, name='webhook_handler'),
+    # 不再需要单独的coinbase webhook处理器，已合并到通用webhook_handler
+    # path('webhook/coinbase/', views.coinbase_webhook_handler, name='coinbase_webhook_handler'),
 ] 

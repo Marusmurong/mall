@@ -42,6 +42,8 @@ class PaymentSerializer(serializers.ModelSerializer):
     usdt_details = USDTPaymentDetailSerializer(read_only=True)
     paypal_details = PayPalPaymentDetailSerializer(read_only=True)
     credit_card_details = CreditCardPaymentDetailSerializer(read_only=True)
+    payment_link = serializers.SerializerMethodField(read_only=True)
+    checkout_url = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Payment
@@ -50,10 +52,68 @@ class PaymentSerializer(serializers.ModelSerializer):
             'amount', 'currency', 'status', 'status_message', 
             'transaction_id', 'payer', 'is_anonymous', 'payer_email', 
             'payer_name', 'created_at', 'updated_at', 'completed_at',
-            'usdt_details', 'paypal_details', 'credit_card_details'
+            'usdt_details', 'paypal_details', 'credit_card_details',
+            'payment_link', 'checkout_url', 'payment_data'
         ]
         read_only_fields = ['id', 'status', 'transaction_id', 'created_at', 
                            'updated_at', 'completed_at']
+                           
+    def get_payment_link(self, obj):
+        """获取支付链接"""
+        # 首先检查PayPal支付详情
+        try:
+            if hasattr(obj, 'paypal_details') and obj.paypal_details and obj.paypal_details.payment_link:
+                return obj.paypal_details.payment_link
+        except:
+            pass
+        
+        # 检查Coinbase支付详情
+        try:
+            if hasattr(obj, 'coinbase_details') and obj.coinbase_details and obj.coinbase_details.hosted_url:
+                return obj.coinbase_details.hosted_url
+        except:
+            pass
+            
+        # 然后检查支付数据中是否有支付链接
+        if obj.payment_data and 'checkout_url' in obj.payment_data:
+            return obj.payment_data.get('checkout_url')
+            
+        if obj.payment_data and 'payment_link' in obj.payment_data:
+            return obj.payment_data.get('payment_link')
+            
+        # 最后检查从payment/utils.py中获取
+        try:
+            from payment.utils import get_payment_checkout_url
+            return get_payment_checkout_url(obj)
+        except:
+            return None
+            
+    def get_checkout_url(self, obj):
+        """获取结账URL"""
+        # 检查支付数据中是否有结账URL
+        if obj.payment_data and 'checkout_url' in obj.payment_data:
+            checkout_url = obj.payment_data.get('checkout_url')
+            
+            # 如果是相对URL，转换为绝对URL
+            if checkout_url and checkout_url.startswith('/'):
+                from django.conf import settings
+                base_url = getattr(settings, 'BASE_URL', 'http://localhost:8000')
+                return f"{base_url}{checkout_url}"
+                
+            return checkout_url
+            
+        return None
+        
+    def to_representation(self, instance):
+        """自定义响应格式，确保支付链接可以直接获取到"""
+        ret = super().to_representation(instance)
+        
+        # 确保payment_link字段优先显示在响应中
+        payment_link = self.get_payment_link(instance)
+        if payment_link:
+            ret['payment_link'] = payment_link
+            
+        return ret
 
 class PaymentCreateSerializer(serializers.ModelSerializer):
     """创建支付记录的序列化器"""
@@ -129,10 +189,15 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             except Order.DoesNotExist:
                 raise serializers.ValidationError({"order_id": "订单不存在"})
                 
-        # 设置付款人
-        if not attrs.get('is_anonymous', False) and self.context['request'].user.is_authenticated:
-            attrs['payer'] = self.context['request'].user
-            
+        # 设置付款人 - 修改这里以支持匿名支付
+        if not attrs.get('is_anonymous', False):
+            # 只有当用户登录时才设置付款人
+            if 'request' in self.context and self.context['request'].user.is_authenticated:
+                attrs['payer'] = self.context['request'].user
+            else:
+                # 未登录用户设置为匿名支付
+                attrs['is_anonymous'] = True
+                
         return attrs
     
     def create(self, validated_data):
@@ -157,6 +222,11 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             # 创建信用卡支付详情
             from payment.utils import generate_credit_card_payment_details
             generate_credit_card_payment_details(payment)
+            
+        elif payment_method.payment_type == 'coinbase' or payment_method.code == 'coinbase_commerce':
+            # 创建Coinbase支付详情
+            from payment.utils import generate_coinbase_payment_details
+            generate_coinbase_payment_details(payment)
             
         return payment
 

@@ -34,6 +34,9 @@ urlpatterns = [
     path('orders/', include('api.v1.orders.urls')),
     path('payments/', include('api.v1.payments.urls')),
     
+    # 内容页面API
+    path('content/', include('api.v1.content.urls')),
+    
     # 推荐/BI/行为绘点API - 待实现
     # path('recommendations/', include('api.v1.recommendations.urls')),
     # path('events/', include('api.v1.events.urls')),

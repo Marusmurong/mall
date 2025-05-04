@@ -264,7 +264,10 @@ export default {
     },
     
     formatPrice(price) {
-      return `¥${parseFloat(price).toFixed(2)}`
+      if (price !== undefined && price !== null) {
+        return `$${parseFloat(price).toFixed(2)}`
+      }
+      return '$0.00'
     }
   }
 }

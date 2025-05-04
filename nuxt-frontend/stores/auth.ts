@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 // 导入Nuxt的composables
 const useApi = () => {
   // 使用动态导入确保在Nuxt环境中运行
-  return import('~/composables/useApi').then(module => module.useApi())
+  return import('../composables/useApi').then(module => module.useApi())
 }
 
 // 安全地访问localStorage
@@ -78,21 +78,32 @@ export const useAuthStore = defineStore('auth', {
         // 获取API实例
         const api = await useApi()
         const response = await api.auth.login({ username, password })
-        this.token = response.access
-        this.refreshToken = response.refresh
+        
+        // 处理新的API响应格式: { code: 0, message: 'success', data: { refresh, access } }
+        let tokenData
+        if (response && response.code === 0 && response.data) {
+          // 新的API响应格式
+          tokenData = response.data
+        } else {
+          // 旧的API响应格式，直接使用
+          tokenData = response
+        }
+        
+        this.token = tokenData.access
+        this.refreshToken = tokenData.refresh
         this.isAuthenticated = true
         
         // 存储token到localStorage
         const storage = useLocalStorage()
-        storage.setItem('token', response.access)
-        storage.setItem('refresh_token', response.refresh)
+        storage.setItem('token', tokenData.access)
+        storage.setItem('refresh_token', tokenData.refresh)
         
         // 为兼容性保留这些代码
         const tokenCookie = useCookie('auth_token')
-        tokenCookie.value = response.access
+        tokenCookie.value = tokenData.access
         
         const refreshTokenCookie = useCookie('refresh_token')
-        refreshTokenCookie.value = response.refresh
+        refreshTokenCookie.value = tokenData.refresh
         
         // 获取用户信息
         await this.fetchUserProfile()
@@ -122,11 +133,22 @@ export const useAuthStore = defineStore('auth', {
       try {
         const api = await useApi()
         const response = await api.auth.refreshToken(this.refreshToken)
-        this.token = response.access
+        
+        // 处理新的API响应格式
+        let tokenData
+        if (response && response.code === 0 && response.data) {
+          // 新的API响应格式
+          tokenData = response.data
+        } else {
+          // 旧的API响应格式，直接使用
+          tokenData = response
+        }
+        
+        this.token = tokenData.access
         
         // 更新localStorage中的token
         const tokenCookie = useCookie('auth_token')
-        tokenCookie.value = response.access
+        tokenCookie.value = tokenData.access
         
         return true
       } catch (error) {
@@ -155,14 +177,56 @@ export const useAuthStore = defineStore('auth', {
       refreshTokenCookie.value = null
     },
     
-    async register(username: string, email: string, password: string, inviteCode: string) {
+    async register(username: string, email: string, password: string, inviteCode: string, confirmPassword: string) {
       try {
+        if (!username || !email || !password) {
+          console.error('注册失败: 用户名、邮箱和密码不能为空')
+          return { success: false, error: '用户名、邮箱和密码不能为空' }
+        }
+        
+        // 基本验证
+        if (password.length < 8) {
+          console.error('注册失败: 密码长度不能小于8位')
+          return { success: false, error: '密码长度不能小于8位' }
+        }
+        
+        console.log('准备注册用户:', { username, email, invite_code: inviteCode })
+        
         const api = await useApi()
-        await api.user.register({ username, email, password, invite_code: inviteCode })
-        return { success: true }
+        const response = await api.user.register({ 
+          username, 
+          email, 
+          password,
+          password2: password,
+          invite_code: inviteCode 
+        })
+        
+        console.log('注册响应:', response)
+        
+        // 检查API响应格式
+        if (response && response.code !== undefined) {
+          // 新的API响应格式
+          if (response.code === 0) {
+            // 成功
+            return { success: true }
+          } else {
+            // 失败，服务器返回了错误信息
+            console.error('注册失败:', response.message)
+            return { 
+              success: false, 
+              error: response.message || '注册失败'
+            }
+          }
+        } else {
+          // 旧的API响应格式或其他响应
+          return { success: true }
+        }
       } catch (error) {
         console.error('注册失败:', error)
-        return { success: false, error }
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : '注册失败，请稍后再试'
+        }
       }
     },
     

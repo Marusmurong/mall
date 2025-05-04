@@ -13,7 +13,7 @@ class Wishlist(models.Model):
     """心愿单"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, verbose_name=_('名称'))
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='用户')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlists_new', verbose_name='用户')
     description = models.TextField(blank=True, verbose_name=_('描述'))
     is_public = models.BooleanField(default=True, verbose_name=_('是否公开'))
     share_code = models.CharField(max_length=20, unique=True, blank=True, verbose_name=_('分享码'))
@@ -21,6 +21,7 @@ class Wishlist(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
+        app_label = 'wishlist_new'
         verbose_name = '心愿单'
         verbose_name_plural = verbose_name
         ordering = ['-created_at']
@@ -88,11 +89,11 @@ class WishlistItem(models.Model):
     added_at = models.DateTimeField(default=timezone.now, verbose_name='添加时间')
     
     class Meta:
+        app_label = 'wishlist_new'
         verbose_name = '心愿单商品'
         verbose_name_plural = verbose_name
         ordering = ['-added_at', 'priority']
-        # 暂时注释掉unique_together约束以解决迁移问题
-        # unique_together = ('wishlist', 'product')
+        # 移除unique_together约束，允许在同一心愿单中添加多个相同商品
         
     def __str__(self):
         product_name = self.product.name if self.product else '未指定商品'
@@ -115,6 +116,7 @@ class WishlistView(models.Model):
     viewed_at = models.DateTimeField(auto_now_add=True, verbose_name='浏览时间')
     
     class Meta:
+        app_label = 'wishlist_new'
         verbose_name = '心愿单浏览记录'
         verbose_name_plural = verbose_name
         ordering = ['-viewed_at']

@@ -58,12 +58,25 @@ class WishlistViewSet(viewsets.ModelViewSet):
         """
         获取当前用户的心愿单
         如果没有则创建一个新的心愿单
+        如果有多个，则返回第一个
         """
-        # 获取或创建心愿单
-        wishlist, created = Wishlist.objects.get_or_create(
-            user=request.user,
-            defaults={'name': f'{request.user.username}的心愿单'}
-        )
+        # 获取用户的所有心愿单
+        wishlists = Wishlist.objects.filter(user=request.user)
+        
+        # 检查是否有心愿单
+        if wishlists.exists():
+            # 如果有多个心愿单，返回第一个
+            wishlist = wishlists.first()
+            # 记录日志
+            if wishlists.count() > 1:
+                print(f"用户 {request.user.username} 有多个心愿单，返回第一个（ID: {wishlist.id}）")
+        else:
+            # 如果没有，创建一个新的
+            wishlist = Wishlist.objects.create(
+                user=request.user,
+                name=f'{request.user.username}的心愿单'
+            )
+            print(f"为用户 {request.user.username} 创建了新的心愿单（ID: {wishlist.id}）")
         
         serializer = self.get_serializer(wishlist)
         return Response(serializer.data)

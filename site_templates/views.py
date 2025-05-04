@@ -8,6 +8,8 @@ from django.conf import settings
 import requests
 import os
 import json
+# 导入商品相关模型
+from goods.models import GoodsCategory, Goods
 
 @require_http_methods(["GET"])
 def alokai_template_view(request):
@@ -137,17 +139,8 @@ def wishlist_view(request):
     return render(request, 'site_templates/alokai/wishlist.html', context)
 
 def get_site_config(site_id):
-    """从Alokai平台获取站点配置"""
-    try:
-        response = requests.get(
-            f'https://platform.alokai.com/api/v1/sites/{site_id}/config',
-            headers={'Authorization': f'Bearer {DEFAULT_API_TOKEN}'},
-            timeout=5
-        )
-        if response.status_code == 200:
-            return response.json()
-    except Exception as e:
-        print(f"获取站点配置失败: {e}")
+    """获取站点配置，使用本地配置，不再访问外部API"""
+    # 返回固定的配置
     return {
         'theme': 'default',
         'features': {
@@ -229,66 +222,83 @@ def get_site_blocks(request, site_id):
     # 在实际应用中，这些数据应该从数据库中获取
     # 这里我们返回一些示例数据
     
-    # 获取一些分类数据
-    categories = GoodsCategory.objects.filter(visible_in__contains=[site_id])[:4]
-    category_data = []
-    for category in categories:
-        category_data.append({
-            'id': category.id,
-            'name': category.name,
-            'slug': category.slug if hasattr(category, 'slug') else f'category-{category.id}',
-            'image': category.image.url if hasattr(category, 'image') and category.image else None
-        })
-    
-    # 获取一些商品数据
-    products = Goods.objects.filter(visible_in__contains=[site_id])[:8]
-    product_data = []
-    for product in products:
-        product_data.append({
-            'id': product.id,
-            'name': product.name,
-            'slug': product.slug if hasattr(product, 'slug') else f'product-{product.id}',
-            'price': str(product.shop_price),
-            'discount_price': str(product.market_price) if product.market_price < product.shop_price else None,
-            'image': product.image.url if hasattr(product, 'image') and product.image else None
-        })
-    
-    blocks = [
-        {
-            'type': 'hero-banner',
-            'data': {
-                'title': '欢迎来到我们的商城',
-                'subtitle': '发现最新的产品和特惠',
-                'buttonText': '立即购物',
-                'buttonLink': '/products',
-                'backgroundImage': '/static/img/hero-bg.jpg'
+    try:
+        # 获取一些分类数据
+        # 修改filter条件，使用字符串比较或者安全的方式处理
+        categories = GoodsCategory.objects.filter(is_active=True)[:4]
+        category_data = []
+        for category in categories:
+            category_data.append({
+                'id': category.id,
+                'name': category.name,
+                'slug': category.slug if hasattr(category, 'slug') else f'category-{category.id}',
+                'image': category.image.url if hasattr(category, 'image') and category.image else None
+            })
+        
+        # 获取一些商品数据
+        products = Goods.objects.filter(is_active=True)[:8]
+        product_data = []
+        for product in products:
+            product_data.append({
+                'id': product.id,
+                'name': product.name,
+                'slug': product.slug if hasattr(product, 'slug') else f'product-{product.id}',
+                'price': str(product.shop_price) if hasattr(product, 'shop_price') else '0.00',
+                'discount_price': str(product.market_price) if hasattr(product, 'market_price') and product.market_price < product.shop_price else None,
+                'image': product.image.url if hasattr(product, 'image') and product.image else None
+            })
+        
+        blocks = [
+            {
+                'type': 'hero-banner',
+                'data': {
+                    'title': '欢迎来到我们的商城',
+                    'subtitle': '发现最新的产品和特惠',
+                    'buttonText': '立即购物',
+                    'buttonLink': '/products',
+                    'backgroundImage': '/static/img/hero-bg.jpg'
+                }
+            },
+            {
+                'type': 'featured-categories',
+                'data': {
+                    'title': '热门分类',
+                    'categories': category_data
+                }
+            },
+            {
+                'type': 'product-showcase',
+                'data': {
+                    'title': '热销商品',
+                    'products': product_data
+                }
+            },
+            {
+                'type': 'wishlist-section',
+                'data': {
+                    'title': '创建您的心愿单',
+                    'description': '将您喜爱的商品添加到心愿单，随时查看并分享给朋友。',
+                    'buttonText': '查看心愿单',
+                    'buttonLink': '/wishlist'
+                }
             }
-        },
-        {
-            'type': 'featured-categories',
-            'data': {
-                'title': '热门分类',
-                'categories': category_data
+        ]
+        return JsonResponse(blocks, safe=False)
+    except Exception as e:
+        # 记录错误并返回默认数据
+        print(f"获取站点区块时出错: {str(e)}")
+        return JsonResponse([
+            {
+                'type': 'hero-banner',
+                'data': {
+                    'title': '欢迎来到我们的商城',
+                    'subtitle': '发现最新的产品和特惠',
+                    'buttonText': '立即购物',
+                    'buttonLink': '/products',
+                    'backgroundImage': '/static/img/hero-bg.jpg'
+                }
             }
-        },
-        {
-            'type': 'product-showcase',
-            'data': {
-                'title': '热销商品',
-                'products': product_data
-            }
-        },
-        {
-            'type': 'wishlist-section',
-            'data': {
-                'title': '创建您的心愿单',
-                'description': '将您喜爱的商品添加到心愿单，随时查看并分享给朋友。',
-                'buttonText': '查看心愿单',
-                'buttonLink': '/wishlist'
-            }
-        }
-    ]
-    return JsonResponse(blocks, safe=False)
+        ], safe=False)
 
 @csrf_exempt
 @require_http_methods(["GET"])
